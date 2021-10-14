@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <vector>
+#include <vector>
+#include <cstring>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <algorithm>
+#include "Vec3.h"
+
+#ifndef FILEREADER
+#define FILEREADER
+
+
+class tmp_class
+{
+    static void checkFileExt(const std::string inFile, const std::string ext);
+
+    public:
+        typedef std::vector<std::vector<std::string> > flines_p;
+        typedef std::vector<std::string > flines;
+        static void static_func();
+
+        static flines_p readFile(std::string);
+        static flines readFile_unparsed(std::string);
+        static void readXYZ();
+        
+        
+};
+
+// struct xyzData
+// {
+//     int numAtoms;
+//     std::vector<double> pos_x;
+//     std::vector<double> pos_y;
+//     std::vector<double> pos_z;
+//     std::vector<std::string> atoms;
+//     xyzData()
+//     {
+//         numAtoms = 0;
+//         printf("CONSCTRUCTOR\n");
+//     }
+
+// };
+
+class fileReader
+{
+    static void checkFileExt(const std::string inFile, const std::string ext);
+
+    public:
+        typedef std::vector<std::vector<std::string> > flines_p;
+        typedef std::vector<std::string > flines;
+        static flines_p readFile(std::string);
+        static flines readFile_unparsed(std::string);
+        static void readXYZ();
+        //static void readXYZ(const std::string fileName, std::vector<Vec3> &coords, std::vector<std::string> &atoms);
+        //static xyzData readXYZ(std::string fileName);
+        ~fileReader()
+        {
+            printf("CONSCTRUCTOR\n");
+        }
+};
+
+#endif
