@@ -55,6 +55,8 @@ FlucDens::FlucDens(const int num_sites,
 
     hardness = vec_d(num_sites, 0);
     use_frag_constraints = true;
+    damp_exponent = 1.26697;
+    damp_coeff = 0.81479;
 }
 
 FlucDens::~FlucDens()
@@ -182,6 +184,17 @@ void FlucDens::change_dyn_exp(const int index, const double value)
     delta_rho_coulomb_mat[index*n_sites + index] = dynamic_exp[index]*5/16 + hardness[index];
 }
 
+void FlucDens::change_frz_exp(const int index, const double value)
+{
+    frozen_exp[index] = value;
+}
+
+void FlucDens::set_dampening(double coeff, double exponent)
+{
+    damp_coeff = coeff;
+    damp_exponent = exponent;
+}
+
 vec_d FlucDens::calc_energy_batch(const std::vector<vec_d> batch_coords, bool calc_frz)
 {
     vec_d result(batch_coords.size());
@@ -279,8 +292,7 @@ double FlucDens::frz_frz_overlap(const double inv_r, const double a, const doubl
     }
 }
 
-
-double FlucDens::calc_energy(const vec_d &positions, bool calc_frz)
+double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_pol)
 {
     size_t i, j;
     double del_del_ee; double frz_a_nuc_b;
@@ -291,6 +303,10 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz)
     double r, r2, inv_r;
 
     frozen_energy = 0.0;
+    polarization_energy = 0.0;
+
+    if (!calc_pol && !calc_frz)
+        return 0.0;
     
     std::fill(delta_rho_pot_vec.begin(), delta_rho_pot_vec.end(), 0.0);
 
@@ -325,24 +341,26 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz)
                 double exp_ar_del = exp(-a_del*r);
                 double exp_br_del = exp(-b_del*r);
 
-                //  delta_rho - delta_rho
-                del_del_ee = elec_elec_penetration(inv_r, a_del, b_del, exp_ar_del, exp_br_del);
-                delta_rho_coulomb_mat[matrix_idx_1] = del_del_ee;
-                delta_rho_coulomb_mat[matrix_idx_2] = del_del_ee;
-
-                //  delta_rho - frozen_rho
-                if (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) == exclusions_del_frz[i].end())
+                if (calc_pol)
                 {
-                    
-                    del_frz_ee  = elec_elec_penetration(inv_r, a_del, b_frz, exp_ar_del, exp_br_frz);
-                    frz_del_ee  = elec_elec_penetration(inv_r, a_frz, b_del, exp_ar_frz, exp_br_del);
-                    del_a_nuc_b = elec_nuclei_pen(inv_r, a_del, exp_ar_del);
-                    del_b_nuc_a = elec_nuclei_pen(inv_r, b_del, exp_br_del);
-                    
-                    delta_rho_pot_vec[i] += frozen_pop[j]*del_frz_ee - nuclei[j]*del_a_nuc_b;
-                    delta_rho_pot_vec[j] += frozen_pop[i]*frz_del_ee - nuclei[i]*del_b_nuc_a;
-                }
+                    //  delta_rho - delta_rho
+                    del_del_ee = elec_elec_penetration(inv_r, a_del, b_del, exp_ar_del, exp_br_del);
+                    delta_rho_coulomb_mat[matrix_idx_1] = del_del_ee;
+                    delta_rho_coulomb_mat[matrix_idx_2] = del_del_ee;
 
+                    //  delta_rho - frozen_rho
+                    if (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) == exclusions_del_frz[i].end())
+                    {
+                        
+                        del_frz_ee  = elec_elec_penetration(inv_r, a_del, b_frz, exp_ar_del, exp_br_frz);
+                        frz_del_ee  = elec_elec_penetration(inv_r, a_frz, b_del, exp_ar_frz, exp_br_del);
+                        del_a_nuc_b = elec_nuclei_pen(inv_r, a_del, exp_ar_del);
+                        del_b_nuc_a = elec_nuclei_pen(inv_r, b_del, exp_br_del);
+                        
+                        delta_rho_pot_vec[i] += frozen_pop[j]*del_frz_ee - nuclei[j]*del_a_nuc_b;
+                        delta_rho_pot_vec[j] += frozen_pop[i]*frz_del_ee - nuclei[i]*del_b_nuc_a;
+                    }
+                }
                 //  frozen_rho - frozen_rho
                 if (calc_frz)
                 if (std::find(exclusions_frz_frz[i].begin(), exclusions_frz_frz[i].end(), j) == exclusions_frz_frz[i].end())
@@ -360,10 +378,29 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz)
             }
         }
     }
-
+    calc_dampening(positions);
     solve_minimization();
 
     return frozen_energy + polarization_energy;
+}
+
+void FlucDens::calc_dampening(const vec_d &positions)
+{
+    double r2, r, sum_damp;
+    for (size_t i = 0; i < n_sites; i++)
+    {
+        sum_damp = 0.0;
+        for (size_t j = 0; j < n_sites; j++)
+        {
+            if (j == i) continue;
+            if (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) != exclusions_del_frz[i].end()) continue;
+            
+            r2 = dot3(positions, (int)j*3, (int)i*3);
+            r = sqrt(r2);
+            sum_damp += exp(-damp_exponent*r);
+        }
+        delta_rho_coulomb_mat[i*n_sites + i] = dynamic_exp[i]*5/16 + sum_damp*damp_coeff;
+    }
 }
 
 double FlucDens::elec_nuclei_pen(const double inv_r, const double a, const double exp_ar)

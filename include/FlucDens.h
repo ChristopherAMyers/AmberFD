@@ -33,9 +33,10 @@ class FlucDens {
         static double dot3(const vec_d &coords, int i, int j);
 
         double calc_overlap(const vec_d &coords);
-        double calc_energy(const vec_d &coords, bool calc_frz=true);
+        double calc_energy(const vec_d &coords, bool calc_frz=true, bool calc_pol=true);
         vec_d calc_energy_batch(const std::vector<vec_d> batch_coords, bool calc_frz=true);
-        
+        void set_dampening(double coeff, double exponent);
+
         //  frozen - frozen exclusions
         void add_frz_frz_exclusion(int frz_i, int frz_j);
         void get_frz_frz_exclusions(const int particle1, std::vector<int> &particles2) const;
@@ -47,6 +48,7 @@ class FlucDens {
         void add_del_frz_exclusion(int delta_i, int frz_j);
         void add_fragment(const std::vector<int> site_idx_list);
         void change_dyn_exp(const int index, const double value);
+        void change_frz_exp(const int index, const double value);
         void get_del_frz_exclusions(const int particle1, std::vector<int> &particles2) const;
 
 
@@ -74,6 +76,8 @@ class FlucDens {
         vec_d dynamic_exp;
         vec_d delta_rho;
         vec_d hardness;
+        double damp_exponent;
+        double damp_coeff;
         std::vector<std::vector<int>> exclusions_del_frz;
         std::vector<std::vector<int>> exclusions_frz_frz;
         size_t n_sites;
@@ -88,7 +92,7 @@ class FlucDens {
         double elec_elec_penetration_OLD(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
         double elec_nuclei_pen(const double inv_r, const double a, const double exp_ar);
         bool use_long_range_approx(double r, double a, double b);
-
+        void calc_dampening(const vec_d &positions);
         void create_del_exclusions_from_frgment(const std::vector<int> frag_idx);
 
         double dens_cutoff_pct_error = 0.02;
@@ -107,6 +111,7 @@ class FlucDens {
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1, const int idx2);
 
         double total_time;
+        
 };
 
 #endif  // FLUC_DENS_H
