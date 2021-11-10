@@ -63,7 +63,6 @@ class FlucDens {
         std::vector<int> site_frag_ids;
         vec_d A_mat_save, B_vec_save;
 
-        void set_hardness(const int index, const double value);
         void set_frag_constraints(const bool constr_frags);
 
         double get_total_time();
@@ -75,7 +74,6 @@ class FlucDens {
         vec_d frozen_exp;
         vec_d dynamic_exp;
         vec_d delta_rho;
-        vec_d hardness;
         double damp_exponent;
         double damp_coeff;
         std::vector<std::vector<int>> exclusions_del_frz;
