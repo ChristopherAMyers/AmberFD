@@ -52,8 +52,6 @@ FlucDens::FlucDens(const int num_sites,
     site_frag_ids.resize(n_sites, -1);
     n_fragments = 0;
     total_time = 0.0;
-
-    hardness = vec_d(num_sites, 0);
     use_frag_constraints = true;
     damp_exponent = 1.26697;
     damp_coeff = 0.81479;
@@ -68,12 +66,6 @@ double FlucDens::dot3(const vec_d &coords, int i, int j)
     double y = coords[i + 1] - coords[j + 1];
     double z = coords[i + 2] - coords[j + 2];
     return x*x + y*y + z*z;
-}
-
-void FlucDens::set_hardness(const int index, const double value)
-{
-    hardness[index] = value;
-    delta_rho_coulomb_mat[index*n_sites + index] = dynamic_exp[index]*5/16 + hardness[index];
 }
 
 void FlucDens::set_frag_constraints(const bool constr_frags)
@@ -181,7 +173,7 @@ void FlucDens::add_fragment(const std::vector<int> site_idx_list)
 void FlucDens::change_dyn_exp(const int index, const double value)
 {
     dynamic_exp[index] = value;
-    delta_rho_coulomb_mat[index*n_sites + index] = dynamic_exp[index]*5/16 + hardness[index];
+    delta_rho_coulomb_mat[index*n_sites + index] = dynamic_exp[index]*5/16;
 }
 
 void FlucDens::change_frz_exp(const int index, const double value)
