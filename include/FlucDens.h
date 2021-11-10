@@ -34,7 +34,6 @@ class FlucDens {
 
         double calc_overlap(const vec_d &coords);
         double calc_energy(const vec_d &coords, bool calc_frz=true, bool calc_pol=true);
-        vec_d calc_energy_batch(const std::vector<vec_d> batch_coords, bool calc_frz=true);
         void set_dampening(double coeff, double exponent);
 
         //  frozen - frozen exclusions

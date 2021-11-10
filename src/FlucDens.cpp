@@ -187,17 +187,6 @@ void FlucDens::set_dampening(double coeff, double exponent)
     damp_exponent = exponent;
 }
 
-vec_d FlucDens::calc_energy_batch(const std::vector<vec_d> batch_coords, bool calc_frz)
-{
-    vec_d result(batch_coords.size());
-    //#pragma omp parallel for
-    for (int i = 0; i < (int)result.size(); i++)
-    {
-        result[i] = calc_energy(batch_coords[i], calc_frz);
-    }
-    return result;
-}
-
 double FlucDens::get_total_time()
 {
     return total_time;
