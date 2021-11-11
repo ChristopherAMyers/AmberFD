@@ -317,7 +317,7 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
             else if (true)
             {
                 //  compute exponentials only once
-                double exp_ar_frz = exp(-a_frz*r);
+                
                 double exp_br_frz = exp(-b_frz*r);
                 double exp_ar_del = exp(-a_del*r);
                 double exp_br_del = exp(-b_del*r);
@@ -359,8 +359,12 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
             }
         }
     }
-    calc_dampening(positions);
-    solve_minimization();
+    if (calc_pol)
+    {
+        calc_dampening(positions);
+        solve_minimization();
+    }
+    else polarization_energy = 0.0;
 
     return frozen_energy + polarization_energy;
 }

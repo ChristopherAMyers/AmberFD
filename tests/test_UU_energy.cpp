@@ -2,6 +2,7 @@
 #include "FlucDens.h"
 #include <vector>
 #include "include/fileReader.h"
+#include "include/arrerts.h"
 #include <map>
 #include <utility>
 #include <math.h>
@@ -89,15 +90,15 @@ int main(int argc, char *argv[])
     fluc.print_params("frozen_exp parameters", "frozen_exp");
     fluc.print_params("dynamic_exp parameters", "dynamic_exp");
     
-
     try{
         double energy = fluc.calc_energy(sites);
-        double eng_diff = energy - (-10.42492742001900651871);
-        printf(" got energy: %.20f\n", energy);
-        printf(" expected:   -10.42492742001900651871\n");
-        printf(" difference: %.20f\n", eng_diff);
-        if (!std::abs(eng_diff) <= 1e-10)
-            throw std::runtime_error("Energy does not equal");
+        assert_equal_tol(energy, -10.42492742001900651871, 1e-16);
+
+        double pol_energy = fluc.calc_energy(sites, false);
+        assert_equal_tol(pol_energy, -5.8805968057345366, 1e-16);
+
+        double frz_energy = fluc.calc_energy(sites, true, false);
+        assert_equal_tol(pol_energy, -5.8805968057345366, 1e-16);
         }
     catch(const std::exception& e) {
         cout << " exception: " << e.what() << endl;
