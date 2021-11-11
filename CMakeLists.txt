@@ -16,14 +16,16 @@ include(${SWIG_USE_FILE})
 set(CMAKE_SWIG_FLAGS -py3)
 
 #   lapack and blas
-find_package(BLAS REQUIRED)
+#find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
+set(LAPACK_INCLUDE_DIR /usr/include)
 
 #   print out python versions and locations
 message("PYTHONLIBS_VERSION_STRING: ${PYTHONLIBS_VERSION_STRING}")
 message("Python3_INCLUDE_DIRS: ${Python3_INCLUDE_DIRS}")
 message("Python3_LIBRARIES: ${Python3_LIBRARIES}")
-message("BLAS_INCLUDE_DIR: ${BLAS_INCLUDE_DIR}")
+message("LAPACK_INCLUDE_DIR: ${LAPACK_INCLUDE_DIR}")
+message("LAPACK_LIBRARIES ${LAPACK_LIBRARIES}")
 message("CMAKE_SWIG_FLAGS: ${CMAKE_SWIG_FLAGS}")
 message("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 set(INCL ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -49,11 +51,17 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
+
 add_library(FlucDens STATIC ${SOURCES})
+target_link_libraries(FlucDens ${BLAS_LIBRARIES})
+target_link_libraries(FlucDens ${LAPACK_LIBRARIES})
+target_link_libraries(FlucDens /usr/lib/x86_64-linux-gnu/liblapacke.so)
+
+#   needed for tests
+target_include_directories(FlucDens PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 swig_add_library(swigFlucDens TYPE SHARED LANGUAGE python SOURCES ${INCL}/FlucDens.i)
 swig_link_libraries(swigFlucDens FlucDens ${PYTHON_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 enable_testing()
-#add_subdirectory(tests)
-
+add_subdirectory(tests)

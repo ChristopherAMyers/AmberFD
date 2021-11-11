@@ -39,3 +39,4 @@ build*
 
 #   testing and debugging
 debug*
+backups/

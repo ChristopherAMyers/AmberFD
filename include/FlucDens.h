@@ -50,7 +50,6 @@ class FlucDens {
         void change_frz_exp(const int index, const double value);
         void get_del_frz_exclusions(const int particle1, std::vector<int> &particles2) const;
 
-
         vec_d get_rho_coulomb_mat();
         vec_d get_rho_pot_vec();
         vec_d get_delta_rho();
@@ -86,7 +85,6 @@ class FlucDens {
 
         double frz_frz_overlap(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
         double elec_elec_penetration(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
-        double elec_elec_penetration_OLD(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
         double elec_nuclei_pen(const double inv_r, const double a, const double exp_ar);
         bool use_long_range_approx(double r, double a, double b);
         void calc_dampening(const vec_d &positions);

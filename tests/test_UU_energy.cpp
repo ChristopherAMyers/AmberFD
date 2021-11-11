@@ -6,12 +6,12 @@
 #include <utility>
 #include <math.h>
 #include <Vec3.h>
+#include <stdexcept>
 
 using std::cout;
 using std::endl;
 using std::vector;
 using std::pair;
-
 
 std::map<std::string, int> symbol_to_nuc {{"H", 1}, {"C", 6}, {"N", 7}, {"O", 8}};
 std::map<int, double> nuc_to_exp_frz {{1, 2.50}, {6, 2.45}, {7, 2.17}, {8, 2.42}};
@@ -88,6 +88,22 @@ int main(int argc, char *argv[])
 
     fluc.print_params("frozen_exp parameters", "frozen_exp");
     fluc.print_params("dynamic_exp parameters", "dynamic_exp");
-    fluc.calc_energy(sites);
+    
+
+    try{
+        double energy = fluc.calc_energy(sites);
+        double eng_diff = energy - (-10.42492742001900651871);
+        printf(" got energy: %.20f\n", energy);
+        printf(" expected:   -10.42492742001900651871\n");
+        printf(" difference: %.20f\n", eng_diff);
+        if (!std::abs(eng_diff) <= 1e-10)
+            throw std::runtime_error("Energy does not equal");
+        }
+    catch(const std::exception& e) {
+        cout << " exception: " << e.what() << endl;
+        return 1;
+    }
+
+
     return 0;
 }

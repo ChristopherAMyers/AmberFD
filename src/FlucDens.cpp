@@ -430,36 +430,6 @@ double FlucDens::elec_elec_penetration(const double inv_r, const double a, const
     }
 }
 
-double FlucDens::elec_elec_penetration_OLD(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br)
-{
-    /*  electron electron charge penetration term */
-    double ab_diff = abs(a - b);
-    if (ab_diff > 0.001)
-    {
-        double a2 = a*a; double a4 = a2*a2; double a6 = a2*a4;
-        double b2 = b*b; double b4 = b2*b2; double b6 = b2*b4;
-        double denom1 = a2 - b2;
-        double denom2 = -denom1;
-        double c1 = a*b4 / (2*denom1*denom1);
-        double c2 = (b6 - 3*a2*b4) / std::pow(denom1, 3);
-        double c3 = b*a4 / (2*denom2*denom2);
-        double c4 = (a6 - 3*b2*a4) / std::pow(denom2, 3);
-
-        return inv_r - exp_ar*(c1 - c2*inv_r) - exp_br*(c3 - c4*inv_r);
-    }
-    else
-    {
-        double ar = a/inv_r;
-        double ar2 = ar*ar;
-        double ar3 = ar2*ar;
-        double r = 1/inv_r;
-        double term0 = (-48 - 33*ar - 9*ar2 - ar3)/(48.*r);
-        double term1 = (15 + 15*ar + 6*ar2 + ar3)/96;
-        double term2 = -((30 + 30*ar + 15*ar2 + 5*ar3 + ar2*ar2)*r)/(320.*ar);
-
-        return inv_r + exp_ar*(term0 + term1*ab_diff + term2*ab_diff*ab_diff);
-    }
-}
 
 void FlucDens::assign_constraints()
 {
