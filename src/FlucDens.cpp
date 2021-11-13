@@ -55,6 +55,7 @@ FlucDens::FlucDens(const int num_sites,
     use_frag_constraints = true;
     damp_exponent = 1.26697;
     damp_coeff = 0.81479;
+    damp_sum.resize(n_sites, 0.0);
 }
 
 FlucDens::~FlucDens()
@@ -290,6 +291,7 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
         return 0.0;
     
     std::fill(delta_rho_pot_vec.begin(), delta_rho_pot_vec.end(), 0.0);
+    std::fill(damp_sum.begin(), damp_sum.end(), 0.0);
 
     //#pragma omp parallel for private (frozen_energy)
     for (i = 0; i < n_sites; i++)
@@ -342,6 +344,9 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
                         
                         delta_rho_pot_vec[i] += frozen_pop[j]*del_frz_ee - nuclei[j]*del_a_nuc_b;
                         delta_rho_pot_vec[j] += frozen_pop[i]*frz_del_ee - nuclei[i]*del_b_nuc_a;
+
+                        damp_sum[i] += exp(-damp_exponent*r);
+                        damp_sum[j] += exp(-damp_exponent*r);
                     }
                 }
                 //  frozen_rho - frozen_rho
@@ -363,30 +368,10 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
     }
     if (calc_pol)
     {
-        calc_dampening(positions);
         solve_minimization();
     }
 
     return frozen_energy + polarization_energy;
-}
-
-void FlucDens::calc_dampening(const vec_d &positions)
-{
-    double r2, r, sum_damp;
-    for (size_t i = 0; i < n_sites; i++)
-    {
-        sum_damp = 0.0;
-        for (size_t j = 0; j < n_sites; j++)
-        {
-            if (j == i) continue;
-            if (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) != exclusions_del_frz[i].end()) continue;
-            
-            r2 = dot3Vec(positions, (int)j*3, (int)i*3);
-            r = sqrt(r2);
-            sum_damp += exp(-damp_exponent*r);
-        }
-        delta_rho_coulomb_mat[i*n_sites + i] = dynamic_exp[i]*5/16 + sum_damp*damp_coeff;
-    }
 }
 
 double FlucDens::elec_nuclei_pen(const double inv_r, const double a, const double exp_ar)
@@ -471,6 +456,10 @@ void FlucDens::solve_minimization()
     int info;
     vec_d A_mat(dim*dim, 0.0);
     vec_d B_vec(dim, 0);
+
+    //  copy over dampening
+    for (int i = 0; i < n_sites; i++)
+        delta_rho_coulomb_mat[i*n_sites + i] = dynamic_exp[i]*5/16 + damp_sum[i]*damp_coeff;
     
     //  copy over potential vector
     vec_d neg_pot = delta_rho_pot_vec;

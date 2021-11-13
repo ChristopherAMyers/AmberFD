@@ -71,6 +71,7 @@ class FlucDens {
         vec_d frozen_exp;
         vec_d dynamic_exp;
         vec_d delta_rho;
+        vec_d damp_sum;
         double damp_exponent;
         double damp_coeff;
         std::vector<std::vector<int>> exclusions_del_frz;
@@ -86,7 +87,6 @@ class FlucDens {
         double elec_elec_penetration(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
         double elec_nuclei_pen(const double inv_r, const double a, const double exp_ar);
         bool use_long_range_approx(double r, double a, double b);
-        void calc_dampening(const vec_d &positions);
         void create_del_exclusions_from_frgment(const std::vector<int> frag_idx);
 
         double dens_cutoff_pct_error = 0.02;
