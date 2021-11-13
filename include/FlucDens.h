@@ -88,6 +88,7 @@ class FlucDens {
         double elec_nuclei_pen(const double inv_r, const double a, const double exp_ar);
         bool use_long_range_approx(double r, double a, double b);
         void create_del_exclusions_from_frgment(const std::vector<int> frag_idx);
+        void calc_one_electro(double* deltaR, int i, int j, bool calc_pol, bool calc_frz);
 
         double dens_cutoff_pct_error = 0.02;
         double dens_cutoff_power_law;
