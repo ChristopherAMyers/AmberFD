@@ -60,7 +60,7 @@ FlucDens::FlucDens(const int num_sites,
 FlucDens::~FlucDens()
 {}
 
-double FlucDens::dot3(const vec_d &coords, int i, int j)
+double FlucDens::dot3Vec(const vec_d &coords, int i, int j)
 {
     double x = coords[i]     - coords[j];
     double y = coords[i + 1] - coords[j + 1];
@@ -210,7 +210,7 @@ double FlucDens::calc_overlap(const vec_d &coords)
             size_t matrix_idx_2 = j*n_sites + i;
 
             //  distances and inverse distances
-            r2 = dot3(coords, (int)j*3, (int)i*3);
+            r2 = dot3Vec(coords, (int)j*3, (int)i*3);
             r = sqrt(r2);
             inv_r = 1/r;
 
@@ -294,6 +294,10 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
     //#pragma omp parallel for private (frozen_energy)
     for (i = 0; i < n_sites; i++)
     {
+        //  extract density exponentials
+        double a_frz = frozen_exp[i];
+        double a_del = dynamic_exp[i];
+
         for (j = i+1; j < n_sites; j++)
         {
             //  symmetric Coulomb matrix elements in row_major format
@@ -301,14 +305,13 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
             size_t matrix_idx_2 = j*n_sites + i;
 
             //  distances and inverse distances
-            r2 = dot3(positions, (int)j*3, (int)i*3);
-            r = sqrt(r2);
-            inv_r = 1/r;
+            double deltaR[Nonbonded::RMaxIdx];
+            Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
+            r2 = deltaR[Nonbonded::R2Idx];
+            r = deltaR[Nonbonded::RIdx];
+            inv_r = deltaR[Nonbonded::RInvIdx];
 
-            //  extract density exponentials
-            double a_frz = frozen_exp[i];
             double b_frz = frozen_exp[j];
-            double a_del = dynamic_exp[i];
             double b_del = dynamic_exp[j];
 
             if (use_long_range_approx(r, a_frz, b_frz)
@@ -316,10 +319,9 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
             {            }
             else if (true)
             {
-                //  compute exponentials only once
-                
-                double exp_br_frz = exp(-b_frz*r);
                 double exp_ar_del = exp(-a_del*r);
+                double exp_ar_frz = exp(-a_frz*r);
+                double exp_br_frz = exp(-b_frz*r);
                 double exp_br_del = exp(-b_del*r);
 
                 if (calc_pol)
@@ -364,7 +366,6 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
         calc_dampening(positions);
         solve_minimization();
     }
-    else polarization_energy = 0.0;
 
     return frozen_energy + polarization_energy;
 }
@@ -380,7 +381,7 @@ void FlucDens::calc_dampening(const vec_d &positions)
             if (j == i) continue;
             if (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) != exclusions_del_frz[i].end()) continue;
             
-            r2 = dot3(positions, (int)j*3, (int)i*3);
+            r2 = dot3Vec(positions, (int)j*3, (int)i*3);
             r = sqrt(r2);
             sum_damp += exp(-damp_exponent*r);
         }

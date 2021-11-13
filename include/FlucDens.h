@@ -10,14 +10,13 @@
 #include <cblas.h>
 #include <omp.h>
 
+#include "common.h"
 #include "Vec3.h"
 
 #ifndef FLUC_DENS_H
 #define FLUC_DENS_H
 
-
-typedef std::vector<double> vec_d;
-typedef std::vector<double> vec_i;
+//typedef std::vector<double> vec_d;
 class FlucDens {
 
     public:
@@ -30,7 +29,7 @@ class FlucDens {
         ~FlucDens();
 
         void print_params(const std::string message, const std::string param_name);
-        static double dot3(const vec_d &coords, int i, int j);
+        static double dot3Vec(const vec_d &coords, int i, int j);
 
         double calc_overlap(const vec_d &coords);
         double calc_energy(const vec_d &coords, bool calc_frz=true, bool calc_pol=true);

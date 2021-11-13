@@ -39,6 +39,7 @@ namespace std {
 %ignore FlucDens::FlucDens();
 
 %include "include/FlucDens.h"
+%include "include/common.h"
 
 %exception FlucDens::FlucDens {
     $action

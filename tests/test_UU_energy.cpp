@@ -78,9 +78,15 @@ int main(int argc, char *argv[])
         dyn_exp.push_back(nuc_to_exp_dyn[nuc]);
         frz_chg.push_back(std::stof(chg_data[i][0]));
     }
+    // change exponents of the second molecule to create uneveness
+    for (int i = (int)(atoms.size()/2); i < (int)atoms.size(); i++)
+    {
+        dyn_exp[i] += 0.25;
+    }
     printf("There are %d atoms\n", (int)atoms.size());
 
     FlucDens fluc(atoms.size(), &frz_chg[0], &nuclei[0], &frz_exp[0], &dyn_exp[0]);
+    fluc.set_dampening(1.5467, 1.4364);
     
     vector<pair<int, int>> bonds;
     form_bonds(coords, nuclei, bonds);
@@ -92,13 +98,13 @@ int main(int argc, char *argv[])
     
     try{
         double energy = fluc.calc_energy(sites);
-        assert_equal_tol(energy, -10.42492742001900651871, 1e-16);
+        assert_equal_tol(energy, -10.0619386256454657, 1e-13);
 
         double pol_energy = fluc.calc_energy(sites, false);
-        assert_equal_tol(pol_energy, -5.8805968057345366, 1e-16);
+        assert_equal_tol(pol_energy, -5.517608011360994, 1e-13);
 
         double frz_energy = fluc.calc_energy(sites, true, false);
-        assert_equal_tol(pol_energy, -5.8805968057345366, 1e-16);
+        assert_equal_tol(frz_energy, -4.5443306142844708, 1e-13);
         }
     catch(const std::exception& e) {
         cout << " exception: " << e.what() << endl;

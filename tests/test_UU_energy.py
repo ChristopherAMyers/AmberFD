@@ -1,7 +1,7 @@
 import sys
 from os.path import *
 import numpy as np
-from simtk.openmm.app.element import Element
+#from simtk.openmm.app.element import Element
 sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
 from FlucDens import *
 import time
@@ -26,7 +26,7 @@ def get_bonds(coords, atoms):
     return bonds
 
 
-
+atom_to_nuc = {'H': 1, 'C': 6, 'N': 7, 'O': 8}
 if __name__ == "__main__":
     #   import and assign parameters
     xyz_data = np.loadtxt('data/u_u.xyz', skiprows=2, dtype=str)
@@ -34,9 +34,10 @@ if __name__ == "__main__":
     n_atoms = int(len(xyz_data)/2)
     coords = xyz_data[:, [1,2,3]].astype(float)*1.88973
     atoms = xyz_data[:, 0]
-    nuclei = np.array([Element.getBySymbol(x).atomic_number for x in atoms])
+    nuclei = np.array([atom_to_nuc[x] for x in atoms])
     exp_frz = np.array([int_to_exp_frz[x] for x in nuclei])
     exp_dyn = exp_frz*0.5
+    exp_dyn[n_atoms:] += 0.25
     bonds = get_bonds(coords, atoms)
 
     start = time.time()
@@ -46,7 +47,7 @@ if __name__ == "__main__":
         fluc.create_frz_exclusions_from_bonds(bonds, 3)
         fluc.add_fragment(VectorI(range(n_atoms)))
         fluc.add_fragment(VectorI(range(n_atoms, n_atoms*2)))
-        total_fluc = fluc.calc_energy(VectorD(coords.flatten()))
+        total_fluc = fluc.calc_energy(coords.flatten())
         frz_energy = fluc.get_frozen_energy()
 
         #   individual fragments
@@ -69,9 +70,10 @@ if __name__ == "__main__":
         print("Diff:          {:15.8f}".format(eng_diff))
         print("Diff (kJ/mol): {:15.8f}".format(eng_diff*2625.5009))
         print("Pol. (kJ/mol): {:15.8f}".format((total_fluc - frz_energy)*2625.5009))
-        print("RES: {:10.5f} {:15.8f}".format(i, (total_fluc - frz_energy)*2625.5009))
+        -84.19430925179343
+        assert(abs(eng_diff*2625.5009 - -84.19430925179343) < 1e-13)
     end = time.time()
 
-    print(end - start)
+    #print(end - start)
 
     

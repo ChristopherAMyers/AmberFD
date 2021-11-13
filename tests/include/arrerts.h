@@ -18,11 +18,12 @@ void assert_equal_tol(double found, double expected, double tol, bool print_res=
         printf(" tolerance : %.16f\n", tol);
         printf(" difference: %.16f\n", diff);
     }
-    if (!std::abs(diff) <= tol)
+    if (std::abs(diff) > tol)
     {
         std::stringstream message;
         message << "ASSERTION FAILED; EXPECTED " << expected << ", FOUND " << found;
-            throw std::runtime_error(message.str());
+        //printf(" %s\n", message.str().c_str());
+        throw std::runtime_error(message.str());
     }
 }
 
