@@ -126,31 +126,33 @@ void FlucDens::get_frz_frz_exclusions(const int particle1, std::vector<int> &par
 
 void FlucDens::create_frz_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)
 {
+    vector<std::set<int> > exclusions = Nonbonded::calc_exclusions_from_bonds(bonds, bond_cutoff, n_sites);
+
     /*  determine exclusions for frozen-frozen interactions from bonds up to 
         an arbitrary bond neighbor length. Edited from OpenMM */ 
-    if (bond_cutoff < 1)
-        return;
-    for (auto& bond : bonds)
-    {
-        if (bond.first < 0 || bond.second < 0 || bond.first >= n_sites || bond.second >= n_sites)
-            throw "createExclusionsFromBonds: Illegal particle index in list of bonds";
-    }
-    vector<std::set<int> > exclusions(n_sites);
-    vector<std::set<int> > bonded12(exclusions.size());
-    for (auto& bond : bonds) {
-        int p1 = bond.first;
-        int p2 = bond.second;
-        exclusions[p1].insert(p2);
-        exclusions[p2].insert(p1);
-        bonded12[p1].insert(p2);
-        bonded12[p2].insert(p1);
-    }
-    for (int level = 0; level < bond_cutoff-1; level++) {
-        vector<std::set<int> > currentExclusions = exclusions;
-        for (int i = 0; i < (int) n_sites; i++)
-            for (int j : currentExclusions[i])
-                exclusions[j].insert(bonded12[i].begin(), bonded12[i].end());
-    }
+    // if (bond_cutoff < 1)
+    //     return;
+    // for (auto& bond : bonds)
+    // {
+    //     if (bond.first < 0 || bond.second < 0 || bond.first >= n_sites || bond.second >= n_sites)
+    //         throw "createExclusionsFromBonds: Illegal particle index in list of bonds";
+    // }
+    // vector<std::set<int> > exclusions(n_sites);
+    // vector<std::set<int> > bonded12(exclusions.size());
+    // for (auto& bond : bonds) {
+    //     int p1 = bond.first;
+    //     int p2 = bond.second;
+    //     exclusions[p1].insert(p2);
+    //     exclusions[p2].insert(p1);
+    //     bonded12[p1].insert(p2);
+    //     bonded12[p2].insert(p1);
+    // }
+    // for (int level = 0; level < bond_cutoff-1; level++) {
+    //     vector<std::set<int> > currentExclusions = exclusions;
+    //     for (int i = 0; i < (int) n_sites; i++)
+    //         for (int j : currentExclusions[i])
+    //             exclusions[j].insert(bonded12[i].begin(), bonded12[i].end());
+    // }
     for (int i = 0; i < (int) exclusions.size(); ++i)
         for (int j : exclusions[i])
             if (j < i)
@@ -307,6 +309,8 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
 
 void FlucDens::calc_one_electro(double* deltaR, int i, int j, bool calc_pol, bool calc_frz)
 {
+    /*  calculate a single electrostatic interaction between a pair of atoms */
+    
     const double b_frz = frozen_exp[j];
     const double b_del = dynamic_exp[j];
     const double a_frz = frozen_exp[i];

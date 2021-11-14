@@ -1,8 +1,13 @@
 #include <vector>
 #include <math.h>
+#include <set>
+#include <map>
+#include <utility>
 
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
+
+#define ANG2BOHR 1.8897259886
 
 typedef std::vector<double> vec_d;
 typedef std::vector<float> vec_f;
@@ -23,6 +28,8 @@ class Nonbonded{
 
         static void calc_dR(const vec_d &coords, int i, int j, double* deltaR);
         static double dot3(const double*u, const double* v);
+
+        static std::vector<std::set<int> > calc_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, const int bond_cutoff, const int n_sites);
 
 };
 
