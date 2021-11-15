@@ -20,7 +20,6 @@
 class FlucDens {
 
     public:
-        FlucDens();
         FlucDens(const int n_sites, 
                    const double *frozen_charges_in, 
                    const double *nuclei_in, 
@@ -34,6 +33,8 @@ class FlucDens {
         double calc_overlap(const vec_d &coords);
         double calc_energy(const vec_d &coords, bool calc_frz=true, bool calc_pol=true);
         void set_dampening(double coeff, double exponent);
+
+
 
         //  frozen - frozen exclusions
         void add_frz_frz_exclusion(int frz_i, int frz_j);
@@ -61,7 +62,6 @@ class FlucDens {
         vec_d A_mat_save, B_vec_save;
 
         void set_frag_constraints(const bool constr_frags);
-
         double get_total_time();
     private:
         vec_d frozen_pop;
@@ -75,7 +75,7 @@ class FlucDens {
         double damp_exponent;
         double damp_coeff;
         std::vector<std::vector<int>> exclusions_del_frz;
-        std::vector<std::vector<int>> exclusions_frz_frz;
+        std::vector<std::set<int>> exclusions_frz_frz;
         size_t n_sites;
         std::map<std::string, vec_d* > param_data;
         
@@ -87,7 +87,7 @@ class FlucDens {
         double elec_elec_penetration(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
         double elec_nuclei_pen(const double inv_r, const double a, const double exp_ar);
         bool use_long_range_approx(double r, double a, double b);
-        void create_del_exclusions_from_frgment(const std::vector<int> frag_idx);
+        void create_del_exclusions_from_fragment(const std::vector<int> frag_idx);
         void calc_one_electro(double* deltaR, int i, int j, bool calc_pol, bool calc_frz);
 
         double dens_cutoff_pct_error = 0.02;
@@ -104,7 +104,6 @@ class FlucDens {
 
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1);
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1, const int idx2);
-
         double total_time;
         
 };

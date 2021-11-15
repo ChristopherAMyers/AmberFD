@@ -2,7 +2,7 @@
 #include "FlucDens.h"
 #include <vector>
 #include "include/fileReader.h"
-#include "include/arrerts.h"
+#include "include/asserts.h"
 #include <map>
 #include <utility>
 #include <math.h>
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     vector<pair<int, int>> bonds;
     form_bonds(coords, nuclei, bonds);
     fluc.create_frz_exclusions_from_bonds(bonds, 2);
-    //print_exclusions(fluc);
+    print_exclusions(fluc);
 
     fluc.print_params("frozen_exp parameters", "frozen_exp");
     fluc.print_params("dynamic_exp parameters", "dynamic_exp");

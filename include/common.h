@@ -12,6 +12,7 @@
 typedef std::vector<double> vec_d;
 typedef std::vector<float> vec_f;
 typedef std::vector<int> vec_i;
+typedef std::map<int, double> map_id;
 
 class Nonbonded{
 

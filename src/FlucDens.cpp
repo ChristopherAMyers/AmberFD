@@ -5,12 +5,6 @@ using std::vector;
 using std::pair;
 using std::set;
 
-FlucDens::FlucDens()
-{
-    printf("Inside FlucDens Constructor \n");
-}
-
-
 FlucDens::FlucDens(const int num_sites, 
                    const double *frozen_chg_in, 
                    const double *nuclei_in, 
@@ -75,7 +69,7 @@ void FlucDens::set_frag_constraints(const bool constr_frags)
     use_frag_constraints = constr_frags;
 }
 
-void FlucDens::create_del_exclusions_from_frgment(const std::vector<int> frag_idx)
+void FlucDens::create_del_exclusions_from_fragment(const std::vector<int> frag_idx)
 {
     for (auto del_i: frag_idx)
         for(auto frz_j: frag_idx)
@@ -108,8 +102,8 @@ void FlucDens::add_frz_frz_exclusion(int frz_i, int frz_j)
         sprintf(buffer, "Frozen exception index pair (%d,%d) out of bounds", frz_i, frz_j);
         throw std::out_of_range(buffer);
     }
-    exclusions_frz_frz[frz_i].push_back(frz_j);
-    exclusions_frz_frz[frz_j].push_back(frz_i);
+    exclusions_frz_frz[frz_i].insert(frz_j);
+    exclusions_frz_frz[frz_j].insert(frz_i);
 }
 
 int FlucDens::get_num_frz_frz_exclusions() const
@@ -121,7 +115,10 @@ void FlucDens::get_frz_frz_exclusions(const int particle1, std::vector<int> &par
 {
     if (particle1 < 0 || particle1 >= (int) exclusions_frz_frz.size()) 
         throw "Index out of range";
-    particles2 = exclusions_frz_frz[particle1];
+    particles2.resize(exclusions_frz_frz[particle1].size());
+    std::copy(exclusions_frz_frz[particle1].begin(), exclusions_frz_frz[particle1].end(), particles2.begin());
+
+    //particles2 = exclusions_frz_frz[particle1];
 }
 
 void FlucDens::create_frz_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)

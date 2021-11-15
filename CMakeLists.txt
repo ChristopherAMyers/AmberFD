@@ -36,6 +36,7 @@ include_directories(${BLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR})
 include_directories(${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(include)
 set_source_files_properties(${INCL}/FlucDens.i PROPERTIES CPLUSPLUS ON)
+set_source_files_properties(${INCL}/swigDispersionPauli.i PROPERTIES CPLUSPLUS ON)
 
 file(GLOB_RECURSE SOURCES src/*.cpp tests/*.cpp)
 
@@ -53,6 +54,8 @@ if (OPENMP_FOUND)
 endif()
 
 add_library(FlucDens STATIC ${SOURCES})
+add_library(DispersionPauli STATIC ${SOURCES})
+
 target_link_libraries(FlucDens ${BLAS_LIBRARIES})
 target_link_libraries(FlucDens ${LAPACK_LIBRARIES})
 target_link_libraries(FlucDens /usr/lib/x86_64-linux-gnu/liblapacke.so)
@@ -61,7 +64,8 @@ target_link_libraries(FlucDens /usr/lib/x86_64-linux-gnu/liblapacke.so)
 target_include_directories(FlucDens PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 swig_add_library(swigFlucDens TYPE SHARED LANGUAGE python SOURCES ${INCL}/FlucDens.i)
-swig_link_libraries(swigFlucDens FlucDens ${PYTHON_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+swig_link_libraries(swigFlucDens FlucDens DispersionPauli ${PYTHON_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+
 
 enable_testing()
 add_subdirectory(tests)

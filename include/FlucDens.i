@@ -5,22 +5,21 @@
     #include "include/FlucDens.h"
 %}
 
-//%init %{
-//    import_array();
-//%}
 
 %include "numpy.i"
 %include "std_vector.i"
 %include "std_pair.i"
+%include "std_map.i"
 %include "std_string.i"
 
 namespace std {
-  %template(PairII) pair<int,int>;
-  %template(VectorD) vector<double>;
-  %template(VectorDD) vector< vector<double> >;
-  %template(VectorI) vector<int>;
-  %template(VectorII) vector < vector<int> >;
-  %template(VectorPairII) vector< pair<int,int> >;
+    %template(MapID) map<int,double>;
+    %template(PairII) pair<int,int>;
+    %template(VectorD) vector<double>;
+    %template(VectorDD) vector< vector<double> >;
+    %template(VectorI) vector<int>;
+    %template(VectorII) vector < vector<int> >;
+    %template(VectorPairII) vector< pair<int,int> >;
 };
 
 %apply (double* IN_ARRAY1, int DIM1) {(double* arr1, int len1),
@@ -30,13 +29,10 @@ namespace std {
                                       (double *frozen_exp, int len3),
                                       (double *dynamic_exp, int len4)}
 
+%include "include/DispersionPauli.i"
 %init %{
     import_array();
 %}
-
-%rename (test_vec_fuc) my_test_vec_fuc;
-%ignore test_vec_fuc;
-%ignore FlucDens::FlucDens();
 
 %include "include/FlucDens.h"
 %include "include/common.h"
