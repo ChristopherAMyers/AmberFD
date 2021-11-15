@@ -9,9 +9,6 @@
                                       (double* coeff_list, int len),
                                       (double* exp_list, int len)}
 
-%init %{
-    import_array();
-%}
 %include "include/DispersionPauli.h"
 %include "include/common.h"
 

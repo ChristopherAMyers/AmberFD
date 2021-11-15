@@ -29,11 +29,11 @@ namespace std {
                                       (double *frozen_exp, int len3),
                                       (double *dynamic_exp, int len4)}
 
-%include "include/DispersionPauli.i"
+
 %init %{
     import_array();
 %}
-
+%include "include/DispersionPauli.i"
 %include "include/FlucDens.h"
 %include "include/common.h"
 

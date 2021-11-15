@@ -80,12 +80,6 @@ void DispersionPauli::set_pauli_coeff(vec_d coeff_list)
         throw std::runtime_error("coeff_list length does not equal n_sites");
     pauli_coeff.assign(coeff_list.begin(), coeff_list.end());
 }
-void DispersionPauli::set_pauli_coeff(double* coeff_list, int len)
-{
-    if (len != n_sites)
-        throw std::runtime_error("coeff_list length does not equal n_sites");
-    pauli_coeff.assign(coeff_list, coeff_list + len);
-}
 void DispersionPauli::set_pauli_coeff(int index, double coeff)
 {
     if (index > (n_sites - 1))
@@ -99,12 +93,6 @@ void DispersionPauli::set_pauli_exp(vec_d exp_list)
     if ((int)exp_list.size() != n_sites)
         throw std::runtime_error("coeff_list length does not equal n_sites");
     pauli_exponents.assign(exp_list.begin(), exp_list.end());
-}
-void DispersionPauli::set_pauli_exp(double *exp_list, int len)
-{
-    if (len != n_sites)
-        throw std::runtime_error("exp_list length does not equal n_sites");
-    pauli_exponents.assign(exp_list, exp_list + len);
 }
 void DispersionPauli::set_pauli_exp(int index, double exponent)
 {

@@ -25,10 +25,8 @@ class DispersionPauli {
         void set_vdw_radii(map_id nuclei2radiiMap);
         void set_C6_map(map_id nucleiToC6Map);
         void set_pauli_coeff(vec_d coeff_list);
-        void set_pauli_coeff(double* coeff_list, int len);
         void set_pauli_coeff(int index, double coeff);
         void set_pauli_exp(vec_d exp_list);
-        void set_pauli_exp(double* exp_list, int len);
         void set_pauli_exp(int index, double exponent);
 
         void get_dispersion_params(double &s6, double &a1, double &a2);
