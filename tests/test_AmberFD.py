@@ -3,7 +3,7 @@ from os.path import *
 import numpy as np
 #from simtk.openmm.app.element import Element
 sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
-from AmberFD import FlucDens, VectorI, VectorD, VectorPairII, PairII
+from AmberFD import FlucDens, VectorI, VectorD, VectorPairII
 import time
 
 int_to_exp_frz = {1: 2.50, 6: 2.45, 7: 2.17, 8: 2.42}

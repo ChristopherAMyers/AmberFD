@@ -35,6 +35,7 @@ message("INCL: ${INCL}")
 include_directories(${BLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR})
 include_directories(${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(include)
+set_source_files_properties(${INCL}/AmberFD.i PROPERTIES CPLUSPLUS ON)
 set_source_files_properties(${INCL}/FlucDens.i PROPERTIES CPLUSPLUS ON)
 set_source_files_properties(${INCL}/swigDispersionPauli.i PROPERTIES CPLUSPLUS ON)
 
@@ -53,19 +54,16 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-add_library(FlucDens STATIC ${SOURCES})
-add_library(DispersionPauli STATIC ${SOURCES})
-
-target_link_libraries(FlucDens ${BLAS_LIBRARIES})
-target_link_libraries(FlucDens ${LAPACK_LIBRARIES})
-target_link_libraries(FlucDens /usr/lib/x86_64-linux-gnu/liblapacke.so)
+add_library(AmberFD STATIC ${SOURCES})
+target_link_libraries(AmberFD ${BLAS_LIBRARIES})
+target_link_libraries(AmberFD ${LAPACK_LIBRARIES})
+target_link_libraries(AmberFD /usr/lib/x86_64-linux-gnu/liblapacke.so)
 
 #   needed for tests
-target_include_directories(FlucDens PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(AmberFD PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-swig_add_library(swigFlucDens TYPE SHARED LANGUAGE python SOURCES ${INCL}/FlucDens.i)
-swig_link_libraries(swigFlucDens FlucDens DispersionPauli ${PYTHON_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-
+swig_add_library(swigAmberFD TYPE SHARED LANGUAGE python SOURCES ${INCL}/AmberFD.i)
+swig_link_libraries(swigAmberFD AmberFD ${PYTHON_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 enable_testing()
 add_subdirectory(tests)

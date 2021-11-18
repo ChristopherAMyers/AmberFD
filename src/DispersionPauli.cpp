@@ -125,7 +125,10 @@ vec_d DispersionPauli::get_pauli_exp()
 {
     return pauli_exponents;
 }
-
+vec_d DispersionPauli::get_C6_coeff()
+{
+    return C6_coeff;
+}
 double DispersionPauli::get_pauli_energy()
 {
     return pauli_energy;
@@ -169,12 +172,14 @@ double DispersionPauli::calc_one_pair(double *deltaR, int i, int j)
         double r2 = deltaR[Nonbonded::R2Idx];
         double r6 = r2*r2*r2;
         double C6 = sqrt(C6_coeff[i]*C6_coeff[j]);
-        double pair_disp = disp_s6*C6/(r6 + shift6);
+        double pair_disp = -disp_s6*C6/(r6 + shift6);
 
         //  Pauli energy
         double coeff = pauli_coeff[i]*pauli_coeff[j];
         double exponent = 0.5*(pauli_exponents[i] + pauli_exponents[j]);
         double pair_pauli = coeff*exp(-exponent*deltaR[Nonbonded::RIdx]);
+
+        //printf("NEW: %d, %d, %.10f\n", i, j, pair_pauli);
 
         //  return and update totals
         disp_energy += pair_disp;
