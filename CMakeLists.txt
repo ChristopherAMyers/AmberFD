@@ -40,7 +40,6 @@ set_source_files_properties(${INCL}/FlucDens.i PROPERTIES CPLUSPLUS ON)
 set_source_files_properties(${INCL}/swigDispersionPauli.i PROPERTIES CPLUSPLUS ON)
 
 file(GLOB_RECURSE SOURCES src/*.cpp tests/*.cpp)
-
 file(GLOB_RECURSE files tests/test_*.cpp)
 foreach(file ${files})
     message("test file: ${file}")

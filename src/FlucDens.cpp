@@ -50,6 +50,10 @@ FlucDens::FlucDens(const int num_sites,
     damp_exponent = 1.26697;
     damp_coeff = 0.81479;
     damp_sum.resize(n_sites, 0.0);
+
+    //  initialize energies
+    frozen_energy = 0;
+    polarization_energy= 0;
 }
 
 FlucDens::~FlucDens()
@@ -521,7 +525,7 @@ void FlucDens::print_params(const std::string message, const std::string param_n
     size_t i = 0;
     int n_per_row = std::min(n_sites, (size_t)5);
     printf("\n %s\n", message.c_str());
-    printf(" Number of elements: %d \n", (int)frozen_exp.size());
+    printf(" Number of elements: %d \n", (int)params->size());
     for (i = 0; i < n_sites; i ++)
     {
         printf(" %10.5f", (*params)[i]);

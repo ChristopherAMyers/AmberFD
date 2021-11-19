@@ -10,6 +10,7 @@
 %include "std_pair.i"
 %include "std_map.i"
 %include "std_string.i"
+%include <std_shared_ptr.i>
 
 namespace std {
     %template(MapID) map<int,double>;
@@ -24,7 +25,14 @@ namespace std {
 %init %{
     import_array();
 %}
+
+%shared_ptr(FlucDens);
+%shared_ptr(DispersionPauli);
 %include "include/FlucDens.i"
 %include "include/DispersionPauli.i"
 %include "include/AmberFD.h"
 %include "include/common.h"
+
+
+
+//%shared_ptr SharedPtr<FlucDens>

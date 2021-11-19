@@ -34,8 +34,6 @@ class FlucDens {
         double calc_energy(const vec_d &coords, bool calc_frz=true, bool calc_pol=true);
         void set_dampening(double coeff, double exponent);
 
-
-
         //  frozen - frozen exclusions
         void add_frz_frz_exclusion(int frz_i, int frz_j);
         void get_frz_frz_exclusions(const int particle1, std::vector<int> &particles2) const;
