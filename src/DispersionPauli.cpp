@@ -7,14 +7,20 @@ using std::pair;
 using std::set;
 using std::map;
 
-DispersionPauli::DispersionPauli(const int num_sites, const int* nuclei_in, const double* exponents_in, const double* coeff_in)
+DispersionPauli::DispersionPauli(const int num_sites, const int* nuclei_in, const double* exponents_in, const double* radii_in)
 {
     n_sites = num_sites;
 
     //  copy over parameters
     nuclei.assign(nuclei_in, nuclei_in + n_sites);
     pauli_exponents.assign(exponents_in, exponents_in + n_sites);
-    pauli_coeff.assign(coeff_in, coeff_in + n_sites);
+    pauli_radii.assign(radii_in, radii_in + n_sites);
+
+    //  convert radii over to pauli coefficients
+    pauli_coeff.resize(pauli_radii.size(), 0.0);
+    for (size_t i=0; i < pauli_radii.size(); i ++)
+        pauli_coeff[i] = radii_to_coeff(pauli_radii[i], pauli_exponents[i]);
+    // coeff12 = np.sqrt((4.184/2625.5009)*np.exp(exp_list12*radii*ang2bohr))
 
     //  initialize exclusions
     exclusions.resize(num_sites);
@@ -74,19 +80,29 @@ void DispersionPauli::set_C6_map(map_id nucleiToC6Map){
     C6_map = nucleiToC6Map;
     set_all_C6_coeff();
 }
-void DispersionPauli::set_pauli_coeff(vec_d coeff_list)
+double DispersionPauli::radii_to_coeff(double radii, double exponent)
 {
-    if ((int)coeff_list.size() != n_sites)
-        throw std::runtime_error("coeff_list length does not equal n_sites");
-    pauli_coeff.assign(coeff_list.begin(), coeff_list.end());
+    if (radii <= 0)
+        return 0.0;
+    else
+        return sqrt(kcal * exp(exponent*radii));
 }
-void DispersionPauli::set_pauli_coeff(int index, double coeff)
+void DispersionPauli::set_pauli_radii(vec_d radii_list)
+{
+    if ((int)radii_list.size() != n_sites)
+        throw std::runtime_error("radi_list length does not equal n_sites");
+    pauli_radii.assign(radii_list.begin(), radii_list.end());
+    for (size_t i=0; i < pauli_radii.size(); i ++)
+        pauli_coeff[i] = radii_to_coeff(pauli_radii[i], pauli_exponents[i]);
+}
+void DispersionPauli::set_pauli_radii(int index, double radii)
 {
     if (index > (n_sites - 1))
         throw std::out_of_range("coeff index is greater than n_sites");
     if (index < 0)
         throw std::out_of_range("coeff index must be greater than zero");
-    pauli_coeff[index] = coeff;
+    pauli_radii[index] = radii;
+    pauli_coeff[index] = radii_to_coeff(radii, pauli_exponents[index]);
 }
 void DispersionPauli::set_pauli_exp(vec_d exp_list)
 {
@@ -117,9 +133,9 @@ map_id DispersionPauli::get_C6_map()
 {
     return C6_map;
 }
-vec_d DispersionPauli::get_pauli_coeff()
+vec_d DispersionPauli::get_pauli_radii()
 {
-    return pauli_coeff;
+    return pauli_radii;
 }
 vec_d DispersionPauli::get_pauli_exp()
 {
@@ -203,9 +219,9 @@ void DispersionPauli::create_exclusions_from_bonds(const vector<pair<int, int> >
 
 void DispersionPauli::create_exclusions_from_fragment(const std::vector<int> frag_idx)
 {
-    for (auto del_i: frag_idx)
-        for(auto frz_j: frag_idx)
-            add_exclusion(del_i, frz_j);
+    for (auto idx_i: frag_idx)
+        for(auto idx_j: frag_idx)
+            add_exclusion(idx_i, idx_j);
 }
 
 void DispersionPauli::add_exclusion(const int index_i, const int index_j)

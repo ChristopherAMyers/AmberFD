@@ -18,21 +18,24 @@ class DispersionPauli {
         DispersionPauli(const int num_sites,
                         const int* nuclei,
                         const double* exponents,
-                        const double* coeff);
+                        const double* radii);
         ~DispersionPauli();
 
         void set_dispersion_params(double s6, double a1, double a2);
         void set_vdw_radii(map_id nuclei2radiiMap);
         void set_C6_map(map_id nucleiToC6Map);
-        void set_pauli_coeff(vec_d coeff_list);
-        void set_pauli_coeff(int index, double coeff);
+        //void set_pauli_coeff(vec_d coeff_list);
+        //void set_pauli_coeff(int index, double coeff);
+        void set_pauli_radii(vec_d radii_list);
+        void set_pauli_radii(int index, double radii);
         void set_pauli_exp(vec_d exp_list);
         void set_pauli_exp(int index, double exponent);
 
         void get_dispersion_params(double &s6, double &a1, double &a2);
         map_id get_vdw_radii();
         map_id get_C6_map();
-        vec_d get_pauli_coeff();
+        //vec_d get_pauli_coeff();
+        vec_d get_pauli_radii();
         vec_d get_pauli_exp();
         vec_d get_C6_coeff();
         double get_pauli_energy();
@@ -51,6 +54,7 @@ class DispersionPauli {
         
         vec_d pauli_exponents;
         vec_d pauli_coeff;
+        vec_d pauli_radii;
         vec_d vdw_radii;
         vec_d C6_coeff;
         double disp_s6, disp_a1, disp_a2;
@@ -65,6 +69,8 @@ class DispersionPauli {
 
         void set_all_vdw_radii();
         void set_all_C6_coeff();
+        double radii_to_coeff(double radii, double exponent);
+        const double kcal = 4.184/2625.5009; // 1 kcal/mol in atomic units
 
         
 };
