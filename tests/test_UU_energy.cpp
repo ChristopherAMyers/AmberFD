@@ -3,6 +3,7 @@
 #include <vector>
 #include "include/fileReader.h"
 #include "include/asserts.h"
+#include "include/common.h"
 #include <map>
 #include <utility>
 #include <math.h>
@@ -15,8 +16,8 @@ using std::vector;
 using std::pair;
 
 std::map<std::string, int> symbol_to_nuc {{"H", 1}, {"C", 6}, {"N", 7}, {"O", 8}};
-std::map<int, double> nuc_to_exp_frz {{1, 2.50}, {6, 2.45}, {7, 2.17}, {8, 2.42}};
-std::map<int, double> nuc_to_exp_dyn {{1, 2.10}, {6, 2.05}, {7, 1.80}, {8, 1.90}};
+map_id nuc_to_exp_frz {{1, 2.50}, {6, 2.45}, {7, 2.17}, {8, 2.42}};
+map_id nuc_to_exp_dyn {{1, 2.10}, {6, 2.05}, {7, 1.80}, {8, 1.90}};
 
 void form_bonds(const vector<Vec3> coords, const vector<double> nuclei, vector<pair<int, int>> &bonds)
 {
@@ -68,18 +69,24 @@ int main(int argc, char *argv[])
     
     
     cout << "Assigning data\n";
-    vector<double> sites, nuclei, frz_exp, dyn_exp, frz_chg;
+    vec_d sites, nuclei, frz_exp, dyn_exp, frz_chg;
+    vec_i frag1_idx, frag2_idx;
+    int num_atoms1 = (int)(atoms.size()/2);
     for (int i = 0; i < (int)atoms.size(); i ++)
     {
-        sites.push_back(coords[i][0]); sites.push_back(coords[i][1]); sites.push_back(coords[i][2]); 
+        sites.push_back(coords[i][0]*ANG2BOHR); 
+        sites.push_back(coords[i][1]*ANG2BOHR); 
+        sites.push_back(coords[i][2]*ANG2BOHR); 
         int nuc = symbol_to_nuc[atoms[i]];
         nuclei.push_back(nuc);
         frz_exp.push_back(nuc_to_exp_frz[nuc]);
         dyn_exp.push_back(nuc_to_exp_dyn[nuc]);
         frz_chg.push_back(std::stof(chg_data[i][0]));
+        if (i < num_atoms1) frag1_idx.push_back(i);
+        else                frag2_idx.push_back(i);
     }
     // change exponents of the second molecule to create uneveness
-    for (int i = (int)(atoms.size()/2); i < (int)atoms.size(); i++)
+    for (int i = num_atoms1; i < (int)atoms.size(); i++)
     {
         dyn_exp[i] += 0.25;
     }
@@ -90,21 +97,23 @@ int main(int argc, char *argv[])
     
     vector<pair<int, int>> bonds;
     form_bonds(coords, nuclei, bonds);
-    fluc.create_frz_exclusions_from_bonds(bonds, 2);
+    fluc.create_frz_exclusions_from_bonds(bonds, 3);
+    fluc.add_fragment(frag1_idx);
+    fluc.add_fragment(frag2_idx);
     print_exclusions(fluc);
 
     fluc.print_params("frozen_exp parameters", "frozen_exp");
     fluc.print_params("dynamic_exp parameters", "dynamic_exp");
     
     try{
-        double energy = fluc.calc_energy(sites);
-        assert_equal_tol(energy, -10.0619386256454657, 1e-13);
+        double energy = fluc.calc_energy(sites)*AU_2_KJ_PER_MOL;
+        assert_equal_tol(energy, 22.9188345025445770, 1e-13);
 
-        double pol_energy = fluc.calc_energy(sites, false);
-        assert_equal_tol(pol_energy, -5.517608011360994, 1e-13);
+        double pol_energy = fluc.calc_energy(sites, false)*AU_2_KJ_PER_MOL;
+        assert_equal_tol(pol_energy, -1.9242042342195604, 1e-13);
 
-        double frz_energy = fluc.calc_energy(sites, true, false);
-        assert_equal_tol(frz_energy, -4.5443306142844708, 1e-13);
+        double frz_energy = fluc.calc_energy(sites, true, false)*AU_2_KJ_PER_MOL;
+        assert_equal_tol(frz_energy, 24.8430387367641394, 1e-13);
         }
     catch(const std::exception& e) {
         cout << " exception: " << e.what() << endl;
