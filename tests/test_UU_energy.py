@@ -31,19 +31,6 @@ atom_to_nuc = {'H': 1, 'C': 6, 'N': 7, 'O': 8}
 ANG2BOHR = 1.8897259886
 AU_2_KJ_PER_MOL = 2625.5009
 if __name__ == "__main__":
-    #   import and assign parameters
-    # xyz_data = np.loadtxt('data/u_u.xyz', skiprows=2, dtype=str)
-    # frz_chg = np.loadtxt('data/u_u.chg')
-    # n_atoms = int(len(xyz_data)/2)
-    # coords = xyz_data[:, [1,2,3]].astype(float)*ANG2BOHR
-    # atoms = xyz_data[:, 0]
-    # nuclei = np.array([atom_to_nuc[x] for x in atoms])
-    # exp_frz = np.array([int_to_exp_frz[x] for x in nuclei])
-    # exp_dyn = np.array([int_to_exp_dyn[x] for x in nuclei])
-    # exp_dyn[n_atoms:] += 0.25
-    # bonds = get_bonds(coords, atoms)
-
-
     data = np.loadtxt('data/u_u_data.txt', dtype=object).T
     atom_names = data[0]
     nuclei = data[1].astype(int)
@@ -88,7 +75,6 @@ if __name__ == "__main__":
         print("Frz Energy_2:  {:15.16f}".format(frz_energy_2))
         print("Diff:          {:15.16f}".format(eng_diff))
         print("Pol. (kJ/mol): {:15.16f}".format((total_fluc - frz_energy)))
-        -84.19430925179343
 
         AssertEqual(frz_energy,  -153.9164545735984291, 1e-14)
         AssertEqual(frz_energy_1, -57.9401318692427196, 1e-14)

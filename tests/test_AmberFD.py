@@ -5,9 +5,8 @@ import numpy as np
 sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
 from AmberFD import AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, PairII
 import time
+from AssertEqual import AssertEqual
 
-int_to_exp_frz = {1: 2.50, 6: 2.45, 7: 2.17, 8: 2.42}
-int_to_exp_dyn = {1: 2.10, 6: 2.05, 7: 1.80, 8: 1.90}
 ANG2BOHR = 1.8897259886
 AU_2_KJ_PER_MOL = 2625.5009
 
@@ -31,37 +30,17 @@ def get_bonds(coords, atoms):
 atom_to_nuc = {'H': 1, 'C': 6, 'N': 7, 'O': 8}
 if __name__ == "__main__":
     #   import and assign parameters
-    xyz_data = np.loadtxt('data/u_u.xyz', skiprows=2, dtype=str)
-    frz_chg = np.loadtxt('data/u_u.chg')
-    param_data = np.loadtxt('data/u_disp_pauli_params.txt', dtype=str)
-    param_data = param_data.T
-
-    #   pdb info is used for dispersion and pauli energies
-    pdb_data = np.loadtxt('tmp/u_u.pdb', dtype=str)
-    atom_names = pdb_data[:, 2]
-    frz_exp_dict = dict(zip(param_data[0], param_data[1].astype(float)))
-    frz_dyn_dict = dict(zip(param_data[0], param_data[2].astype(float)))
-    frz_chg_dict = dict(zip(param_data[0], param_data[3].astype(float)))
-    pauli_exp_dict = dict(zip(param_data[0], param_data[4].astype(float)))
-    pauli_radii_dict = dict(zip(param_data[0], param_data[5].astype(float)))
+    data = np.loadtxt('data/u_u_data.txt', dtype=object).T
+    atom_names = data[0]
+    nuclei = data[1].astype('int32')
+    elms = data[2]
+    x, y, z, frz_chg, exp_frz, exp_dyn, pauli_exp, pauli_radii =  data[3:].astype(float)
+    coords = np.array([x, y, z]).T
+    bonds = get_bonds(coords, elms)
+    n_atoms = int(len(coords)/2)
     
 
-    n_atoms = int(len(xyz_data)/2)
-    #coords = xyz_data[:, [1,2,3]].astype(float)*ANG2BOHR
-    #atoms = xyz_data[:, 0]
-    coords = pdb_data[:, [6,7,8]].astype(float)*ANG2BOHR
-    atoms = pdb_data[:, -1]
-    nuclei = np.array([atom_to_nuc[x] for x in atoms], dtype='intc')
-    exp_frz = np.array([int_to_exp_frz[x] for x in nuclei])
-    exp_dyn = np.array([int_to_exp_dyn[x] for x in nuclei])
-    #exp_dyn = exp_frz*0.5
-    exp_dyn[n_atoms:] += 0.25
-    bonds = get_bonds(coords, atoms)
-    pauli_exp = [pauli_exp_dict[x] for x in atom_names]
-    pauli_exp = [pauli_exp_dict[x] for x in atom_names]
-    pauli_radii = [pauli_radii_dict[x] for x in atom_names]
-
-    amber = AmberFD(len(atoms))
+    amber = AmberFD(len(coords))
     for n, nuc in enumerate(nuclei):
         particle = ParticleInfo(nuc)
         particle.dyn_exp = exp_dyn[n]
@@ -88,7 +67,7 @@ if __name__ == "__main__":
     disp.calc_energy(coords.flatten())
     fluc.calc_energy(coords.flatten())
 
-    for n, name in enumerate(atom_names):
-        mol_str = ' {:4s} {:1d} {:8.3f}  {:8.3f}  {:8.3f}'.format(name, nuclei[n], *tuple(coords[n]))
-        param_str = ('  {:8.3f}'*5).format(frz_chg[n], exp_frz[n], exp_dyn[n], pauli_exp[n], pauli_radii[n])
-        print(mol_str + param_str)
+    AssertEqual(energies.E_frz*AU_2_KJ_PER_MOL,   -153.9164545735984291,    1e-14)
+    AssertEqual(energies.E_pol*AU_2_KJ_PER_MOL,    -10.0445370280187092,    1e-14)
+    AssertEqual(energies.E_pauli*AU_2_KJ_PER_MOL,    0.4749888820543172741, 1e-14)
+    AssertEqual(energies.E_disp*AU_2_KJ_PER_MOL,    -8.4318942845087168081, 1e-14)
