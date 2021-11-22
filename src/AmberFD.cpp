@@ -11,7 +11,7 @@ AmberFD::AmberFD(const int n_particles)
     frz_chg.reserve(n_particles);
     frz_exp.reserve(n_particles);
     dyn_exp.reserve(n_particles);
-    pauli_coeff.reserve(n_particles);
+    pauli_radii.reserve(n_particles);
     pauli_exp.reserve(n_particles);
     n_sites = 0;
 }
@@ -25,8 +25,53 @@ void AmberFD::add_particle(ParticleInfo parameters)
     frz_chg.push_back(parameters.frz_chg);
     dyn_exp.push_back(parameters.dyn_exp);
     pauli_exp.push_back(parameters.pauli_exp);
-    pauli_coeff.push_back(parameters.pauli_coeff);
+    pauli_radii.push_back(parameters.pauli_radii);
     n_sites += 1;
+}
+
+void AmberFD::add_fragment(const vec_i frag_idx)
+{
+    dispersionPauli->create_exclusions_from_fragment(frag_idx);
+    flucDens->add_fragment(frag_idx);
+}
+
+// void AmberFD::zero_energies()
+// {
+//     E_disp = E_pauli = E_frz = E_pol = E_vct = E_total = 0.0;
+// }
+
+Energies AmberFD::calc_energy_forces(const vec_d &positions)
+{
+    size_t i, j;
+    total_energies.reset();
+    Energies pair_energies;
+
+    //  initialize fluc-dens solver
+    flucDens->initialize_calculation();
+    for (i = 0; i < n_sites; i++)
+    {
+        for (j = i+1; j < n_sites; j++)
+        {
+            //  distances data
+            double deltaR[Nonbonded::RMaxIdx];
+            Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
+
+            //  dispersion and pauli energies
+            dispersionPauli->calc_one_pair(deltaR, i, j, pair_energies);
+            total_energies.E_pauli += pair_energies.E_pauli;
+            total_energies.E_disp += pair_energies.E_disp;
+
+            //  fluctuating density and alectrostatics
+            flucDens->calc_one_electro(deltaR, i, j, true, true, pair_energies);
+            total_energies.E_frz += pair_energies.E_frz;
+            total_energies.E_vct += pair_energies.E_vct;
+        }
+    }
+    //  minimize fluc-dens energy
+    flucDens->solve_minimization();
+    total_energies.E_pol = flucDens->get_polarization_energy();
+
+    return total_energies;
 }
 
 std::shared_ptr<FlucDens> AmberFD::create_fluc_dens_force()
@@ -38,6 +83,6 @@ std::shared_ptr<FlucDens> AmberFD::create_fluc_dens_force()
 
 std::shared_ptr<DispersionPauli> AmberFD::create_disp_pauli_force()
 {
-    dispersionPauli = std::shared_ptr<DispersionPauli>(new DispersionPauli(n_sites, &nuclei[0], &pauli_exp[0], &pauli_coeff[0]));
+    dispersionPauli = std::shared_ptr<DispersionPauli>(new DispersionPauli(n_sites, &nuclei[0], &pauli_exp[0], &pauli_radii[0]));
     return dispersionPauli;
 }

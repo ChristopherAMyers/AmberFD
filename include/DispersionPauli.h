@@ -24,8 +24,6 @@ class DispersionPauli {
         void set_dispersion_params(double s6, double a1, double a2);
         void set_vdw_radii(map_id nuclei2radiiMap);
         void set_C6_map(map_id nucleiToC6Map);
-        //void set_pauli_coeff(vec_d coeff_list);
-        //void set_pauli_coeff(int index, double coeff);
         void set_pauli_radii(vec_d radii_list);
         void set_pauli_radii(int index, double radii);
         void set_pauli_exp(vec_d exp_list);
@@ -34,15 +32,15 @@ class DispersionPauli {
         void get_dispersion_params(double &s6, double &a1, double &a2);
         map_id get_vdw_radii();
         map_id get_C6_map();
-        //vec_d get_pauli_coeff();
         vec_d get_pauli_radii();
         vec_d get_pauli_exp();
         vec_d get_C6_coeff();
         double get_pauli_energy();
         double get_disp_energy();
+        int get_num_sites();
 
         double calc_energy(const vec_d &coords);
-        double calc_one_pair(double *deltaR, int i, int j);
+        double calc_one_pair(double *deltaR, int i, int j, Energies& energies);
 
         void create_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, int bond_cutoff);
         void create_exclusions_from_fragment(const vec_i frag_idx);
@@ -64,8 +62,8 @@ class DispersionPauli {
         map_id vdw_radii_map;
         std::vector<std::set<int>> exclusions;
 
-        double disp_energy;
-        double pauli_energy;
+        double total_disp_energy;
+        double total_pauli_energy;
 
         void set_all_vdw_radii();
         void set_all_C6_coeff();

@@ -17,17 +17,18 @@
 #ifndef AMBERFD_H
 #define AMBERFD_H
 
+/*  Small structure used to assign per-site force field parameters */
 class ParticleInfo{
     public:
         int nuclei;
-        double frz_chg, frz_exp, dyn_exp, pauli_exp, pauli_coeff;
+        double frz_chg, frz_exp, dyn_exp, pauli_exp, pauli_radii;
         ParticleInfo(int nuclei)
         {
             this->nuclei = nuclei;
-            frz_chg = frz_exp = dyn_exp = pauli_exp =  pauli_coeff = 0.0;
+            frz_chg = frz_exp = dyn_exp = pauli_exp =  pauli_radii = 0.0;
         }
         ParticleInfo(int nuclei, double frz_chg, double frz_exp, double dyn_exp, double pauli_exp, double pauli_coeff):
-        nuclei(nuclei), frz_chg(frz_chg), frz_exp(frz_exp), dyn_exp(dyn_exp), pauli_exp(pauli_exp), pauli_coeff(pauli_coeff)
+        nuclei(nuclei), frz_chg(frz_chg), frz_exp(frz_exp), dyn_exp(dyn_exp), pauli_exp(pauli_exp), pauli_radii(pauli_coeff)
         {}
 };
 
@@ -38,6 +39,8 @@ class AmberFD{
         ~AmberFD();
 
         void add_particle(ParticleInfo parameters);
+        void add_fragment(const vec_i frag_idx);
+        Energies calc_energy_forces(const vec_d &positions);
         std::shared_ptr<FlucDens> create_fluc_dens_force();
         std::shared_ptr<DispersionPauli> create_disp_pauli_force();
 
@@ -47,11 +50,15 @@ class AmberFD{
         vec_d frz_exp;
         vec_d dyn_exp;
         vec_d pauli_exp;
-        vec_d pauli_coeff;
+        vec_d pauli_radii;
         int n_sites;
 
         std::shared_ptr<FlucDens> flucDens;
         std::shared_ptr<DispersionPauli> dispersionPauli;
+
+        //void zero_energies();
+        Energies total_energies;
+        double E_total;
 };
 
 

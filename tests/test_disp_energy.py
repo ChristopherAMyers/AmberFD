@@ -29,17 +29,13 @@ def get_bonds(coords, atoms):
 
 atom_to_nuc = {'H': 1, 'C': 6, 'N': 7, 'O': 8}
 if __name__ == "__main__":
-    #   import and assign parameters
-    pdb_data = np.loadtxt('data/u_u.pdb', dtype=str)
-    atom_names = pdb_data[:, 2]
-    coords = pdb_data[:, [6, 7, 8]].astype(float)*1.88973
-    atoms = pdb_data[:, -1]
-    nuclei = np.array([atom_to_nuc[x] for x in atoms]).astype('int32')
-    param_data = np.loadtxt('data/u_disp_pauli_params.txt', dtype=str)
-    pauli_exp_dict = dict(zip(param_data[:, 0], param_data[:, 4].astype(float)))
-    pauli_radii_dict = dict(zip(param_data[:, 0], param_data[:, 5].astype(float)))
-    pauli_exp = np.array([pauli_exp_dict[x] for x in atom_names])
-    pauli_radii = np.array([pauli_radii_dict[x] for x in atom_names])
+    data = np.loadtxt('data/u_u_data.txt', dtype=object).T
+    atom_names = data[0]
+    nuclei = data[1].astype('int32')
+    elms = data[2]
+    x, y, z, frz_chg, exp_frz, exp_dyn, pauli_exp, pauli_radii =  data[3:].astype(float)
+    coords = np.array([x, y, z]).T
+    bonds = get_bonds(coords, elms)
     n_atoms = int(len(coords)/2)
 
     disp = DispersionPauli(nuclei, pauli_exp, pauli_radii)
@@ -50,7 +46,7 @@ if __name__ == "__main__":
     pauli_energy = disp.get_pauli_energy()*2625.5009
     disp_energy = disp.get_disp_energy()*2625.5009
 
-    AssertEqual(pauli_energy, 356.719672647861, 1e-14)
-    AssertEqual(disp_energy, -15.785740126322692, 1e-14)
+    AssertEqual(pauli_energy, 0.4749888820543172741, 1e-14)
+    AssertEqual(disp_energy, -8.4318942845087168081, 1e-14)
     
 

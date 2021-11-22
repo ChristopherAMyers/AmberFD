@@ -147,19 +147,24 @@ vec_d DispersionPauli::get_C6_coeff()
 }
 double DispersionPauli::get_pauli_energy()
 {
-    return pauli_energy;
+    return total_pauli_energy;
 }
 double DispersionPauli::get_disp_energy()
 {
-    return disp_energy;
+    return total_disp_energy;
+}
+int DispersionPauli::get_num_sites()
+{
+    return n_sites;
 }
 
 double DispersionPauli::calc_energy(const vec_d &positions)
 {
     size_t i, j;
-    disp_energy = 0.0;
-    pauli_energy = 0.0;
+    total_disp_energy = 0.0;
+    total_pauli_energy = 0.0;
 
+    Energies energies;
     for (i = 0; i < n_sites; i++)
     {
         for (j = i+1; j < n_sites; j++)
@@ -168,16 +173,19 @@ double DispersionPauli::calc_energy(const vec_d &positions)
             double deltaR[Nonbonded::RMaxIdx];
             Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
 
-            calc_one_pair(deltaR, i, j);
+            calc_one_pair(deltaR, i, j, energies);
+            total_pauli_energy += energies.E_pauli;
+            total_disp_energy += energies.E_disp;
         }
     }
 
-    return disp_energy + pauli_energy;
+    return total_disp_energy + total_pauli_energy;
 }
 
-double DispersionPauli::calc_one_pair(double *deltaR, int i, int j)
+double DispersionPauli::calc_one_pair(double *deltaR, int i, int j, Energies& energies)
 {
-    
+    double pair_disp = 0.0;
+    double pair_pauli = 0.0;
     if (std::find(exclusions[i].begin(), exclusions[i].end(), j) == exclusions[i].end())
     {      
         //  dispersion energy
@@ -188,23 +196,21 @@ double DispersionPauli::calc_one_pair(double *deltaR, int i, int j)
         double r2 = deltaR[Nonbonded::R2Idx];
         double r6 = r2*r2*r2;
         double C6 = sqrt(C6_coeff[i]*C6_coeff[j]);
-        double pair_disp = -disp_s6*C6/(r6 + shift6);
+        pair_disp = -disp_s6*C6/(r6 + shift6);
 
         //  Pauli energy
         double coeff = pauli_coeff[i]*pauli_coeff[j];
         double exponent = 0.5*(pauli_exponents[i] + pauli_exponents[j]);
-        double pair_pauli = coeff*exp(-exponent*deltaR[Nonbonded::RIdx]);
+        pair_pauli = coeff*exp(-exponent*deltaR[Nonbonded::RIdx]);
 
         //printf("NEW: %d, %d, %.10f\n", i, j, pair_pauli);
-
         //  return and update totals
-        disp_energy += pair_disp;
-        pauli_energy += pair_pauli;
-        return pair_disp + pair_pauli;
+        // total_disp_energy += pair_disp;
+        // total_pauli_energy += pair_pauli;
     }
-    
-
-    return 0.0;
+    energies.E_disp = pair_disp;
+    energies.E_pauli = pair_pauli;
+    return pair_disp + pair_pauli;
 }
 
 void DispersionPauli::create_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)

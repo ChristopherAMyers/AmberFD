@@ -32,6 +32,9 @@ class FlucDens {
 
         double calc_overlap(const vec_d &coords);
         double calc_energy(const vec_d &coords, bool calc_frz=true, bool calc_pol=true);
+        void calc_one_electro(double* deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies);
+        void initialize_calculation();
+        void solve_minimization();
         void set_dampening(double coeff, double exponent);
 
         //  frozen - frozen exclusions
@@ -86,19 +89,19 @@ class FlucDens {
         double elec_nuclei_pen(const double inv_r, const double a, const double exp_ar);
         bool use_long_range_approx(double r, double a, double b);
         void create_del_exclusions_from_fragment(const std::vector<int> frag_idx);
-        void calc_one_electro(double* deltaR, int i, int j, bool calc_pol, bool calc_frz);
-
+        
+        
         double dens_cutoff_pct_error = 0.02;
         double dens_cutoff_power_law;
         const double dens_cutoff_a = -1.1724, dens_cutoff_b=14.692;
 
         vec_d delta_rho_coulomb_mat;
         vec_d delta_rho_pot_vec;
-        double frozen_energy;
-        double polarization_energy;
+        double total_frz_energy;
+        double total_pol_energy;
 
         void assign_constraints();
-        void solve_minimization();
+        
 
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1);
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1, const int idx2);

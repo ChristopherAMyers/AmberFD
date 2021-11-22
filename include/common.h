@@ -8,6 +8,7 @@
 #define TYPEDEFS_H
 
 #define ANG2BOHR 1.8897259886
+#define AU_2_KJ_PER_MOL 2625.5009
 
 typedef std::vector<double> vec_d;
 typedef std::vector<float> vec_f;
@@ -31,7 +32,14 @@ class Nonbonded{
         static double dot3(const double*u, const double* v);
 
         static std::vector<std::set<int> > calc_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, const int bond_cutoff, const int n_sites);
+};
 
+class Energies{
+    public:
+        double E_pauli, E_disp, E_frz, E_pol, E_vct;
+        Energies(){   reset();  }
+        void reset(){   E_pauli = E_disp = E_frz = E_pol = E_vct = 0.0; }
+        double total() { return E_pauli + E_disp + E_frz + E_pol + E_vct;   }
 };
 
 #endif // TYPEDEFS_H

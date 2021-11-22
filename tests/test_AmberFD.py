@@ -34,22 +34,32 @@ if __name__ == "__main__":
     xyz_data = np.loadtxt('data/u_u.xyz', skiprows=2, dtype=str)
     frz_chg = np.loadtxt('data/u_u.chg')
     param_data = np.loadtxt('data/u_disp_pauli_params.txt', dtype=str)
+    param_data = param_data.T
 
     #   pdb info is used for dispersion and pauli energies
-    pdb_data = np.loadtxt('data/u_u.pdb', dtype=str)
+    pdb_data = np.loadtxt('tmp/u_u.pdb', dtype=str)
     atom_names = pdb_data[:, 2]
-    pauli_exp_dict = dict(zip(param_data[:, 0], param_data[:, 4].astype(float)))
-    pauli_radii_dict = dict(zip(param_data[:, 0], param_data[:, 5].astype(float)))
+    frz_exp_dict = dict(zip(param_data[0], param_data[1].astype(float)))
+    frz_dyn_dict = dict(zip(param_data[0], param_data[2].astype(float)))
+    frz_chg_dict = dict(zip(param_data[0], param_data[3].astype(float)))
+    pauli_exp_dict = dict(zip(param_data[0], param_data[4].astype(float)))
+    pauli_radii_dict = dict(zip(param_data[0], param_data[5].astype(float)))
+    
 
     n_atoms = int(len(xyz_data)/2)
-    coords = xyz_data[:, [1,2,3]].astype(float)*ANG2BOHR
-    atoms = xyz_data[:, 0]
+    #coords = xyz_data[:, [1,2,3]].astype(float)*ANG2BOHR
+    #atoms = xyz_data[:, 0]
+    coords = pdb_data[:, [6,7,8]].astype(float)*ANG2BOHR
+    atoms = pdb_data[:, -1]
     nuclei = np.array([atom_to_nuc[x] for x in atoms], dtype='intc')
     exp_frz = np.array([int_to_exp_frz[x] for x in nuclei])
     exp_dyn = np.array([int_to_exp_dyn[x] for x in nuclei])
     #exp_dyn = exp_frz*0.5
     exp_dyn[n_atoms:] += 0.25
     bonds = get_bonds(coords, atoms)
+    pauli_exp = [pauli_exp_dict[x] for x in atom_names]
+    pauli_exp = [pauli_exp_dict[x] for x in atom_names]
+    pauli_radii = [pauli_radii_dict[x] for x in atom_names]
 
     amber = AmberFD(len(atoms))
     for n, nuc in enumerate(nuclei):
@@ -57,8 +67,8 @@ if __name__ == "__main__":
         particle.dyn_exp = exp_dyn[n]
         particle.frz_exp = exp_frz[n]
         particle.frz_chg = frz_chg[n]
-        particle.pauli_exp = pauli_exp_dict[atom_names[n]]
-        particle.pauli_radii = pauli_radii_dict[atom_names[n]]
+        particle.pauli_exp = pauli_exp[n]
+        particle.pauli_radii = pauli_radii[n]
         amber.add_particle(particle)
 
     #   create dispersion-pauli force
@@ -78,5 +88,7 @@ if __name__ == "__main__":
     disp.calc_energy(coords.flatten())
     fluc.calc_energy(coords.flatten())
 
-
-    
+    for n, name in enumerate(atom_names):
+        mol_str = ' {:4s} {:1d} {:8.3f}  {:8.3f}  {:8.3f}'.format(name, nuclei[n], *tuple(coords[n]))
+        param_str = ('  {:8.3f}'*5).format(frz_chg[n], exp_frz[n], exp_dyn[n], pauli_exp[n], pauli_radii[n])
+        print(mol_str + param_str)

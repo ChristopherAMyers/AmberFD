@@ -52,8 +52,8 @@ FlucDens::FlucDens(const int num_sites,
     damp_sum.resize(n_sites, 0.0);
 
     //  initialize energies
-    frozen_energy = 0;
-    polarization_energy= 0;
+    total_frz_energy = 0;
+    total_pol_energy= 0;
 }
 
 FlucDens::~FlucDens()
@@ -277,18 +277,22 @@ double FlucDens::frz_frz_overlap(const double inv_r, const double a, const doubl
     }
 }
 
-double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_pol)
+void FlucDens::initialize_calculation()
 {
-    size_t i, j;
-
-    frozen_energy = 0.0;
-    polarization_energy = 0.0;
-
-    if (!calc_pol && !calc_frz)
-        return 0.0;
-    
+    total_frz_energy = 0.0;
+    total_pol_energy = 0.0;    
     std::fill(delta_rho_pot_vec.begin(), delta_rho_pot_vec.end(), 0.0);
     std::fill(damp_sum.begin(), damp_sum.end(), 0.0);
+}
+
+double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_pol)
+{
+    if (!calc_pol && !calc_frz)
+        return 0.0;
+
+    initialize_calculation();
+    size_t i, j;
+    Energies energies;
 
     //#pragma omp parallel for private (frozen_energy)
     for (i = 0; i < n_sites; i++)
@@ -299,19 +303,22 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
             double deltaR[Nonbonded::RMaxIdx];
             Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
 
-            calc_one_electro(deltaR, i, j, calc_pol, calc_frz);
+            calc_one_electro(deltaR, i, j, calc_pol, calc_frz, energies);
+            total_frz_energy += energies.E_frz;
         }
     }
     if (calc_pol)
         solve_minimization();
 
-    return frozen_energy + polarization_energy;
+    return total_frz_energy + total_pol_energy;
 }
 
-void FlucDens::calc_one_electro(double* deltaR, int i, int j, bool calc_pol, bool calc_frz)
+void FlucDens::calc_one_electro(double* deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies)
 {
     /*  calculate a single electrostatic interaction between a pair of atoms */
     
+    double frozen_energy = 0.0;
+
     const double b_frz = frozen_exp[j];
     const double b_del = dynamic_exp[j];
     const double a_frz = frozen_exp[i];
@@ -362,17 +369,20 @@ void FlucDens::calc_one_electro(double* deltaR, int i, int j, bool calc_pol, boo
         if (calc_frz)
         if (std::find(exclusions_frz_frz[i].begin(), exclusions_frz_frz[i].end(), j) == exclusions_frz_frz[i].end())
         {
+            
             const double frz_frz_ee  = elec_elec_penetration(inv_r, a_frz, b_frz, exp_ar_frz, exp_br_frz);
             const double frz_a_nuc_b = elec_nuclei_pen(inv_r, a_frz, exp_ar_frz);
             const double frz_b_nuc_a = elec_nuclei_pen(inv_r, b_frz, exp_br_frz);
             const double nuc_nuc = nuclei[i]*nuclei[j]*inv_r;
 
-            frozen_energy +=  frozen_pop[i]*frozen_pop[j]*frz_frz_ee 
+            frozen_energy =  frozen_pop[i]*frozen_pop[j]*frz_frz_ee 
                             - frozen_pop[i]*nuclei[j]*frz_a_nuc_b
                             - frozen_pop[j]*nuclei[i]*frz_b_nuc_a
                             + nuc_nuc;
+            //printf(" FRZ-FRZ: %d  %d  %15.5f  %15.5f\n", i, j, r, frozen_energy);
         }
     }
+    energies.E_frz = frozen_energy;
 }
 
 double FlucDens::elec_nuclei_pen(const double inv_r, const double a, const double exp_ar)
@@ -491,7 +501,7 @@ void FlucDens::solve_minimization()
 
     //  Since all constraints are linear in delta_rho and result in sums equal to zero,
     //  the polarization energy is simply 0.5 * delta_rho^T * pot_vec
-    polarization_energy = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &delta_rho_pot_vec[0], 1);
+    total_pol_energy = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &delta_rho_pot_vec[0], 1);
     return;
 
     /*
@@ -552,12 +562,12 @@ vec_d FlucDens::get_delta_rho()
 
 double FlucDens::get_frozen_energy()
 {
-    return frozen_energy;
+    return total_frz_energy;
 }
 
 double FlucDens::get_polarization_energy()
 {
-    return polarization_energy;
+    return total_pol_energy;
 }
 
 std::vector<std::vector<int>> FlucDens::get_constraints()
