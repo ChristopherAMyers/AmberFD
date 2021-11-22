@@ -86,6 +86,8 @@ if __name__ == "__main__":
         AssertEqual(eng_diff,    -84.1955437955331405, 1e-14)
         AssertEqual(pol_energy,    -1.9242040089255248, 1e-14)
 
+        
+
     end = time.time()
 
     #print(end - start)
