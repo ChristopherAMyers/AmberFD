@@ -36,10 +36,14 @@ class Nonbonded{
 
 class Energies{
     public:
-        double E_pauli, E_disp, E_frz, E_pol, E_vct;
+        double pauli, disp, frz, pol, vct;
+        double elec_elec, elec_nuc, nuc_nuc;
         Energies(){   reset();  }
-        void reset(){   E_pauli = E_disp = E_frz = E_pol = E_vct = 0.0; }
-        double total() { return E_pauli + E_disp + E_frz + E_pol + E_vct;   }
+        void reset(){   pauli = disp = frz = pol = vct = 0.0; }
+        double total() { return pauli + disp + frz + pol + vct;   }
+
+        void reset_all()
+        { reset(); elec_elec = elec_nuc = nuc_nuc = 0.0;    }
 };
 
 #endif // TYPEDEFS_H

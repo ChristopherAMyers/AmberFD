@@ -16,6 +16,16 @@
 #ifndef FLUC_DENS_H
 #define FLUC_DENS_H
 
+class FlucDensEnergies{
+    public:
+        double frz, pol, vct;
+        double elec_elec, elec_nuc, nuc_nuc;
+        FlucDensEnergies(){   reset();  }
+        void reset(){   elec_elec = elec_nuc = nuc_nuc = frz = pol = vct = 0.0; }
+        double total() { return frz + pol + vct;   }
+};
+        
+
 //typedef std::vector<double> vec_d;
 class FlucDens {
 
@@ -56,6 +66,7 @@ class FlucDens {
         vec_d get_delta_rho();
         double get_frozen_energy();
         double get_polarization_energy();
+        FlucDensEnergies get_energies();
         vec_d get_params_by_name(const std::string param_name);
         std::vector<std::vector<int>> get_constraints();
 
@@ -64,6 +75,7 @@ class FlucDens {
 
         void set_frag_constraints(const bool constr_frags);
         double get_total_time();
+
     private:
         vec_d frozen_pop;
         vec_d fluc_pop;
@@ -85,8 +97,8 @@ class FlucDens {
         bool use_frag_constraints;
 
         double frz_frz_overlap(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
-        double elec_elec_penetration(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
-        double elec_nuclei_pen(const double inv_r, const double a, const double exp_ar);
+        double elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
+        double elec_nuclei_energy(const double inv_r, const double a, const double exp_ar);
         bool use_long_range_approx(double r, double a, double b);
         void create_del_exclusions_from_fragment(const std::vector<int> frag_idx);
         
@@ -95,18 +107,23 @@ class FlucDens {
         double dens_cutoff_power_law;
         const double dens_cutoff_a = -1.1724, dens_cutoff_b=14.692;
 
-        vec_d delta_rho_coulomb_mat;
-        vec_d delta_rho_pot_vec;
-        double total_frz_energy;
-        double total_pol_energy;
+        vec_d J_mat;
+        vec_d pot_vec;
+        vec_d dJ_dR;
+        vec_d dPot_dR;
+        //double total_frz_energy;
+        //double total_pol_energy;
 
         void assign_constraints();
-        
-
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1);
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1, const int idx2);
         double total_time;
+
+        //double total_elec_elec, total_elec_nuc, total_nuc_nuc;
         
+        FlucDensEnergies total_energies;
 };
+
+
 
 #endif  // FLUC_DENS_H

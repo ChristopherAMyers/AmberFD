@@ -174,8 +174,8 @@ double DispersionPauli::calc_energy(const vec_d &positions)
             Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
 
             calc_one_pair(deltaR, i, j, energies);
-            total_pauli_energy += energies.E_pauli;
-            total_disp_energy += energies.E_disp;
+            total_pauli_energy += energies.pauli;
+            total_disp_energy += energies.disp;
         }
     }
 
@@ -208,8 +208,8 @@ double DispersionPauli::calc_one_pair(double *deltaR, int i, int j, Energies& en
         // total_disp_energy += pair_disp;
         // total_pauli_energy += pair_pauli;
     }
-    energies.E_disp = pair_disp;
-    energies.E_pauli = pair_pauli;
+    energies.disp = pair_disp;
+    energies.pauli = pair_pauli;
     return pair_disp + pair_pauli;
 }
 

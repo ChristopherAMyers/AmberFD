@@ -35,11 +35,6 @@ void AmberFD::add_fragment(const vec_i frag_idx)
     flucDens->add_fragment(frag_idx);
 }
 
-// void AmberFD::zero_energies()
-// {
-//     E_disp = E_pauli = E_frz = E_pol = E_vct = E_total = 0.0;
-// }
-
 Energies AmberFD::calc_energy_forces(const vec_d &positions)
 {
     size_t i, j;
@@ -58,18 +53,18 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
 
             //  dispersion and pauli energies
             dispersionPauli->calc_one_pair(deltaR, i, j, pair_energies);
-            total_energies.E_pauli += pair_energies.E_pauli;
-            total_energies.E_disp += pair_energies.E_disp;
+            total_energies.pauli += pair_energies.pauli;
+            total_energies.disp += pair_energies.disp;
 
             //  fluctuating density and alectrostatics
             flucDens->calc_one_electro(deltaR, i, j, true, true, pair_energies);
-            total_energies.E_frz += pair_energies.E_frz;
-            total_energies.E_vct += pair_energies.E_vct;
+            total_energies.frz += pair_energies.frz;
+            total_energies.vct += pair_energies.vct;
         }
     }
     //  minimize fluc-dens energy
     flucDens->solve_minimization();
-    total_energies.E_pol = flucDens->get_polarization_energy();
+    total_energies.pol = flucDens->get_polarization_energy();
 
     return total_energies;
 }
