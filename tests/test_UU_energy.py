@@ -76,10 +76,11 @@ if __name__ == "__main__":
         print("Diff:          {:15.16f}".format(eng_diff))
         print("Pol. (kJ/mol): {:15.16f}".format((total_fluc - frz_energy)))
 
-        AssertEqual(frz_energy,  -153.9164545735984291, 1e-14)
+        
+        AssertEqual(frz_energy,  -153.9164545736028913, 1e-14)
         AssertEqual(frz_energy_1, -57.9401318692427196, 1e-14)
         AssertEqual(frz_energy_2, -58.5616039140674047, 1e-14)
-        AssertEqual(eng_diff,     -37.4147187902883047, 1e-14)
+        AssertEqual(eng_diff,     -37.4147187902929517, 1e-14)
         AssertEqual(pol_energy,   -10.0445370280187092, 1e-14)
 
         

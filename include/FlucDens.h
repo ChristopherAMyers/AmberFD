@@ -83,8 +83,10 @@ class FlucDens {
         std::vector<Vec3> frozen_forces;
         std::vector<Vec3> total_forces;
 
-        vec_d approx_delta_rho;
-        vec_d J_mat;
+        //  single energy terms
+        double frz_frz_overlap(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
+        double elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br, double &dEdR);
+        double elec_nuclei_energy(const double inv_r, const double a, const double exp_ar, double &dEdR);
 
     private:
         vec_d frozen_pop;
@@ -106,9 +108,6 @@ class FlucDens {
         int n_fragments;
         bool use_frag_constraints;
 
-        double frz_frz_overlap(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
-        double elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br, double &dEdR);
-        double elec_nuclei_energy(const double inv_r, const double a, const double exp_ar, double &dEdR);
         bool use_long_range_approx(double r, double a, double b);
         void create_del_exclusions_from_fragment(const std::vector<int> frag_idx);
         
@@ -117,7 +116,7 @@ class FlucDens {
         double dens_cutoff_power_law;
         const double dens_cutoff_a = -1.1724, dens_cutoff_b=14.692;
 
-        //vec_d J_mat;
+        vec_d J_mat;
         vec_d pot_vec;
         vec_d dJ_dR;
         vec_d dPot_dR;

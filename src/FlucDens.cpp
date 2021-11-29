@@ -294,9 +294,6 @@ void FlucDens::initialize_calculation()
     fill(frozen_forces.begin(), frozen_forces.end(), Vec3(0, 0, 0));
     fill(total_forces.begin(), total_forces.end(), Vec3(0, 0, 0));
     total_energies.reset();
-
-    approx_delta_rho.resize(n_sites, 0.0);
-    fill(approx_delta_rho.begin(), approx_delta_rho.end(), 0.0);
 }
 
 double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_pol)
@@ -309,15 +306,12 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
     Energies energies;
     energies.reset_all();
 
-
     for (i = 0; i < n_sites; i++)
     {
         for (j = i+1; j < n_sites; j++)
         {
             //  distances and inverse distances
-            // double deltaR[Nonbonded::RMaxIdx];
-            // Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
-            DeltaR deltaR(positions, (int)j*3, (int)i*3);
+            DeltaR deltaR(positions, (int)i*3, (int)j*3);
 
             calc_one_electro(deltaR, i, j, calc_pol, calc_frz, energies);
             total_energies.frz += energies.frz;
@@ -390,9 +384,6 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
 
                 damp_sum[i] += exp(-damp_exponent*r);
                 damp_sum[j] += exp(-damp_exponent*r);
-
-                approx_delta_rho[i] += exp(-damp_exponent*r);
-                approx_delta_rho[j] += exp(-damp_exponent*r);
             }
         }
         //  frozen_rho - frozen_rho
@@ -408,18 +399,17 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
             E_eZ1 = frozen_pop[i]*nuclei[j]*frz_a_nuc_b;
             E_eZ2 = frozen_pop[j]*nuclei[i]*frz_b_nuc_a;
 
-            frozen_energy =  (E_ee + E_eZ1) + (E_ZZ + E_eZ2);
-
             Vec3 dR_norm = deltaR.dR*inv_r;
             Vec3 d_ee_dR = frozen_pop[i]*frozen_pop[j]*frz_frz_ee_ddR*dR_norm;
             Vec3 d_eZ_dR1 = frozen_pop[i]*nuclei[j]*frz_a_nuc_b_ddR*dR_norm;
             Vec3 d_eZ_dR2 = frozen_pop[j]*nuclei[i]*frz_b_nuc_a_ddR*dR_norm;
-            Vec3 d_ZZ_dR = nuclei[i]*nuclei[j]*inv_r*inv_r*dR_norm;
+            Vec3 d_ZZ_dR = -nuclei[i]*nuclei[j]*inv_r*inv_r*dR_norm;
 
-            Vec3 force_i = d_ee_dR + d_eZ_dR1 + d_eZ_dR2 + d_ZZ_dR;
+            Vec3 force_i = -(d_ee_dR + d_eZ_dR1 + d_eZ_dR2 + d_ZZ_dR);
             frozen_forces[i] += force_i;
             frozen_forces[j] -= force_i;
 
+            frozen_energy =  (E_ee + E_eZ1) + (E_ZZ + E_eZ2);
         }
     }
     energies.elec_elec = E_ee;
@@ -447,9 +437,10 @@ double FlucDens::elec_nuclei_energy(const double inv_r, const double a, const do
 
 double FlucDens::elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br, double &dEdR)
 {
+    double E_ee = 0.0;
     /*  electron electron charge penetration term */
-    double ab_diff = b - a;
-    if (abs(ab_diff) > 0.001)
+    double d = b - a;
+    if (abs(d) > 0.001)
     {
         double a2 = a*a; double a4 = a2*a2; double a6 = a2*a4;
         double b2 = b*b; double b4 = b2*b2; double b6 = b2*b4;
@@ -462,23 +453,29 @@ double FlucDens::elec_elec_energy(const double inv_r, const double a, const doub
         double c3 = b*a4 / (2*den2_2);
         double c4 = -(a6 - 3*b2*a4) / (den2_2*denom2);
 
-        double E_ee = inv_r - exp_ar*(c1 + c2*inv_r) - exp_br*(c3 + c4*inv_r);
+        E_ee = inv_r - exp_ar*(c1 + c2*inv_r) - exp_br*(c3 + c4*inv_r);
         dEdR = -E_ee*inv_r + exp_ar*(a*c1 + inv_r*(a*c2 - c1)) + exp_br*(b*c3 + inv_r*(b*c4 - c3));
-        return E_ee;
-        
     }
     else
     {
-        double ar = a/inv_r;
-        double ar2 = ar*ar;
-        double ar3 = ar2*ar;
         double r = 1/inv_r;
-        double term0 = (-48 - 33*ar - 9*ar2 - ar3)/(48.*r);
-        double term1 = (15 + 15*ar + 6*ar2 + ar3)/96;
-        double term2 = -((30 + 30*ar + 15*ar2 + 5*ar3 + ar2*ar2)*r)/(320.*ar);
+        double ad = a*d;
+        double a2 = a*a;
+        double a2_minus_3d = 2*a - 3*d;
+        double A0 = (5*ad - 3*d*d - 22*a2)/(32*a);
+        double A1 = (5*ad - 3*d*d - 6*a2)/32;
+        double A2 = -a*a2_minus_3d*a2_minus_3d/192;
+        double A3 = a*ad*a2_minus_3d/192;
+        double A4 = -a2*ad*d/320;
+        double r2 = r*r;
+        double r3 = r*r2;
+        double r4 = r2*r2;
+        double one_minus_exp = 1 - exp_ar;
 
-        return inv_r + exp_ar*(term0 + term1*ab_diff + term2*ab_diff*ab_diff);
+        E_ee = inv_r*one_minus_exp + exp_ar*(A0 + r*A1 + r2*A2 + r3*A3 + r4*A4);
+        dEdR = -a*E_ee + a*inv_r - inv_r*inv_r*one_minus_exp + exp_ar*(A1 + 2*A2*r + 3*A3*r2 + 4*A4*r3);
     }
+    return E_ee;
 }
 
 

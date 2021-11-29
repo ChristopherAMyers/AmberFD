@@ -68,7 +68,7 @@ if __name__ == "__main__":
     fluc.calc_energy(coords.flatten())
 
     forces = fluc.get_forces()
-    eps = 1e-6
+    eps = 1e-5
     for n, coord in enumerate(coords):
         numerical_force = np.zeros(3)
         for x in [0, 1, 2]:
@@ -80,8 +80,9 @@ if __name__ == "__main__":
             frz_energy_p = fluc.calc_energy(new_coords_p.flatten(), True, False)
             frz_energy_m = fluc.calc_energy(new_coords_m.flatten(), True, False)
 
-            numerical_force[n] = (frz_energy_p - frz_energy_m)/(2*eps)
-        print(forces[n], numerical_force)
+            numerical_force[x] = -(frz_energy_p - frz_energy_m)/(2*eps)
+        print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*forces[n], *tuple(numerical_force)))
+        #print(forces[n], numerical_force)
 
 
     # AssertEqual(energies.frz*AU_2_KJ_PER_MOL,   -153.9164545735984291,    1e-14)
