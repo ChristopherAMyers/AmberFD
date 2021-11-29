@@ -46,3 +46,31 @@ std::vector<std::set<int> > Nonbonded::calc_exclusions_from_bonds(const std::vec
     }
     return exclusions;
 }
+
+DeltaR::DeltaR(double *deltaR)
+{
+    dR = Vec3(deltaR[Nonbonded::XIdx], deltaR[Nonbonded::YIdx], deltaR[Nonbonded::ZIdx]);
+    r2 = deltaR[Nonbonded::R2Idx];
+    r = deltaR[Nonbonded::RIdx];
+    r_inv = deltaR[Nonbonded::RInvIdx];
+}
+DeltaR::DeltaR(const vec_d &coords, int i, int j)
+{
+    double dx = coords[i + 0] - coords[j + 0];
+    double dy = coords[i + 1] - coords[j + 1];
+    double dz = coords[i + 2] - coords[j + 2];
+    dR = Vec3(dx, dy, dz);
+    r2 = dR.dot(dR);
+    r = sqrt(r2);
+    r_inv = 1/r;
+}
+void DeltaR::get_pointer(double *deltaR)
+{
+    //double deltaR[Nonbonded::RMaxIdx];
+    deltaR[Nonbonded::XIdx] = dR[0];
+    deltaR[Nonbonded::YIdx] = dR[1];
+    deltaR[Nonbonded::ZIdx] = dR[2];
+    deltaR[Nonbonded::R2Idx] = r2;
+    deltaR[Nonbonded::RIdx] = r;
+    deltaR[Nonbonded::RInvIdx] = r_inv;
+}

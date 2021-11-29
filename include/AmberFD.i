@@ -3,6 +3,7 @@
 %{
     #define SWIG_FILE_WITH_INIT
     #include "include/AmberFD.h"
+    //#include "include/Vec3.h"
 %}
 
 %include "numpy.i"
@@ -20,6 +21,7 @@ namespace std {
     %template(VectorI) vector<int>;
     %template(VectorII) vector < vector<int> >;
     %template(VectorPairII) vector< pair<int,int> >;
+    %template(Matrix) vector<Vec3>;
 };
 
 %init %{
@@ -32,6 +34,7 @@ namespace std {
 %include "include/DispersionPauli.i"
 %include "include/AmberFD.h"
 %include "include/common.h"
+//%include "include/Vec3.h"
 
 
 

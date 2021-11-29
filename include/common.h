@@ -3,6 +3,7 @@
 #include <set>
 #include <map>
 #include <utility>
+#include "Vec3.h"
 
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
@@ -32,6 +33,16 @@ class Nonbonded{
         static double dot3(const double*u, const double* v);
 
         static std::vector<std::set<int> > calc_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, const int bond_cutoff, const int n_sites);
+};
+
+class DeltaR{
+    public:
+        DeltaR() = default;
+        DeltaR(double *deltaR);
+        DeltaR(const vec_d &coords, int i, int j);
+        Vec3 dR;
+        double r, r_inv, r2;
+        void get_pointer(double *deltaR);
 };
 
 class Energies{

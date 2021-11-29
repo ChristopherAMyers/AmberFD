@@ -57,7 +57,8 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
             total_energies.disp += pair_energies.disp;
 
             //  fluctuating density and alectrostatics
-            flucDens->calc_one_electro(deltaR, i, j, true, true, pair_energies);
+            DeltaR dR(deltaR);
+            flucDens->calc_one_electro(dR, i, j, true, true, pair_energies);
             total_energies.frz += pair_energies.frz;
             total_energies.vct += pair_energies.vct;
         }

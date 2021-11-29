@@ -13,6 +13,8 @@ FlucDens::FlucDens(const int num_sites,
 {
     n_sites = num_sites;
     frozen_pop.reserve(num_sites);
+    frozen_forces.resize(num_sites);
+    total_forces.resize(num_sites);
 
     //  copy over parameters
     frozen_chg.assign(frozen_chg_in, frozen_chg_in + n_sites);
@@ -33,10 +35,11 @@ FlucDens::FlucDens(const int num_sites,
     dens_cutoff_power_law = dens_cutoff_a*log(dens_cutoff_pct_error) + dens_cutoff_b;
 
     //  for dynamic densities
-    delta_rho_coulomb_mat.resize(n_sites*n_sites, 0.0);
-    delta_rho_pot_vec.resize(n_sites, 0.0);
+    J_mat.resize(n_sites*n_sites, 0.0);
+    dJ_dR.resize(n_sites*n_sites, 0.0);
+    pot_vec.resize(n_sites, 0.0);
     for (int i = 0; i < n_sites; i++)
-        delta_rho_coulomb_mat[i*n_sites + i] = dynamic_exp[i]*5/16;
+        J_mat[i*n_sites + i] = dynamic_exp[i]*5/16;
 
     //  initialize exclusions
     exclusions_del_frz.resize(num_sites);
@@ -50,6 +53,7 @@ FlucDens::FlucDens(const int num_sites,
     damp_exponent = 1.26697;
     damp_coeff = 0.81479;
     damp_sum.resize(n_sites, 0.0);
+    calc_forces = true;
 
     //  initialize energies
     initialize_calculation();
@@ -85,10 +89,10 @@ void FlucDens::add_del_frz_exclusion(int delta_i, int frz_j)
         will be excluded */
     if ((delta_i > n_sites) || (frz_j > n_sites) || (delta_i < 0) || (frz_j < 0))
         throw out_of_bounds_eror("add_del_frz_exclusion()", delta_i, frz_j);
-    exclusions_del_frz[delta_i].push_back(frz_j);
+    exclusions_del_frz[delta_i].insert(frz_j);
 }
 
-void FlucDens::get_del_frz_exclusions(const int particle1, std::vector<int> &particles2) const
+void FlucDens::get_del_frz_exclusions(const int particle1, std::set<int> &particles2) const
 {
     if (particle1 < 0 || particle1 >= (int) exclusions_frz_frz.size()) 
         throw "Index out of range";
@@ -147,13 +151,20 @@ void FlucDens::add_fragment(const std::vector<int> site_idx_list)
     n_fragments += 1;
 }
 
-void FlucDens::change_dyn_exp(const int index, const double value)
+void FlucDens::set_dyn_exp(const int index, const double value)
 {
     dynamic_exp[index] = value;
-    delta_rho_coulomb_mat[index*n_sites + index] = dynamic_exp[index]*5/16;
+    J_mat[index*n_sites + index] = dynamic_exp[index]*5/16;
 }
 
-void FlucDens::change_frz_exp(const int index, const double value)
+void FlucDens::set_dyn_exp(vec_d exponents)
+{
+    if ((int)exponents.size() != n_sites)
+        throw std::runtime_error("radi_list length does not equal n_sites");
+    dynamic_exp.assign(exponents.begin(), exponents.end());
+}
+
+void FlucDens::set_frz_exp(const int index, const double value)
 {
     frozen_exp[index] = value;
 }
@@ -164,9 +175,31 @@ void FlucDens::set_dampening(double coeff, double exponent)
     damp_exponent = exponent;
 }
 
+void FlucDens::set_calc_forces(bool calculate_forces)
+{
+    calc_forces = calculate_forces;
+}
+
 double FlucDens::get_total_time()
 {
     return total_time;
+}
+
+std::vector<vec_d> FlucDens::get_forces()
+{
+    vec_d empty(3, 0.0);
+    std::vector<vec_d> rtn(n_sites, empty);
+    //vec_d rtn(n_sites*3, 0.0);
+    for(size_t i = 0; i < frozen_forces.size(); i++)
+    {
+        // rtn[i*3 + 0] = frozen_forces[i][0];
+        // rtn[i*3 + 1] = frozen_forces[i][1];
+        // rtn[i*3 + 2] = frozen_forces[i][2];
+        rtn[i][0] = frozen_forces[i][0];
+        rtn[i][1] = frozen_forces[i][1];
+        rtn[i][2] = frozen_forces[i][2];
+    }
+    return rtn;
 }
 
 double FlucDens::calc_overlap(const vec_d &coords)
@@ -251,13 +284,19 @@ double FlucDens::frz_frz_overlap(const double inv_r, const double a, const doubl
 }
 
 void FlucDens::initialize_calculation()
-{
-    //total_frz_energy = 0.0;
-    //total_pol_energy = 0.0;    
-    std::fill(delta_rho_pot_vec.begin(), delta_rho_pot_vec.end(), 0.0);
-    std::fill(damp_sum.begin(), damp_sum.end(), 0.0);
-    //total_elec_elec = total_elec_nuc = total_nuc_nuc = 0.0;
+{ 
+    using std::fill;
+    fill(pot_vec.begin(), pot_vec.end(), 0.0);
+    fill(damp_sum.begin(), damp_sum.end(), 0.0);
+    fill(dPot_dR.begin(), dPot_dR.end(), 0.0);
+    fill(dDamp_dR.begin(), dDamp_dR.end(), 0.0);
+    fill(dJ_dR.begin(), dJ_dR.end(), 0.0);
+    fill(frozen_forces.begin(), frozen_forces.end(), Vec3(0, 0, 0));
+    fill(total_forces.begin(), total_forces.end(), Vec3(0, 0, 0));
     total_energies.reset();
+
+    approx_delta_rho.resize(n_sites, 0.0);
+    fill(approx_delta_rho.begin(), approx_delta_rho.end(), 0.0);
 }
 
 double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_pol)
@@ -270,13 +309,15 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
     Energies energies;
     energies.reset_all();
 
+
     for (i = 0; i < n_sites; i++)
     {
         for (j = i+1; j < n_sites; j++)
         {
             //  distances and inverse distances
-            double deltaR[Nonbonded::RMaxIdx];
-            Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
+            // double deltaR[Nonbonded::RMaxIdx];
+            // Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
+            DeltaR deltaR(positions, (int)j*3, (int)i*3);
 
             calc_one_electro(deltaR, i, j, calc_pol, calc_frz, energies);
             total_energies.frz += energies.frz;
@@ -289,24 +330,24 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
         solve_minimization();
 
     return total_energies.total();
-    //return total_frz_energy + total_pol_energy;
 }
 
-void FlucDens::calc_one_electro(double* deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies)
+void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies)
 {
     /*  calculate a single electrostatic interaction between a pair of atoms */
     
     double frozen_energy = 0.0;
     double E_ee = 0.0, E_eZ1 = 0.0, E_eZ2 = 0.0, E_ZZ = 0.0;
+    
 
     const double b_frz = frozen_exp[j];
     const double b_del = dynamic_exp[j];
     const double a_frz = frozen_exp[i];
     const double a_del = dynamic_exp[i];
-    
+
     //  extract deltaR
-    const double r = deltaR[Nonbonded::RIdx];
-    const double inv_r = deltaR[Nonbonded::RInvIdx];
+    const double r = deltaR.r;
+    const double inv_r = deltaR.r_inv;
 
     //  symmetric Coulomb matrix elements
     const size_t matrix_idx_1 = i*n_sites + j;
@@ -325,45 +366,60 @@ void FlucDens::calc_one_electro(double* deltaR, int i, int j, bool calc_pol, boo
         if (calc_pol)
         {
             //  delta_rho - delta_rho
-            const double del_del_ee = elec_elec_penetration(inv_r, a_del, b_del, exp_ar_del, exp_br_del);
-            delta_rho_coulomb_mat[matrix_idx_1] = del_del_ee;
-            delta_rho_coulomb_mat[matrix_idx_2] = del_del_ee;
+            double ee_force;
+            const double del_del_ee = elec_elec_energy(inv_r, a_del, b_del, exp_ar_del, exp_br_del, ee_force);
+            J_mat[matrix_idx_1] = del_del_ee;
+            J_mat[matrix_idx_2] = del_del_ee;
+            dJ_dR[matrix_idx_1] = ee_force;
+            dJ_dR[matrix_idx_2] = ee_force;
+
 
             //  delta_rho - frozen_rho
             if (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) == exclusions_del_frz[i].end())
             {
+                double del_frz_ee_ddR, frz_del_ee_ddR, del_a_nuc_b_ddR, del_b_nuc_a_ddR;
+                const double del_frz_ee  = elec_elec_energy(inv_r, a_del, b_frz, exp_ar_del, exp_br_frz, del_frz_ee_ddR);
+                const double frz_del_ee  = elec_elec_energy(inv_r, a_frz, b_del, exp_ar_frz, exp_br_del, frz_del_ee_ddR);
+                const double del_a_nuc_b = elec_nuclei_energy(inv_r, a_del, exp_ar_del, del_a_nuc_b_ddR);
+                const double del_b_nuc_a = elec_nuclei_energy(inv_r, b_del, exp_br_del, del_b_nuc_a_ddR);
                 
-                const double del_frz_ee  = elec_elec_penetration(inv_r, a_del, b_frz, exp_ar_del, exp_br_frz);
-                const double frz_del_ee  = elec_elec_penetration(inv_r, a_frz, b_del, exp_ar_frz, exp_br_del);
-                const double del_a_nuc_b = elec_nuclei_pen(inv_r, a_del, exp_ar_del);
-                const double del_b_nuc_a = elec_nuclei_pen(inv_r, b_del, exp_br_del);
-                
-                delta_rho_pot_vec[i] += frozen_pop[j]*del_frz_ee - nuclei[j]*del_a_nuc_b;
-                delta_rho_pot_vec[j] += frozen_pop[i]*frz_del_ee - nuclei[i]*del_b_nuc_a;
+                pot_vec[i] += frozen_pop[j]*del_frz_ee + nuclei[j]*del_a_nuc_b;
+                pot_vec[j] += frozen_pop[i]*frz_del_ee + nuclei[i]*del_b_nuc_a;
+
+                //dPot_dR[i] += frozen_pop[j]*del_frz_ee_ddR* 
 
                 damp_sum[i] += exp(-damp_exponent*r);
                 damp_sum[j] += exp(-damp_exponent*r);
+
+                approx_delta_rho[i] += exp(-damp_exponent*r);
+                approx_delta_rho[j] += exp(-damp_exponent*r);
             }
         }
         //  frozen_rho - frozen_rho
         if (calc_frz)
         if (std::find(exclusions_frz_frz[i].begin(), exclusions_frz_frz[i].end(), j) == exclusions_frz_frz[i].end())
         {
-            const double frz_frz_ee  = elec_elec_penetration(inv_r, a_frz, b_frz, exp_ar_frz, exp_br_frz);
-            const double frz_a_nuc_b = elec_nuclei_pen(inv_r, a_frz, exp_ar_frz);
-            const double frz_b_nuc_a = elec_nuclei_pen(inv_r, b_frz, exp_br_frz);
+            double frz_frz_ee_ddR, frz_a_nuc_b_ddR, frz_b_nuc_a_ddR;
+            const double frz_frz_ee  = elec_elec_energy(inv_r, a_frz, b_frz, exp_ar_frz, exp_br_frz, frz_frz_ee_ddR);
+            const double frz_a_nuc_b = elec_nuclei_energy(inv_r, a_frz, exp_ar_frz, frz_a_nuc_b_ddR);
+            const double frz_b_nuc_a = elec_nuclei_energy(inv_r, b_frz, exp_br_frz, frz_b_nuc_a_ddR);
             E_ZZ = nuclei[i]*nuclei[j]*inv_r;
             E_ee = frozen_pop[i]*frozen_pop[j]*frz_frz_ee;
-            E_eZ1 =  -frozen_pop[i]*nuclei[j]*frz_a_nuc_b;
-            E_eZ2 = -frozen_pop[j]*nuclei[i]*frz_b_nuc_a;
+            E_eZ1 = frozen_pop[i]*nuclei[j]*frz_a_nuc_b;
+            E_eZ2 = frozen_pop[j]*nuclei[i]*frz_b_nuc_a;
 
             frozen_energy =  (E_ee + E_eZ1) + (E_ZZ + E_eZ2);
 
-            // frozen_energy =  frozen_pop[i]*frozen_pop[j]*frz_frz_ee 
-            //     - frozen_pop[i]*nuclei[j]*frz_a_nuc_b
-            //     - frozen_pop[j]*nuclei[i]*frz_b_nuc_a
-            //     + E_ZZ;
-            //printf(" FRZ-FRZ: %d  %d  %15.5f  %15.5f\n", i, j, r, frozen_energy);
+            Vec3 dR_norm = deltaR.dR*inv_r;
+            Vec3 d_ee_dR = frozen_pop[i]*frozen_pop[j]*frz_frz_ee_ddR*dR_norm;
+            Vec3 d_eZ_dR1 = frozen_pop[i]*nuclei[j]*frz_a_nuc_b_ddR*dR_norm;
+            Vec3 d_eZ_dR2 = frozen_pop[j]*nuclei[i]*frz_b_nuc_a_ddR*dR_norm;
+            Vec3 d_ZZ_dR = nuclei[i]*nuclei[j]*inv_r*inv_r*dR_norm;
+
+            Vec3 force_i = d_ee_dR + d_eZ_dR1 + d_eZ_dR2 + d_ZZ_dR;
+            frozen_forces[i] += force_i;
+            frozen_forces[j] -= force_i;
+
         }
     }
     energies.elec_elec = E_ee;
@@ -372,20 +428,24 @@ void FlucDens::calc_one_electro(double* deltaR, int i, int j, bool calc_pol, boo
     energies.frz = frozen_energy;
 }
 
-double FlucDens::elec_nuclei_pen(const double inv_r, const double a, const double exp_ar)
+double FlucDens::elec_nuclei_energy(const double inv_r, const double a, const double exp_ar, double &dEdR)
 {
     double nuc_elec;
     if (inv_r > 1E4)
-        nuc_elec = a*0.5;
+    {
+        nuc_elec = -a*0.5;
+        dEdR = 0.0;
+    }
     else
     {
-        nuc_elec = inv_r - exp_ar*(inv_r + a*0.5);
+        nuc_elec = -inv_r + exp_ar*(inv_r + a*0.5);
+        dEdR = -nuc_elec*inv_r - 0.5*a*exp_ar*(inv_r + a);
     }
     return nuc_elec;
 }
 
 
-double FlucDens::elec_elec_penetration(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br)
+double FlucDens::elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br, double &dEdR)
 {
     /*  electron electron charge penetration term */
     double ab_diff = b - a;
@@ -398,11 +458,14 @@ double FlucDens::elec_elec_penetration(const double inv_r, const double a, const
         double den1_2 = denom1*denom1;
         double den2_2 = denom2*denom2;
         double c1 = a*b4 / (2*den1_2);
-        double c2 = (b6 - 3*a2*b4) / (den1_2*denom1);
+        double c2 = -(b6 - 3*a2*b4) / (den1_2*denom1);
         double c3 = b*a4 / (2*den2_2);
-        double c4 = (a6 - 3*b2*a4) / (den2_2*denom2);
+        double c4 = -(a6 - 3*b2*a4) / (den2_2*denom2);
 
-        return inv_r - exp_ar*(c1 - c2*inv_r) - exp_br*(c3 - c4*inv_r);
+        double E_ee = inv_r - exp_ar*(c1 + c2*inv_r) - exp_br*(c3 + c4*inv_r);
+        dEdR = -E_ee*inv_r + exp_ar*(a*c1 + inv_r*(a*c2 - c1)) + exp_br*(b*c3 + inv_r*(b*c4 - c3));
+        return E_ee;
+        
     }
     else
     {
@@ -457,15 +520,15 @@ void FlucDens::solve_minimization()
 
     //  copy over dampening
     for (int i = 0; i < n_sites; i++)
-        delta_rho_coulomb_mat[i*n_sites + i] = dynamic_exp[i]*5/16 + damp_sum[i]*damp_coeff;
+        J_mat[i*n_sites + i] = dynamic_exp[i]*5/16 + damp_sum[i]*damp_coeff;
     
     //  copy over potential vector
-    vec_d neg_pot = delta_rho_pot_vec;
+    vec_d neg_pot = pot_vec;
     cblas_dscal(n_sites, -1, &neg_pot[0], 1);   //negate potential (right hand side of matrix equation)
     std::copy(neg_pot.begin(), neg_pot.end(), B_vec.begin());
 
     //  copy over Coulomb matrix
-    vec_d::iterator start = delta_rho_coulomb_mat.begin();
+    vec_d::iterator start = J_mat.begin();
     for(int i = 0; i < n_sites; i++)
         std::copy(start + i*n_sites, start + (i+1)*n_sites, A_mat.begin() + i*dim);
     
@@ -480,7 +543,7 @@ void FlucDens::solve_minimization()
 
     A_mat_save = A_mat;
     B_vec_save = B_vec;
-
+    
     //  solve matrix equation A_mat * x = B_vec for x
     int ipiv[dim];
     info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim, 1, &A_mat[0], dim, ipiv, &B_vec[0], dim);
@@ -489,8 +552,12 @@ void FlucDens::solve_minimization()
     //  Since all constraints are linear in delta_rho and result in sums equal to zero,
     //  the polarization energy is simply 0.5 * delta_rho^T * pot_vec
     //total_pol_energy = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &delta_rho_pot_vec[0], 1);
-    total_energies.pol = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &delta_rho_pot_vec[0], 1);
+    total_energies.pol = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
     return;
+
+
+
+
 
     /*
     //  solve for polarization energy = 0.5 * dP^T Coul_mat * dP + pot_vec * dP
@@ -535,12 +602,12 @@ void FlucDens::print_params(const std::string message, const std::string param_n
 
 vec_d FlucDens::get_rho_coulomb_mat()
 {
-    return vec_d(delta_rho_coulomb_mat);
+    return vec_d(J_mat);
 }
 
 vec_d FlucDens::get_rho_pot_vec()
 {
-    return vec_d(delta_rho_pot_vec);
+    return vec_d(pot_vec);
 }
 
 vec_d FlucDens::get_delta_rho()

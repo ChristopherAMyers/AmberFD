@@ -73,7 +73,6 @@ int main(int argc, char *argv[])
     for (auto line: data)
     {
         if (line[0][0] == '#') continue;
-        cout << line[1] << endl;
         nuclei.push_back(std::stod(line[1]));
         atoms.push_back(line[2]);
         x = std::stod(line[3]);
