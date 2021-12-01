@@ -41,3 +41,6 @@ build*
 debug*
 backups/
 tests/__pycache__/
+tests/res
+tests/
+tests/create_asserts.py

@@ -60,14 +60,14 @@ if __name__ == "__main__":
     fluc.create_frz_exclusions_from_bonds(bonds, 3)
     fluc.add_fragment(np.arange(0, n_atoms))
     fluc.add_fragment(np.arange(n_atoms, n_atoms*2))
-    fluc.set_dampening(1.5467, 1.4364)
+    fluc.set_dampening(10.5467, 1.4364)
     
     energies = amber.calc_energy_forces(coords.flatten())
 
     disp.calc_energy(coords.flatten())
     fluc.calc_energy(coords.flatten())
 
-    forces = fluc.get_forces()
+    forces = np.array(fluc.get_forces())*2625.5009*ANG2BOHR
     eps = 1e-5
     for n, coord in enumerate(coords):
         numerical_force = np.zeros(3)
@@ -77,13 +77,14 @@ if __name__ == "__main__":
             new_coords_p[n][x] += eps
             new_coords_m[n][x] -= eps
 
-            frz_energy_p = fluc.calc_energy(new_coords_p.flatten(), True, False)
-            frz_energy_m = fluc.calc_energy(new_coords_m.flatten(), True, False)
+            frz_energy_p = fluc.calc_energy(new_coords_p.flatten(), False, True)
+            frz_energy_m = fluc.calc_energy(new_coords_m.flatten(), False, True)
 
-            numerical_force[x] = -(frz_energy_p - frz_energy_m)/(2*eps)
-        print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*forces[n], *tuple(numerical_force)))
-        #print(forces[n], numerical_force)
+            numerical_force[x] = -(frz_energy_p - frz_energy_m)/(2*eps)*2625.5009*ANG2BOHR
 
+        diff = (forces[n] - numerical_force)/numerical_force
+        #print(('{:15.12f} '*3).format(*tuple(diff)))
+        print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(numerical_force)))
 
     # AssertEqual(energies.frz*AU_2_KJ_PER_MOL,   -153.9164545735984291,    1e-14)
     # AssertEqual(energies.pol*AU_2_KJ_PER_MOL,    -10.0445370280187092,    1e-14)

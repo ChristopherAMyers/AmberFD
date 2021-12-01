@@ -36,7 +36,15 @@ FlucDens::FlucDens(const int num_sites,
 
     //  for dynamic densities
     J_mat.resize(n_sites*n_sites, 0.0);
-    dJ_dR.resize(n_sites*n_sites, 0.0);
+    dJ_dx.resize(n_sites*n_sites, 0.0);
+    dJ_dy.resize(n_sites*n_sites, 0.0);
+    dJ_dz.resize(n_sites*n_sites, 0.0);
+    dP_dx_2D.resize(n_sites, vec_d(n_sites));
+    dP_dy_2D.resize(n_sites, vec_d(n_sites));
+    dP_dz_2D.resize(n_sites, vec_d(n_sites));
+    dDamp_dx_2D.resize(n_sites, vec_d(n_sites));
+    dDamp_dy_2D.resize(n_sites, vec_d(n_sites));
+    dDamp_dz_2D.resize(n_sites, vec_d(n_sites));
     pot_vec.resize(n_sites, 0.0);
     for (int i = 0; i < n_sites; i++)
         J_mat[i*n_sites + i] = dynamic_exp[i]*5/16;
@@ -50,8 +58,8 @@ FlucDens::FlucDens(const int num_sites,
     n_fragments = 0;
     total_time = 0.0;
     use_frag_constraints = true;
-    damp_exponent = 1.26697;
-    damp_coeff = 0.81479;
+    damp_exponent = 1.0;
+    damp_coeff = 0.0;
     damp_sum.resize(n_sites, 0.0);
     calc_forces = true;
 
@@ -195,9 +203,9 @@ std::vector<vec_d> FlucDens::get_forces()
         // rtn[i*3 + 0] = frozen_forces[i][0];
         // rtn[i*3 + 1] = frozen_forces[i][1];
         // rtn[i*3 + 2] = frozen_forces[i][2];
-        rtn[i][0] = frozen_forces[i][0];
-        rtn[i][1] = frozen_forces[i][1];
-        rtn[i][2] = frozen_forces[i][2];
+        rtn[i][0] = total_forces[i][0];
+        rtn[i][1] = total_forces[i][1];
+        rtn[i][2] = total_forces[i][2];
     }
     return rtn;
 }
@@ -290,7 +298,15 @@ void FlucDens::initialize_calculation()
     fill(damp_sum.begin(), damp_sum.end(), 0.0);
     fill(dPot_dR.begin(), dPot_dR.end(), 0.0);
     fill(dDamp_dR.begin(), dDamp_dR.end(), 0.0);
-    fill(dJ_dR.begin(), dJ_dR.end(), 0.0);
+    fill(dJ_dx.begin(), dJ_dx.end(), 0.0);
+    fill(dJ_dy.begin(), dJ_dy.end(), 0.0);
+    fill(dJ_dz.begin(), dJ_dz.end(), 0.0);
+    fill(dP_dx_2D.begin(), dP_dx_2D.end(), vec_d(n_sites, 0));
+    fill(dP_dy_2D.begin(), dP_dy_2D.end(), vec_d(n_sites, 0));
+    fill(dP_dz_2D.begin(), dP_dz_2D.end(), vec_d(n_sites, 0));
+    fill(dDamp_dx_2D.begin(), dDamp_dx_2D.end(), vec_d(n_sites, 0));
+    fill(dDamp_dy_2D.begin(), dDamp_dy_2D.end(), vec_d(n_sites, 0));
+    fill(dDamp_dz_2D.begin(), dDamp_dz_2D.end(), vec_d(n_sites, 0));
     fill(frozen_forces.begin(), frozen_forces.end(), Vec3(0, 0, 0));
     fill(total_forces.begin(), total_forces.end(), Vec3(0, 0, 0));
     total_energies.reset();
@@ -344,8 +360,8 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
     const double inv_r = deltaR.r_inv;
 
     //  symmetric Coulomb matrix elements
-    const size_t matrix_idx_1 = i*n_sites + j;
-    const size_t matrix_idx_2 = j*n_sites + i;
+    const int idx_ij = i*n_sites + j;
+    const int idx_ji = j*n_sites + i;
 
     if (use_long_range_approx(r, a_frz, b_frz)
     && use_long_range_approx(r, a_del, b_del) )
@@ -360,13 +376,19 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
         if (calc_pol)
         {
             //  delta_rho - delta_rho
-            double ee_force;
-            const double del_del_ee = elec_elec_energy(inv_r, a_del, b_del, exp_ar_del, exp_br_del, ee_force);
-            J_mat[matrix_idx_1] = del_del_ee;
-            J_mat[matrix_idx_2] = del_del_ee;
-            dJ_dR[matrix_idx_1] = ee_force;
-            dJ_dR[matrix_idx_2] = ee_force;
+            Vec3 dR = deltaR.dR*inv_r;
+            double ee_ddR;
+            const double del_del_ee = elec_elec_energy(inv_r, a_del, b_del, exp_ar_del, exp_br_del, ee_ddR);
+            J_mat[idx_ij] = del_del_ee;
+            J_mat[idx_ji] = del_del_ee;
 
+            dJ_dx[idx_ij] = ee_ddR * inv_r * deltaR.dR[0];
+            dJ_dy[idx_ij] = ee_ddR * inv_r * deltaR.dR[1];
+            dJ_dz[idx_ij] = ee_ddR * inv_r * deltaR.dR[2];
+
+            dJ_dx[idx_ji] = -dJ_dx[idx_ij];
+            dJ_dy[idx_ji] = -dJ_dy[idx_ij];
+            dJ_dz[idx_ji] = -dJ_dz[idx_ij];
 
             //  delta_rho - frozen_rho
             if (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) == exclusions_del_frz[i].end())
@@ -380,10 +402,26 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 pot_vec[i] += frozen_pop[j]*del_frz_ee + nuclei[j]*del_a_nuc_b;
                 pot_vec[j] += frozen_pop[i]*frz_del_ee + nuclei[i]*del_b_nuc_a;
 
-                //dPot_dR[i] += frozen_pop[j]*del_frz_ee_ddR* 
-
                 damp_sum[i] += exp(-damp_exponent*r);
                 damp_sum[j] += exp(-damp_exponent*r);
+
+                double dDamp_dR = -damp_exponent*damp_coeff*exp(-damp_exponent*r);
+                dDamp_dx_2D[i][j] =  dDamp_dR * dR[0];
+                dDamp_dy_2D[i][j] =  dDamp_dR * dR[1]; 
+                dDamp_dz_2D[i][j] =  dDamp_dR * dR[2];
+                dDamp_dx_2D[j][i] = -dDamp_dR * dR[0];
+                dDamp_dy_2D[j][i] = -dDamp_dR * dR[1]; 
+                dDamp_dz_2D[j][i] = -dDamp_dR * dR[2];
+                
+                double dP_dR_ij = frozen_pop[j]*del_frz_ee_ddR + nuclei[j]*del_a_nuc_b_ddR;
+                double dP_dR_ji = frozen_pop[i]*frz_del_ee_ddR + nuclei[i]*del_b_nuc_a_ddR;
+                dP_dx_2D[i][j] =  dP_dR_ij*dR[0];
+                dP_dy_2D[i][j] =  dP_dR_ij*dR[1];
+                dP_dz_2D[i][j] =  dP_dR_ij*dR[2];
+                
+                dP_dx_2D[j][i] = -dP_dR_ji*dR[0];
+                dP_dy_2D[j][i] = -dP_dR_ji*dR[1];
+                dP_dz_2D[j][i] = -dP_dR_ji*dR[2];
             }
         }
         //  frozen_rho - frozen_rho
@@ -546,29 +584,60 @@ void FlucDens::solve_minimization()
     info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim, 1, &A_mat[0], dim, ipiv, &B_vec[0], dim);
     delta_rho.assign(B_vec.begin(), B_vec.begin() + n_sites);
 
-    //  Since all constraints are linear in delta_rho and result in sums equal to zero,
-    //  the polarization energy is simply 0.5 * delta_rho^T * pot_vec
-    //total_pol_energy = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &delta_rho_pot_vec[0], 1);
-    total_energies.pol = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
-    return;
+    //  simplified version of polarization energy
+    if (false)
+    {
+        //  Since all constraints are linear in delta_rho and result in sums equal to zero,
+        //  the polarization energy is simply 0.5 * delta_rho^T * pot_vec
+        //total_pol_energy = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &delta_rho_pot_vec[0], 1);
+        total_energies.pol = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
+    }
+    //  extended version, used for debugging parts of polarization energy and forces
+    else
+    {
+        //printf("\n ####   Using extended POL energy   #### \n");
+        //  create a temp vector to store result in
+        vec_d y_vec(n_sites);
 
+        //  perform J_mat * rho -> y
+        cblas_dsymv(CblasRowMajor, CblasUpper, n_sites, 1.0, &J_mat[0], n_sites, &delta_rho[0], 1, 0.0, &y_vec[0], 1);
 
+        //  perform 0.5 * rho * y = 0.5 * rho * (Jmat * rho)
+        double term1 = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &y_vec[0], 1);
 
+        //  perform rho * pot
+        double term2 = cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
 
+        //printf(" term1 = %20.16f \n", term1);
+        //printf(" term2 = %20.16f \n", term2);
+        total_energies.pol = term1 + term2;
+    }
 
-    /*
-    //  solve for polarization energy = 0.5 * dP^T Coul_mat * dP + pot_vec * dP
-    //  energy is simplified down to  = -0.5 * dP^T (constr_mat^T * lambda + neg_pot)
-    vec_d constraint_flat(constraints.size()*n_sites, 0.0); // in column-major format
-    vec_d lamb(B_vec.begin() + n_sites, B_vec.end());
-    for(int i = 0; i < n_constr; i++)
-        std::copy(constraints[i].begin(), constraints[i].end(), constraint_flat.begin() + i*n_sites);
-    
-    //  The constr_mat^T * lambda + neg_pot part; result stored in neg_pot
-    cblas_dgemv(CblasColMajor, CblasNoTrans, n_sites, n_constr, 1, &constraint_flat[0], n_sites, &lamb[0], 1, 1, &neg_pot[0], 1);
-    //  -0.5 * dP^T (previous_result) part
-    polarization_energy = -0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &neg_pot[0], 1);
-    */
+    for(int k = 0; k < n_sites; k++)
+    {
+
+        double fx = -cblas_ddot(n_sites, &delta_rho[0], 1, &dJ_dx[k*n_sites], 1)*delta_rho[k];
+        double fy = -cblas_ddot(n_sites, &delta_rho[0], 1, &dJ_dy[k*n_sites], 1)*delta_rho[k];
+        double fz = -cblas_ddot(n_sites, &delta_rho[0], 1, &dJ_dz[k*n_sites], 1)*delta_rho[k];
+
+        // fx -= cblas_ddot(n_sites, &delta_rho[0], 1, &dP_dx[i*n_sites], 1);
+        // fy -= cblas_ddot(n_sites, &delta_rho[0], 1, &dP_dy[i*n_sites], 1);
+        // fz -= cblas_ddot(n_sites, &delta_rho[0], 1, &dP_dz[i*n_sites], 1);
+
+        for(int j = 0; j < n_sites; j++)
+        {
+            fx -= (delta_rho[k]*dP_dx_2D[k][j] - delta_rho[j]*dP_dx_2D[j][k]);
+            fy -= (delta_rho[k]*dP_dy_2D[k][j] - delta_rho[j]*dP_dy_2D[j][k]);
+            fz -= (delta_rho[k]*dP_dz_2D[k][j] - delta_rho[j]*dP_dz_2D[j][k]);
+
+            fx -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dx_2D[k][j];
+            fy -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dy_2D[k][j];
+            fz -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dz_2D[k][j];
+        }
+
+        total_forces[k] = Vec3(fx, fy, fz);
+        //printf(" %.8f  %.8f  %.8f \n", dJ_dx[i*n_sites + i], dJ_dy[i*n_sites + i], dJ_dz[i*n_sites + i]);
+    }
 }
 
 bool FlucDens::use_long_range_approx(double r, double a, double b)

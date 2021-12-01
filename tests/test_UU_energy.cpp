@@ -42,7 +42,7 @@ void form_bonds(const vector<Vec3> coords, const vector<double> nuclei, vector<p
             if (add_bond)
             {
                 bonds.push_back(pair<int, int>(i, j));
-                printf(" bond %2d  %2d  %d  %d\n", i+1, j+1, (int)nuclei[i], (int)nuclei[j]);
+                //printf(" bond %2d  %2d  %d  %d\n", i+1, j+1, (int)nuclei[i], (int)nuclei[j]);
             }
         }
     }
@@ -101,10 +101,10 @@ int main(int argc, char *argv[])
     fluc.create_frz_exclusions_from_bonds(bonds, 3);
     fluc.add_fragment(frag1_idx);
     fluc.add_fragment(frag2_idx);
-    print_exclusions(fluc);
+    //print_exclusions(fluc);
 
-    fluc.print_params("frozen_exp parameters", "frozen_exp");
-    fluc.print_params("dynamic_exp parameters", "dynamic_exp");
+    //fluc.print_params("frozen_exp parameters", "frozen_exp");
+    //fluc.print_params("dynamic_exp parameters", "dynamic_exp");
     
     try{
         double energy = fluc.calc_energy(sites)*AU_2_KJ_PER_MOL;

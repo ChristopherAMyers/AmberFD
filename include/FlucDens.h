@@ -118,7 +118,10 @@ class FlucDens {
 
         vec_d J_mat;
         vec_d pot_vec;
-        vec_d dJ_dR;
+        vec_d dJ_dx, dJ_dy, dJ_dz;
+        std::vector<vec_d> dP_dx_2D, dP_dy_2D, dP_dz_2D;
+        std::vector<vec_d> dDamp_dx_2D, dDamp_dy_2D, dDamp_dz_2D;
+        //std::vector<vec_d> dP_dx, dP_dy, dP_dz;
         vec_d dPot_dR;
         vec_d dDamp_dR;
 
