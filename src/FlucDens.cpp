@@ -39,6 +39,11 @@ FlucDens::FlucDens(const int num_sites,
     dJ_dx.resize(n_sites*n_sites, 0.0);
     dJ_dy.resize(n_sites*n_sites, 0.0);
     dJ_dz.resize(n_sites*n_sites, 0.0);
+    dJ_dPos.resize(n_sites*n_sites, Vec3(0, 0, 0));
+    dPot_dPos.resize(n_sites*n_sites, Vec3(0, 0, 0));
+    dPot_dPos_trans.resize(n_sites*n_sites, Vec3(0, 0, 0));
+    dDamp_dPos.resize(n_sites*n_sites, Vec3(0, 0, 0));
+
     dP_dx_2D.resize(n_sites, vec_d(n_sites));
     dP_dy_2D.resize(n_sites, vec_d(n_sites));
     dP_dz_2D.resize(n_sites, vec_d(n_sites));
@@ -296,14 +301,18 @@ void FlucDens::initialize_calculation()
     using std::fill;
     fill(pot_vec.begin(), pot_vec.end(), 0.0);
     fill(damp_sum.begin(), damp_sum.end(), 0.0);
-    fill(dPot_dR.begin(), dPot_dR.end(), 0.0);
-    fill(dDamp_dR.begin(), dDamp_dR.end(), 0.0);
+    //fill(dPot_dR.begin(), dPot_dR.end(), 0.0);
+    //fill(dDamp_dR.begin(), dDamp_dR.end(), 0.0);
     fill(dJ_dx.begin(), dJ_dx.end(), 0.0);
     fill(dJ_dy.begin(), dJ_dy.end(), 0.0);
     fill(dJ_dz.begin(), dJ_dz.end(), 0.0);
-    fill(dP_dx_2D.begin(), dP_dx_2D.end(), vec_d(n_sites, 0));
-    fill(dP_dy_2D.begin(), dP_dy_2D.end(), vec_d(n_sites, 0));
-    fill(dP_dz_2D.begin(), dP_dz_2D.end(), vec_d(n_sites, 0));
+    fill(dJ_dPos.begin(), dJ_dPos.end(), Vec3(0, 0, 0));
+    fill(dPot_dPos.begin(), dPot_dPos.end(), Vec3(0, 0, 0));
+    fill(dPot_dPos_trans.begin(), dPot_dPos_trans.end(), Vec3(0, 0, 0));
+    fill(dDamp_dPos.begin(), dDamp_dPos.end(), Vec3(0, 0, 0));
+    // fill(dP_dx_2D.begin(), dP_dx_2D.end(), vec_d(n_sites, 0));
+    // fill(dP_dy_2D.begin(), dP_dy_2D.end(), vec_d(n_sites, 0));
+    // fill(dP_dz_2D.begin(), dP_dz_2D.end(), vec_d(n_sites, 0));
     fill(dDamp_dx_2D.begin(), dDamp_dx_2D.end(), vec_d(n_sites, 0));
     fill(dDamp_dy_2D.begin(), dDamp_dy_2D.end(), vec_d(n_sites, 0));
     fill(dDamp_dz_2D.begin(), dDamp_dz_2D.end(), vec_d(n_sites, 0));
@@ -381,10 +390,12 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
             const double del_del_ee = elec_elec_energy(inv_r, a_del, b_del, exp_ar_del, exp_br_del, ee_ddR);
             J_mat[idx_ij] = del_del_ee;
             J_mat[idx_ji] = del_del_ee;
+            dJ_dPos[idx_ij] =  ee_ddR * dR;
+            dJ_dPos[idx_ji] = -ee_ddR * dR;
 
-            dJ_dx[idx_ij] = ee_ddR * inv_r * deltaR.dR[0];
-            dJ_dy[idx_ij] = ee_ddR * inv_r * deltaR.dR[1];
-            dJ_dz[idx_ij] = ee_ddR * inv_r * deltaR.dR[2];
+            dJ_dx[idx_ij] = ee_ddR * dR[0];
+            dJ_dy[idx_ij] = ee_ddR * dR[1];
+            dJ_dz[idx_ij] = ee_ddR * dR[2];
 
             dJ_dx[idx_ji] = -dJ_dx[idx_ij];
             dJ_dy[idx_ji] = -dJ_dy[idx_ij];
@@ -402,10 +413,13 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 pot_vec[i] += frozen_pop[j]*del_frz_ee + nuclei[j]*del_a_nuc_b;
                 pot_vec[j] += frozen_pop[i]*frz_del_ee + nuclei[i]*del_b_nuc_a;
 
-                damp_sum[i] += exp(-damp_exponent*r);
-                damp_sum[j] += exp(-damp_exponent*r);
+                double dampening = exp(-damp_exponent*r);
+                damp_sum[i] += dampening;
+                damp_sum[j] += dampening;
 
-                double dDamp_dR = -damp_exponent*damp_coeff*exp(-damp_exponent*r);
+                double dDamp_dR = -damp_exponent*damp_coeff*dampening;
+                dDamp_dPos[idx_ij] =  dDamp_dR*dR;
+                dDamp_dPos[idx_ji] = -dDamp_dR*dR;
                 dDamp_dx_2D[i][j] =  dDamp_dR * dR[0];
                 dDamp_dy_2D[i][j] =  dDamp_dR * dR[1]; 
                 dDamp_dz_2D[i][j] =  dDamp_dR * dR[2];
@@ -415,6 +429,12 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 
                 double dP_dR_ij = frozen_pop[j]*del_frz_ee_ddR + nuclei[j]*del_a_nuc_b_ddR;
                 double dP_dR_ji = frozen_pop[i]*frz_del_ee_ddR + nuclei[i]*del_b_nuc_a_ddR;
+                dPot_dPos[idx_ij] = dP_dR_ij*dR;
+                dPot_dPos[idx_ji] = -dP_dR_ji*dR;
+                dPot_dPos_trans[idx_ji] = dP_dR_ij*dR;
+                dPot_dPos_trans[idx_ij] = -dP_dR_ji*dR;
+
+
                 dP_dx_2D[i][j] =  dP_dR_ij*dR[0];
                 dP_dy_2D[i][j] =  dP_dR_ij*dR[1];
                 dP_dz_2D[i][j] =  dP_dR_ij*dR[2];
@@ -608,24 +628,24 @@ void FlucDens::solve_minimization()
         //  perform rho * pot
         double term2 = cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
 
-        //printf(" term1 = %20.16f \n", term1);
-        //printf(" term2 = %20.16f \n", term2);
         total_energies.pol = term1 + term2;
     }
 
+    Vec3 force;
     for(int k = 0; k < n_sites; k++)
     {
-
+        force = Vec3(0, 0, 0);
         double fx = -cblas_ddot(n_sites, &delta_rho[0], 1, &dJ_dx[k*n_sites], 1)*delta_rho[k];
         double fy = -cblas_ddot(n_sites, &delta_rho[0], 1, &dJ_dy[k*n_sites], 1)*delta_rho[k];
         double fz = -cblas_ddot(n_sites, &delta_rho[0], 1, &dJ_dz[k*n_sites], 1)*delta_rho[k];
 
-        // fx -= cblas_ddot(n_sites, &delta_rho[0], 1, &dP_dx[i*n_sites], 1);
-        // fy -= cblas_ddot(n_sites, &delta_rho[0], 1, &dP_dy[i*n_sites], 1);
-        // fz -= cblas_ddot(n_sites, &delta_rho[0], 1, &dP_dz[i*n_sites], 1);
-
         for(int j = 0; j < n_sites; j++)
         {
+            int kj_idx = k*n_sites + j;
+            force -= delta_rho[k]*dJ_dPos[kj_idx]*delta_rho[j];
+            force -= (delta_rho[k]*dPot_dPos[kj_idx] - delta_rho[j]*dPot_dPos_trans[kj_idx]);
+            force -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dPos[kj_idx];
+
             fx -= (delta_rho[k]*dP_dx_2D[k][j] - delta_rho[j]*dP_dx_2D[j][k]);
             fy -= (delta_rho[k]*dP_dy_2D[k][j] - delta_rho[j]*dP_dy_2D[j][k]);
             fz -= (delta_rho[k]*dP_dz_2D[k][j] - delta_rho[j]*dP_dz_2D[j][k]);
@@ -634,8 +654,8 @@ void FlucDens::solve_minimization()
             fy -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dy_2D[k][j];
             fz -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dz_2D[k][j];
         }
-
         total_forces[k] = Vec3(fx, fy, fz);
+        total_forces[k] = force;
         //printf(" %.8f  %.8f  %.8f \n", dJ_dx[i*n_sites + i], dJ_dy[i*n_sites + i], dJ_dz[i*n_sites + i]);
     }
 }
