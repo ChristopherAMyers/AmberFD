@@ -79,10 +79,6 @@ class FlucDens {
         double get_total_time();
         std::vector<vec_d> get_forces();
 
-        //  move to private
-        std::vector<Vec3> frozen_forces;
-        std::vector<Vec3> total_forces;
-
         //  single energy terms
         double frz_frz_overlap(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br);
         double elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br, double &dEdR);
@@ -118,26 +114,17 @@ class FlucDens {
 
         vec_d J_mat;
         vec_d pot_vec;
-        vec_d dJ_dx, dJ_dy, dJ_dz;
         std::vector<Vec3> dJ_dPos;
         std::vector<Vec3> dDamp_dPos;
         std::vector<Vec3> dPot_dPos, dPot_dPos_trans;
-        std::vector<vec_d> dP_dx_2D, dP_dy_2D, dP_dz_2D;
-        std::vector<vec_d> dDamp_dx_2D, dDamp_dy_2D, dDamp_dz_2D;
-        //std::vector<vec_d> dP_dx, dP_dy, dP_dz;
-        //vec_d dPot_dR;
-        //vec_d dDamp_dR;
-
-        //double total_frz_energy;
-        //double total_pol_energy;
+        std::vector<Vec3> frozen_forces;
+        std::vector<Vec3> total_forces;
 
         void assign_constraints();
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1);
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1, const int idx2);
         double total_time;
         bool calc_forces;
-
-        //double total_elec_elec, total_elec_nuc, total_nuc_nuc;
         
         FlucDensEnergies total_energies;
 };

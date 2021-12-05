@@ -203,12 +203,6 @@ double DispersionPauli::calc_one_pair(double *deltaR, int i, int j, Energies& en
         double exponent = 0.5*(pauli_exponents[i] + pauli_exponents[j]);
         pair_pauli = coeff*exp(-exponent*deltaR[Nonbonded::RIdx]);
 
-        // printf(" %.8f  %.8f  %.8f\n", coeff, exponent, deltaR[Nonbonded::RIdx]);
-
-        //printf("NEW: %d, %d, %.10f\n", i, j, pair_pauli);
-        //  return and update totals
-        // total_disp_energy += pair_disp;
-        // total_pauli_energy += pair_pauli;
     }
     energies.disp = pair_disp;
     energies.pauli = pair_pauli;
