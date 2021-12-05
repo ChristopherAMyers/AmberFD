@@ -40,7 +40,7 @@ class DispersionPauli {
         int get_num_sites();
 
         double calc_energy(const vec_d &coords);
-        double calc_one_pair(double *deltaR, int i, int j, Energies& energies);
+        double calc_one_pair(DeltaR &deltaR, int i, int j, Energies& energies);
 
         void create_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, int bond_cutoff);
         void create_exclusions_from_fragment(const vec_i frag_idx);

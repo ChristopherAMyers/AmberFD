@@ -48,16 +48,14 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
         for (j = i+1; j < n_sites; j++)
         {
             //  distances data
-            double deltaR[Nonbonded::RMaxIdx];
-            Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
+            DeltaR dR(positions, (int)j*3, (int)i*3);
 
             //  dispersion and pauli energies
-            dispersionPauli->calc_one_pair(deltaR, i, j, pair_energies);
+            dispersionPauli->calc_one_pair(dR, i, j, pair_energies);
             total_energies.pauli += pair_energies.pauli;
             total_energies.disp += pair_energies.disp;
 
             //  fluctuating density and alectrostatics
-            DeltaR dR(deltaR);
             flucDens->calc_one_electro(dR, i, j, true, true, pair_energies);
             total_energies.frz += pair_energies.frz;
             total_energies.vct += pair_energies.vct;

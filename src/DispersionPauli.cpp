@@ -169,9 +169,7 @@ double DispersionPauli::calc_energy(const vec_d &positions)
     {
         for (j = i+1; j < n_sites; j++)
         {
-            //  distances data
-            double deltaR[Nonbonded::RMaxIdx];
-            Nonbonded::calc_dR(positions, (int)j*3, (int)i*3, deltaR);
+            DeltaR deltaR(positions, (int)i*3, (int)j*3);
 
             calc_one_pair(deltaR, i, j, energies);
             total_pauli_energy += energies.pauli;
@@ -182,7 +180,7 @@ double DispersionPauli::calc_energy(const vec_d &positions)
     return total_disp_energy + total_pauli_energy;
 }
 
-double DispersionPauli::calc_one_pair(double *deltaR, int i, int j, Energies& energies)
+double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& energies)
 {
     double pair_disp = 0.0;
     double pair_pauli = 0.0;
@@ -193,7 +191,7 @@ double DispersionPauli::calc_one_pair(double *deltaR, int i, int j, Energies& en
         double shift = disp_a1*radii + disp_a2;
         double shift2 = shift*shift;
         double shift6 = shift2*shift2*shift2;
-        double r2 = deltaR[Nonbonded::R2Idx];
+        double r2 = deltaR.r2;
         double r6 = r2*r2*r2;
         double C6 = sqrt(C6_coeff[i]*C6_coeff[j]);
         pair_disp = -disp_s6*C6/(r6 + shift6);
@@ -201,7 +199,7 @@ double DispersionPauli::calc_one_pair(double *deltaR, int i, int j, Energies& en
         //  Pauli energy
         double coeff = pauli_coeff[i]*pauli_coeff[j];
         double exponent = 0.5*(pauli_exponents[i] + pauli_exponents[j]);
-        pair_pauli = coeff*exp(-exponent*deltaR[Nonbonded::RIdx]);
+        pair_pauli = coeff*exp(-exponent*deltaR.r);
 
     }
     energies.disp = pair_disp;
