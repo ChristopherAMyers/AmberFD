@@ -111,10 +111,10 @@ if __name__ == "__main__":
 
     fluc_forces = np.array(fluc.get_forces())*2625.5009*ANG2BOHR
     #np.savetxt('data/u_u_fluc_forces.txt', fluc_forces)
-    np.testing.assert_allclose(fluc_forces, goal_fluc_forces, atol=1e-12)
-    exit()
+    #np.testing.assert_allclose(fluc_forces, goal_fluc_forces, atol=1e-12)
+    #exit()
 
-    forces = np.array(fluc.get_forces())*2625.5009*ANG2BOHR
+    forces = np.array(disp.get_forces())*2625.5009*ANG2BOHR
     eps = 1e-5
     for n, coord in enumerate(coords):
         numerical_force = np.zeros(3)
@@ -124,8 +124,8 @@ if __name__ == "__main__":
             new_coords_p[n][x] += eps
             new_coords_m[n][x] -= eps
 
-            frz_energy_p = fluc.calc_energy(new_coords_p.flatten(), True, True)
-            frz_energy_m = fluc.calc_energy(new_coords_m.flatten(), True, True)
+            frz_energy_p = disp.calc_energy(new_coords_p.flatten())
+            frz_energy_m = disp.calc_energy(new_coords_m.flatten())
             # frz_energy_p = fluc.calc_energy(new_coords_p.flatten(), True, False)
             # frz_energy_m = fluc.calc_energy(new_coords_m.flatten(), True, False)
 

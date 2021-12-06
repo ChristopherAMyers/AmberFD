@@ -1,5 +1,11 @@
 #include "common.h"
 
+void Nonbonded::add_Vec3_to_vector(std::vector<double> &vec, const Vec3 &vec3)
+{
+    vec[0] += vec3[0];
+    vec[1] += vec3[1];
+    vec[2] += vec3[2];
+}
 
 void Nonbonded::calc_dR(const vec_d &coords, int i, int j, double* deltaR)
 {

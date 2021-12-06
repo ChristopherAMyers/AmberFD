@@ -38,7 +38,9 @@ class DispersionPauli {
         double get_pauli_energy();
         double get_disp_energy();
         int get_num_sites();
+        std::vector<vec_d> get_forces();
 
+        void initialize();
         double calc_energy(const vec_d &coords);
         double calc_one_pair(DeltaR &deltaR, int i, int j, Energies& energies);
 
@@ -64,6 +66,10 @@ class DispersionPauli {
 
         double total_disp_energy;
         double total_pauli_energy;
+
+        //std::vector<Vec3> forces;
+        std::vector<vec_d> forces;
+        void add_force(vec_d &force, const Vec3 &dR);
 
         void set_all_vdw_radii();
         void set_all_C6_coeff();

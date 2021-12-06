@@ -41,8 +41,10 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
     total_energies.reset();
     Energies pair_energies;
 
-    //  initialize fluc-dens solver
+    //  initialize solvers
     flucDens->initialize_calculation();
+    dispersionPauli->initialize();
+    
     for (i = 0; i < n_sites; i++)
     {
         for (j = i+1; j < n_sites; j++)

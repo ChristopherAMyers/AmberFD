@@ -197,9 +197,9 @@ std::vector<vec_d> FlucDens::get_forces()
     std::vector<vec_d> rtn(n_sites, vec_d(3, 0.0));
     for(size_t i = 0; i < total_forces.size(); i++)
     {
-        rtn[i][0] = total_forces[i][0] + frozen_forces[i][0];
-        rtn[i][1] = total_forces[i][1] + frozen_forces[i][1];
-        rtn[i][2] = total_forces[i][2] + frozen_forces[i][2];
+        rtn[i][0] = total_forces[i][0];
+        rtn[i][1] = total_forces[i][1];
+        rtn[i][2] = total_forces[i][2];
     }
     return rtn;
 }
@@ -597,6 +597,7 @@ void FlucDens::solve_minimization()
             total_forces[k] -= (delta_rho[k]*dPot_dPos[kj_idx] - delta_rho[j]*dPot_dPos_trans[kj_idx]);
             total_forces[k] -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dPos[kj_idx];
         }
+        total_forces[k] += frozen_forces[k];
         //printf(" %.8f  %.8f  %.8f \n", dJ_dx[i*n_sites + i], dJ_dy[i*n_sites + i], dJ_dz[i*n_sites + i]);
     }
 }

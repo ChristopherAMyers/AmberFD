@@ -29,6 +29,8 @@ class Nonbonded{
         static const int RInvIdx = 5;
         static const int RMaxIdx = 6;
 
+        static void add_Vec3_to_vector(std::vector<double> &vec, const Vec3 &vec3);
+
         static void calc_dR(const vec_d &coords, int i, int j, double* deltaR);
         static double dot3(const double*u, const double* v);
 
