@@ -16,14 +16,16 @@ include(${SWIG_USE_FILE})
 set(CMAKE_SWIG_FLAGS -py3)
 
 #   lapack and blas
-find_package(BLAS REQUIRED)
+#find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
+set(LAPACK_INCLUDE_DIR /usr/include)
 
 #   print out python versions and locations
 message("PYTHONLIBS_VERSION_STRING: ${PYTHONLIBS_VERSION_STRING}")
 message("Python3_INCLUDE_DIRS: ${Python3_INCLUDE_DIRS}")
 message("Python3_LIBRARIES: ${Python3_LIBRARIES}")
-message("BLAS_INCLUDE_DIR: ${BLAS_INCLUDE_DIR}")
+message("LAPACK_INCLUDE_DIR: ${LAPACK_INCLUDE_DIR}")
+message("LAPACK_LIBRARIES ${LAPACK_LIBRARIES}")
 message("CMAKE_SWIG_FLAGS: ${CMAKE_SWIG_FLAGS}")
 message("CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
 set(INCL ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -33,10 +35,11 @@ message("INCL: ${INCL}")
 include_directories(${BLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR})
 include_directories(${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(include)
+set_source_files_properties(${INCL}/AmberFD.i PROPERTIES CPLUSPLUS ON)
 set_source_files_properties(${INCL}/FlucDens.i PROPERTIES CPLUSPLUS ON)
+set_source_files_properties(${INCL}/swigDispersionPauli.i PROPERTIES CPLUSPLUS ON)
 
 file(GLOB_RECURSE SOURCES src/*.cpp tests/*.cpp)
-
 file(GLOB_RECURSE files tests/test_*.cpp)
 foreach(file ${files})
     message("test file: ${file}")
@@ -49,11 +52,17 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
-add_library(FlucDens STATIC ${SOURCES})
 
-swig_add_library(swigFlucDens TYPE SHARED LANGUAGE python SOURCES ${INCL}/FlucDens.i)
-swig_link_libraries(swigFlucDens FlucDens ${PYTHON_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+add_library(AmberFD STATIC ${SOURCES})
+target_link_libraries(AmberFD ${BLAS_LIBRARIES})
+target_link_libraries(AmberFD ${LAPACK_LIBRARIES})
+target_link_libraries(AmberFD /usr/lib/x86_64-linux-gnu/liblapacke.so)
+
+#   needed for tests
+target_include_directories(AmberFD PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+swig_add_library(swigAmberFD TYPE SHARED LANGUAGE python SOURCES ${INCL}/AmberFD.i)
+swig_link_libraries(swigAmberFD AmberFD ${PYTHON_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 enable_testing()
-#add_subdirectory(tests)
-
+add_subdirectory(tests)

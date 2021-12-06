@@ -1,12 +1,9 @@
-%module FlucDens
-
+//%module FlucDens
 %{
     #define SWIG_FILE_WITH_INIT
     #include "include/FlucDens.h"
 %}
 
-
-%include "numpy.i"
 %apply (double* IN_ARRAY1, int DIM1) {(double* arr1, int len1),
                                       (double* arr2, int len2)}
 %apply (double* IN_ARRAY1, int DIM1) {(double *frozen_chg, int len1),
@@ -14,7 +11,6 @@
                                       (double *frozen_exp, int len3),
                                       (double *dynamic_exp, int len4)}
 
-%include "include/DispersionPauli.i"
 %include "include/FlucDens.h"
 %include "include/common.h"
 
