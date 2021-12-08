@@ -31,7 +31,7 @@ atom_to_nuc = {'H': 1, 'C': 6, 'N': 7, 'O': 8}
 ANG2BOHR = 1.8897259886
 AU_2_KJ_PER_MOL = 2625.5009
 if __name__ == "__main__":
-    data = np.loadtxt('data/u_u_data.txt', dtype=object).T
+    data = np.loadtxt('data/u_u_data_1.txt', dtype=object).T
     atom_names = data[0]
     nuclei = data[1].astype(int)
     elms = data[2]

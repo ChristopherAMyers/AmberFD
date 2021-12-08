@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     vector<string> atoms;
     vector<Vec3> coords;
     int num_sites = 19;
-    fileReader::flines_p data = fileReader::readFile("data/u_u_data.txt");
+    fileReader::flines_p data = fileReader::readFile("data/u_u_data_1.txt");
     int i = 0;
     for (auto line: data)
     {

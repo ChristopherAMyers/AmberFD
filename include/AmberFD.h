@@ -40,6 +40,7 @@ class AmberFD{
 
         void add_particle(ParticleInfo parameters);
         void add_fragment(const vec_i frag_idx);
+        std::vector<vec_d> get_forces();
         Energies calc_energy_forces(const vec_d &positions);
         std::shared_ptr<FlucDens> create_fluc_dens_force();
         std::shared_ptr<DispersionPauli> create_disp_pauli_force();
@@ -59,6 +60,7 @@ class AmberFD{
         //void zero_energies();
         Energies total_energies;
         double E_total;
+        std::vector<vec_d> forces;
 };
 
 

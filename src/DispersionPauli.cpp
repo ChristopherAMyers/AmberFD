@@ -100,24 +100,24 @@ void DispersionPauli::set_pauli_radii(vec_d radii_list)
 void DispersionPauli::set_pauli_radii(int index, double radii)
 {
     if (index > (n_sites - 1))
-        throw std::out_of_range("coeff index is greater than n_sites");
+        throw std::out_of_range("radii index is greater than n_sites");
     if (index < 0)
-        throw std::out_of_range("coeff index must be greater than zero");
+        throw std::out_of_range("radii index must be greater than zero");
     pauli_radii[index] = radii;
     pauli_coeff[index] = radii_to_coeff(radii, pauli_exponents[index]);
 }
 void DispersionPauli::set_pauli_exp(vec_d exp_list)
 {
     if ((int)exp_list.size() != n_sites)
-        throw std::runtime_error("coeff_list length does not equal n_sites");
+        throw std::runtime_error("exp_list length does not equal n_sites");
     pauli_exponents.assign(exp_list.begin(), exp_list.end());
 }
 void DispersionPauli::set_pauli_exp(int index, double exponent)
 {
     if (index > (n_sites - 1))
-        throw std::out_of_range("coeff index is greater than n_sites");
+        throw std::out_of_range("exponent index is greater than n_sites");
     if (index < 0)
-        throw std::out_of_range("coeff index must be greater than zero");
+        throw std::out_of_range("exponent index must be greater than zero");
     pauli_exponents[index] = exponent;
 }
 void DispersionPauli::get_dispersion_params(double &s6, double &a1, double &a2)

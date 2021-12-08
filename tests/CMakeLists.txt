@@ -18,3 +18,4 @@ add_test(NAME swig_import  WORKING_DIRECTORY ${TEST_SOURCE} COMMAND ${Python3_EX
 add_test(NAME UU_energy_py WORKING_DIRECTORY ${TEST_SOURCE} COMMAND ${Python3_EXECUTABLE} ${TEST_SOURCE}/test_UU_energy.py)
 add_test(NAME DispPauli_energy_py WORKING_DIRECTORY ${TEST_SOURCE} COMMAND ${Python3_EXECUTABLE} ${TEST_SOURCE}/test_disp_energy.py)
 add_test(NAME AmberFD_energy_py WORKING_DIRECTORY ${TEST_SOURCE} COMMAND ${Python3_EXECUTABLE} ${TEST_SOURCE}/test_AmberFD.py)
+add_test(NAME forces_py WORKING_DIRECTORY ${TEST_SOURCE} COMMAND ${Python3_EXECUTABLE} ${TEST_SOURCE}/test_forces.py)

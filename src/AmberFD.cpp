@@ -14,6 +14,8 @@ AmberFD::AmberFD(const int n_particles)
     pauli_radii.reserve(n_particles);
     pauli_exp.reserve(n_particles);
     n_sites = 0;
+
+    forces.reserve(n_particles);
 }
 AmberFD::~AmberFD()
 {}
@@ -26,6 +28,7 @@ void AmberFD::add_particle(ParticleInfo parameters)
     dyn_exp.push_back(parameters.dyn_exp);
     pauli_exp.push_back(parameters.pauli_exp);
     pauli_radii.push_back(parameters.pauli_radii);
+    forces.push_back(vec_d(3, 0.0));
     n_sites += 1;
 }
 
@@ -33,6 +36,11 @@ void AmberFD::add_fragment(const vec_i frag_idx)
 {
     dispersionPauli->create_exclusions_from_fragment(frag_idx);
     flucDens->add_fragment(frag_idx);
+}
+
+std::vector<vec_d> AmberFD::get_forces()
+{
+    return forces;
 }
 
 Energies AmberFD::calc_energy_forces(const vec_d &positions)
@@ -66,6 +74,15 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
     //  minimize fluc-dens energy
     flucDens->solve_minimization();
     total_energies.pol = flucDens->get_polarization_energy();
+
+    //  copy over forces from the solvers
+    std::vector<vec_d> fluc_forces = flucDens->get_forces();
+    std::vector<vec_d> disp_forces = dispersionPauli->get_forces();
+    for(size_t i = 0; i < forces.size(); i++)
+    {
+        for(int j = 0; j < 3; j++)
+            forces[i][j] = fluc_forces[i][j] + disp_forces[i][j];
+    }
 
     return total_energies;
 }

@@ -29,7 +29,7 @@ def get_bonds(coords, atoms):
 
 atom_to_nuc = {'H': 1, 'C': 6, 'N': 7, 'O': 8}
 if __name__ == "__main__":
-    data = np.loadtxt('data/u_u_data.txt', dtype=object).T
+    data = np.loadtxt('data/u_u_data_1.txt', dtype=object).T
     atom_names = data[0]
     nuclei = data[1].astype('int32')
     elms = data[2]

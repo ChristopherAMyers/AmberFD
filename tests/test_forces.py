@@ -70,68 +70,78 @@ def get_bonds(coords, atoms):
 
 atom_to_nuc = {'H': 1, 'C': 6, 'N': 7, 'O': 8}
 if __name__ == "__main__":
-    #   import and assign parameters
-    data = np.loadtxt('data/u_u_data.txt', dtype=object).T
-    goal_fluc_forces = np.loadtxt('data/u_u_fluc_forces.txt')
-    atom_names = data[0]
-    nuclei = data[1].astype('int32')
-    elms = data[2]
-    x, y, z, frz_chg, exp_frz, exp_dyn, pauli_exp, pauli_radii =  data[3:].astype(float)
-    coords = np.array([x, y, z]).T
-    bonds = get_bonds(coords, elms)
-    n_atoms = int(len(coords)/2)
-    
 
-    amber = AmberFD(len(coords))
-    for n, nuc in enumerate(nuclei):
-        particle = ParticleInfo(nuc)
-        particle.dyn_exp = exp_dyn[n]
-        particle.frz_exp = exp_frz[n]
-        particle.frz_chg = frz_chg[n]
-        particle.pauli_exp = pauli_exp[n]
-        particle.pauli_radii = pauli_radii[n]
-        amber.add_particle(particle)
+    for data_set in (1, 2):
+        #   import and assign parameters
+        data = np.loadtxt('data/u_u_data_%d.txt' % data_set, dtype=object).T
+        goal_fluc_forces = np.loadtxt('data/u_u_fluc_forces_%d.txt' % data_set)
+        goal_disp_forces = np.loadtxt('data/u_u_disp_forces_%d.txt' % data_set)
+        goal_total_forces = np.loadtxt('data/u_u_total_forces_%d.txt' % data_set)
+        atom_names = data[0]
+        nuclei = data[1].astype('int32')
+        elms = data[2]
+        x, y, z, frz_chg, exp_frz, exp_dyn, pauli_exp, pauli_radii =  data[3:].astype(float)
+        coords = np.array([x, y, z]).T
+        bonds = get_bonds(coords, elms)
+        n_atoms = int(len(coords)/2)
+        
 
-    #   create dispersion-pauli force
-    disp = amber.create_disp_pauli_force()
-    disp.create_exclusions_from_fragment(np.arange(0, n_atoms))
-    disp.create_exclusions_from_fragment(np.arange(n_atoms, n_atoms*2))
+        amber = AmberFD(len(coords))
+        for n, nuc in enumerate(nuclei):
+            particle = ParticleInfo(nuc)
+            particle.dyn_exp = exp_dyn[n]
+            particle.frz_exp = exp_frz[n]
+            particle.frz_chg = frz_chg[n]
+            particle.pauli_exp = pauli_exp[n]
+            particle.pauli_radii = pauli_radii[n]
+            amber.add_particle(particle)
 
-    #   create electrostatics force
-    fluc = amber.create_fluc_dens_force()
-    fluc.create_frz_exclusions_from_bonds(bonds, 3)
-    fluc.add_fragment(np.arange(0, n_atoms))
-    fluc.add_fragment(np.arange(n_atoms, n_atoms*2))
-    fluc.set_dampening(1.5467, 1.4364)
-    
-    energies = amber.calc_energy_forces(coords.flatten())
+        #   create dispersion-pauli force
+        disp = amber.create_disp_pauli_force()
+        disp.create_exclusions_from_fragment(np.arange(0, n_atoms))
+        disp.create_exclusions_from_fragment(np.arange(n_atoms, n_atoms*2))
 
-    disp.calc_energy(coords.flatten())
-    fluc.calc_energy(coords.flatten())
+        #   create electrostatics force
+        fluc = amber.create_fluc_dens_force()
+        fluc.create_frz_exclusions_from_bonds(bonds, 3)
+        fluc.add_fragment(np.arange(0, n_atoms))
+        fluc.add_fragment(np.arange(n_atoms, n_atoms*2))
+        fluc.set_dampening(1.5467, 1.4364)
 
-    fluc_forces = np.array(fluc.get_forces())*2625.5009*ANG2BOHR
-    #np.savetxt('data/u_u_fluc_forces.txt', fluc_forces)
-    #np.testing.assert_allclose(fluc_forces, goal_fluc_forces, atol=1e-12)
-    #exit()
+        #   calculate forces and energies
+        disp.calc_energy(coords.flatten())
+        fluc.calc_energy(coords.flatten())
+        energies = amber.calc_energy_forces(coords.flatten())
+        fluc_forces = np.array(fluc.get_forces())*2625.5009*ANG2BOHR
+        disp_forces = np.array(disp.get_forces())*2625.5009*ANG2BOHR
+        forces = np.array(amber.get_forces())*2625.5009*ANG2BOHR
+        # np.savetxt('data/u_u_fluc_forces_%d.txt' % data_set, fluc_forces)
+        # np.savetxt('data/u_u_disp_forces_%d.txt' % data_set, disp_forces)
+        # np.savetxt('data/u_u_total_forces_%d.txt' % data_set, forces)
+        np.testing.assert_allclose(fluc_forces, goal_fluc_forces, atol=1e-12)
+        np.testing.assert_allclose(disp_forces, goal_disp_forces, atol=1e-12)
+        np.testing.assert_allclose(forces, goal_total_forces, atol=1e-12)
+        
+        #   numerical derivatives
+        if False:
+            eps = 1e-5
+            for n, coord in enumerate(coords):
+                numerical_force = np.zeros(3)
+                for x in [0, 1, 2]:
+                    new_coords_p = coords.copy()
+                    new_coords_m = coords.copy()
+                    new_coords_p[n][x] += eps
+                    new_coords_m[n][x] -= eps
 
-    forces = np.array(disp.get_forces())*2625.5009*ANG2BOHR
-    eps = 1e-5
-    for n, coord in enumerate(coords):
-        numerical_force = np.zeros(3)
-        for x in [0, 1, 2]:
-            new_coords_p = coords.copy()
-            new_coords_m = coords.copy()
-            new_coords_p[n][x] += eps
-            new_coords_m[n][x] -= eps
+                    energy_p = amber.calc_energy_forces(new_coords_p.flatten()).total()
+                    energy_m = amber.calc_energy_forces(new_coords_m.flatten()).total()
+                    # energy_p = disp.calc_energy(new_coords_p.flatten())
+                    # energy_m = disp.calc_energy(new_coords_m.flatten())
+                    # frz_energy_p = fluc.calc_energy(new_coords_p.flatten(), True, False)
+                    # frz_energy_m = fluc.calc_energy(new_coords_m.flatten(), True, False)
 
-            frz_energy_p = disp.calc_energy(new_coords_p.flatten())
-            frz_energy_m = disp.calc_energy(new_coords_m.flatten())
-            # frz_energy_p = fluc.calc_energy(new_coords_p.flatten(), True, False)
-            # frz_energy_m = fluc.calc_energy(new_coords_m.flatten(), True, False)
+                    numerical_force[x] = -(energy_p - energy_m)/(2*eps)*2625.5009*ANG2BOHR
 
-            numerical_force[x] = -(frz_energy_p - frz_energy_m)/(2*eps)*2625.5009*ANG2BOHR
-
-        diff = (forces[n] - numerical_force)/numerical_force
-        #print(('{:15.12f} '*3).format(*tuple(diff)))
-        print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(numerical_force)))
+                diff = (forces[n] - numerical_force)/numerical_force
+                print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(numerical_force)))
 
