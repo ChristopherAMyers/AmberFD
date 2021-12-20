@@ -38,7 +38,7 @@ class AmberFD{
         AmberFD(const int n_sites);
         ~AmberFD();
 
-        void add_particle(ParticleInfo parameters);
+        int add_particle(int index, ParticleInfo parameters);
         void add_fragment(const vec_i frag_idx);
         int get_num_particles()
         {   return n_sites; }
@@ -48,6 +48,7 @@ class AmberFD{
         std::shared_ptr<DispersionPauli> get_disp_pauli_force(bool create_if_null=false);
         std::shared_ptr<FlucDens> create_fluc_dens_force();
         std::shared_ptr<DispersionPauli> create_disp_pauli_force();
+        std::map<int, int> get_index_mapping();
 
     private:
         vec_i nuclei;
@@ -56,6 +57,7 @@ class AmberFD{
         vec_d dyn_exp;
         vec_d pauli_exp;
         vec_d pauli_radii;
+        std::map<int, int> system_idx;
         int n_sites;
 
         std::shared_ptr<FlucDens> flucDens;

@@ -48,7 +48,7 @@ if __name__ == "__main__":
         particle.frz_chg = frz_chg[n]
         particle.pauli_exp = pauli_exp[n]
         particle.pauli_radii = pauli_radii[n]
-        amber.add_particle(particle)
+        amber.add_particle(n, particle)
 
     #   create dispersion-pauli force
     disp = amber.create_disp_pauli_force()

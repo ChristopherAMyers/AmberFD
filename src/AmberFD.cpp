@@ -20,7 +20,7 @@ AmberFD::AmberFD(const int n_particles)
 AmberFD::~AmberFD()
 {}
 
-void AmberFD::add_particle(ParticleInfo parameters)
+int AmberFD::add_particle(int index, ParticleInfo parameters)
 {
     nuclei.push_back(parameters.nuclei);
     frz_exp.push_back(parameters.frz_exp);
@@ -30,6 +30,10 @@ void AmberFD::add_particle(ParticleInfo parameters)
     pauli_radii.push_back(parameters.pauli_radii);
     forces.push_back(vec_d(3, 0.0));
     n_sites += 1;
+
+    system_idx[index] = n_sites - 1;
+
+    return n_sites - 1;
 }
 
 void AmberFD::add_fragment(const vec_i frag_idx)
@@ -135,4 +139,9 @@ std::shared_ptr<DispersionPauli> AmberFD::create_disp_pauli_force()
         dispersionPauli = std::shared_ptr<DispersionPauli>(new DispersionPauli(n_sites, &nuclei[0], &pauli_exp[0], &pauli_radii[0]));
         return dispersionPauli;
     }
+}
+
+std::map<int, int> AmberFD::get_index_mapping()
+{
+    return system_idx;
 }
