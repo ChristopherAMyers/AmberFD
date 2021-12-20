@@ -87,15 +87,52 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
     return total_energies;
 }
 
+std::shared_ptr<FlucDens> AmberFD::get_fluc_dens_force(bool create_if_null)
+{
+    if (flucDens == nullptr)
+        if (create_if_null)
+            return create_fluc_dens_force();
+        else
+            throw std::runtime_error("FlucForce has not been created");
+    else
+        return flucDens;
+}
+
+std::shared_ptr<DispersionPauli> AmberFD::get_disp_pauli_force(bool create_if_null)
+{
+    if (dispersionPauli == nullptr)
+        if (create_if_null)
+            return create_disp_pauli_force();
+        else
+            throw std::runtime_error("DispersionPauli has not been created");
+    else
+        return dispersionPauli;
+}
+
 std::shared_ptr<FlucDens> AmberFD::create_fluc_dens_force()
 {
-    vec_d nuc(nuclei.begin(), nuclei.end());
-    flucDens = std::shared_ptr<FlucDens>(new FlucDens(n_sites, &frz_chg[0], &nuc[0], &frz_exp[0], &dyn_exp[0]));
-    return flucDens;
+    //  create a new
+    if (flucDens != nullptr)
+    {
+        throw std::runtime_error("FlucForce has already been created");
+    }
+    else
+    {
+        vec_d nuc(nuclei.begin(), nuclei.end());
+        flucDens = std::shared_ptr<FlucDens>(new FlucDens(n_sites, &frz_chg[0], &nuc[0], &frz_exp[0], &dyn_exp[0]));
+        return flucDens;
+    }
 }
 
 std::shared_ptr<DispersionPauli> AmberFD::create_disp_pauli_force()
 {
-    dispersionPauli = std::shared_ptr<DispersionPauli>(new DispersionPauli(n_sites, &nuclei[0], &pauli_exp[0], &pauli_radii[0]));
-    return dispersionPauli;
+    if (dispersionPauli != nullptr)
+    {
+        throw std::runtime_error("DispersionPauli has already been created");
+    }
+    else
+    {
+        dispersionPauli = std::shared_ptr<DispersionPauli>(new DispersionPauli(n_sites, &nuclei[0], &pauli_exp[0], &pauli_radii[0]));
+        return dispersionPauli;
+    }
 }
