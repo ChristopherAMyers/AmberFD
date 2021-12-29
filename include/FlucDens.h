@@ -49,7 +49,7 @@ class FlucDens {
 
         //  frozen - frozen exclusions
         void add_frz_frz_exclusion(int frz_i, int frz_j);
-        void get_frz_frz_exclusions(const int particle1, std::vector<int> &particles2) const;
+        std::vector<int>  get_frz_frz_exclusions(const int particle1) const;
         void create_frz_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, int bond_cutoff);
         int get_num_frz_frz_exclusions() const;
 
@@ -60,8 +60,9 @@ class FlucDens {
         void set_dyn_exp(const int index, const double value);
         void set_dyn_exp(vec_d exponents);
         void set_frz_exp(const int index, const double value);
-        void get_del_frz_exclusions(const int particle1, std::set<int> &particles2) const;
 
+        int get_num_constraints();
+        std::set<int> get_del_frz_exclusions(const int particle1) const;
         vec_d get_rho_coulomb_mat();
         vec_d get_rho_pot_vec();
         vec_d get_delta_rho();

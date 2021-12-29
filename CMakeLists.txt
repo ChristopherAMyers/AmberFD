@@ -45,7 +45,7 @@ foreach(file ${files})
     message("test file: ${file}")
 endforeach()
 
-add_compile_options(-fPIC -O2)
+add_compile_options(-fPIC -O2 -g)
 if (OPENMP_FOUND)
     message("Setting OpenMP Flags")
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")

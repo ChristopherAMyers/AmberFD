@@ -1,6 +1,7 @@
 from copy import deepcopy, copy
 from openmm.app import forcefield as ff, Simulation, Element
-import openmm as mm
+from openmm.openmm import CustomExternalForce, NonbondedForce
+import openmm.unit as uu
 import sys
 from os.path import *
 import numpy as np
@@ -51,43 +52,6 @@ class AmberFDGenerator(object):
             res_atom[attrib] = float(atom_element.attrib[attrib])
         return res_atom
 
-    '''
-    def registerResidue(self, element):
-        res_name = element.attrib['name']
-        self.residues[res_name] = {}
-        for atom in element.findall('Atom'):
-            res_atom = {}
-            for attrib in ['frz_chg', 'frz_exp', 'dyn_exp', 'pauli_exp', 'pauli_radii']:
-                res_atom[attrib] = float(atom.attrib[attrib])
-            self.residues[res_atom][atom.attrib['name']] = res_atom
-
-    def registerPatchResidue(self, element):
-        res_name = element.attrib['name']
-        self.residues[res_name] = {}
-        residue = self.residues[res_name]
-        base_res_elms = element.findall('BaseResidue')
-        if len(base_res_elms) != 1:
-            raise ValueError(" Exactly one BaseResidue must be specified in each PatchResidue")
-        residue.update(self.residues[base_res_elms.attrib('name')])
-        for atom in element.findall('AddAtom'):
-            residue[atom.attrib['name']] = self.add_atom(atom)
-        for atom in element.findall('RemoveAtom'):
-            residue.pop(atom.attrib['name'])
-
-
-    def registerPolFragment(self, element):
-        frag_name = element.attrib['name']
-        self.fragments[frag_name] = {}
-        for res in element.findall('Residue'):
-            self.res_to_fragment[res.attrib['resName']] = frag_name
-        for atom in element.findall('Atom'):
-            frag_atom = {}
-            for attrib in ['frz_chg', 'frz_exp', 'dyn_exp', 'pauli_exp', 'pauli_radii']:
-                frag_atom[attrib] = float(atom.attrib[attrib])
-            self.fragments[frag_name][atom.attrib['name']] = frag_atom
-    '''
-
-
     @staticmethod
     def parseElement(element, ff):
         print("IN PARSE ELEMENT")
@@ -117,12 +81,6 @@ class AmberFDGenerator(object):
         generator.damp_coeff = element.findall('PolarizationNonPairwise')[0].attrib['damp_coeff']
         generator.damp_coeff = element.findall('PolarizationNonPairwise')[0].attrib['damp_coeff']
 
-        
-        # frag_sections = element.findall('Fragment')
-        # for frag in frag_sections:
-        #     generator.registerPolFragment(frag)
-
-
 
     def createForce(self, sys, data, nonbondedMethod, nonbondedCutoff, args):
         print("IN CREATE FORCE")
@@ -143,7 +101,7 @@ class AmberFDGenerator(object):
                     raise ValueError("Missing polarization parameters in atom {:s} in res {:s}".format(atom.name, atom.residue.name))
                 particle.frz_chg = params['frz_chg']
                 particle.dyn_exp = params['dyn_exp']
-                particle.dyn_chg = params['frz_exp']
+                particle.frz_exp = params['frz_exp']
                 pol_residues.add(atom.residue)
                 add_atom = True
 
@@ -169,6 +127,17 @@ class AmberFDGenerator(object):
                         fragment_idx.append(atom_indices[atom])
                 pol_force.add_fragment(fragment_idx)
 
+            bonds = []
+            index_mapping = force.get_index_mapping()
+            for bond in data.bonds:
+                index_1 = bond.atom1
+                index_2 = bond.atom2
+                if index_1 in index_mapping and index_2 in index_mapping:
+                    bonds.append((index_mapping[index_1], index_mapping[index_2]))
+            pol_force.create_frz_exclusions_from_bonds(bonds, 3)
+
+            
+
         #   create pauli repulsion and dispersion force
         if len(pauli_residues) != 0:
             pauli_force = force.create_disp_pauli_force()
@@ -182,40 +151,38 @@ class AmberFDGenerator(object):
             pauli_force.set_C6_map(MapID(self.dispersion_C6))
             params = self.dispersion_params
             pauli_force.set_dispersion_params(params['s6'], params['a1'], params['a2'])
-
             
 
+        external_force = CustomExternalForce('-Fx*x - Fy*y - Fz*z + fd_energy')
+        external_force.addPerParticleParameter('Fx')
+        external_force.addPerParticleParameter('Fy')
+        external_force.addPerParticleParameter('Fz')
+        external_force.addGlobalParameter('fd_energy', 0.0)
+        index_mapping = force.get_index_mapping()
+        for index in index_mapping:
+            external_force.addParticle(index, (0, 0, 0))
+        sys.addForce(external_force)
 
+        self.force = force
+        sys._amberFDData = {'ext_force': external_force, 'force': force, 'data': data}
         
-        # for atom in []:
-        #     res_name  = atom.residue.name
-        #     frag_name = self.res_to_fragment[res_name]
-        #     fragment = self.fragments[frag_name]
-        #     if atom.name not in fragment: continue
-        #     frag_atom = fragment[atom.name]
-        #     particle = ParticleInfo(atom.element.atomic_number)
-        #     particle.frz_chg = frag_atom['frz_chg']
-        #     particle.frz_exp = frag_atom['frz_exp']
-        #     particle.dyn_exp = frag_atom['dyn_exp']
-        #     particle.pauli_exp= frag_atom['pauli_exp']
-        #     particle.pauli_radii = frag_atom['pauli_radii']
-        #     force.add_particle(particle)
-            
-        sys._amberFDForce = force
-        sys._data = data
-        sys._generator= self
-        pass
 
     def postprocessSystem(self, sys, data, args):
         print("IN POSTPROCESS")
-        # for force in sys.getForces():
-        #     print(force)
-        pass
+        #   exclude base-base interactions already accounted for in AmberFD
+        for force in sys.getForces():
+            if isinstance(force, NonbondedForce):
+                index_mapping = self.force.get_index_mapping()
+                for idx_1 in index_mapping:
+                    for idx_2 in index_mapping:
+                        force.addException(idx_1, idx_2, 0.0, 1.0, 0.0, replace=True)
+                break
+
 
 ff.parsers['AmberFDForce'] = AmberFDGenerator.parseElement
 
 class MoleculeImporter():
-    def __init__(self, *files) -> None:
+    def __init__(self, ff_files, structure_files, solvate=False, **solvate_kwargs) -> None:
         ''' Loads multiple molecule files at once and stores the positions, topology, and forcefield information
         
         Parameters
@@ -226,49 +193,62 @@ class MoleculeImporter():
             This mist MUST include a .xml forcefield file
         '''
 
-
-
         self.topology = None
         self.positions = None
         self.forcefield = None
 
-        if isinstance(files, tuple):
-            pass
-        else:
-            files = tuple([files])
+        if isinstance(structure_files, str):
+            structure_files = tuple([structure_files])
+        elif isinstance(structure_files, list):
+            structure_files = tuple(structure_files)
+        if isinstance(ff_files, str):
+            ff_files = tuple([ff_files])
+        elif isinstance(ff_files, list):
+            ff_files = tuple(ff_files)
 
-        topology = None
-        positions = None
-        forcefield = None
-        file_extensions = []
-        for file in files:
-            if not isinstance(file, str):
-                raise ValueError("files must be of type String or a tuple of Strings")
-            ext = splitext(file)[-1]
-            file_extensions.append(ext)
-            if ext == '.pdb':
-                pdb = PDBFile(file)
-                topology  = copy(topology)
-                positions = copy(pdb.positions)
-            elif ext == '.gro':
-                gro = GromacsGroFile(file)
-                positions = gro.positions
-            elif ext == '.top':
-                topology = copy(GromacsTopFile(file).topology)
-            elif ext == '.xml':
-                forcefield = ff.ForceField(file)
-            else:
-                raise ValueError("Valid file extensions are .pdb, .gro, .top, and .xml")
-            
-        if forcefield is None:
-            raise ValueError("No .xml forcefield was provided in *files list")
-        if positions is None:
-            raise ValueError("A molecule file with positions must be provided in *files list")
-        if topology is None:
-            raise ValueError("A file with a molecular topology (.pdb or .top) must be provided in the *files list")
-                
+        #   import force fields
+        forcefield = ff.ForceField(*ff_files)
+
+        #   determine tyoe of structure files provided
+        extensions = [splitext(x)[-1] for x in structure_files]
+        box_dims = None
+        if set(extensions) == {'.pdb'}:
+            pdb = PDBFile(*structure_files)
+            topology  = pdb.getTopology()
+            positions = pdb.getPositions(True)
+        elif set(extensions) == {'.gro', '.top'}:
+            gro = GromacsGroFile(structure_files[extensions.index('.gro')])
+            top = GromacsTopFile(structure_files[extensions.index('.top')])
+            positions = gro.getPositions(True)
+            topology = top.topology
+            topology.setPeriodicBoxVectors(gro.getPeriodicBoxVectors())
+            box_dims = gro.getPeriodicBoxVectors()
+        else:
+            raise ValueError("Structure files must be .pdb or (.gro, .top)")
+
+        #   add virtual sites to model
         modeller = Modeller(topology, positions)
         modeller.addExtraParticles(forcefield)
+
+        #   solvate system
+        if solvate:
+            solvate_options = {'model': 'tip4pew', 'positiveIon': 'Na+', 'negativeIon': 'Cl-', 'ionicStrength': 0*uu.molar, 'neutralize': True}
+            if box_dims is not None:
+                solvate_options['boxVectors'] = box_dims
+            else:
+                solvate_options['padding'] = 1*uu.nanometers
+            if len(solvate_kwargs) != 0:
+                #   if solvation method is specified, remove defaults and use this instead
+                solv_methods = ['boxSize', 'boxVectors', 'numAdded', 'padding']
+                solv_methods_given = [x for x in solv_methods if x in solv_methods]
+                for method in solv_methods_given:
+                    solvate_options.pop(method, None)
+
+                solvate_options.update(solvate_kwargs)
+            modeller.addSolvent(forcefield, **solvate_options)
+
+        #modeller.addExtraParticles(forcefield)
+
         self.positions = modeller.getPositions()
         self.topology = modeller.getTopology()
         self.forcefield = forcefield
@@ -278,9 +258,49 @@ class AmberFDSimulation(Simulation):
     def __init__(self, topology, system, integrator, platform=None, platformProperties=None, state=None):
         super().__init__(topology, system, integrator, platform=platform, platformProperties=platformProperties, state=state)
 
+        print(system.__dict__)
+        self._FD_solver = system._amberFDData['force']
+        self._external_force = system._amberFDData['ext_force']
+        self.index_mapping = dict(self._FD_solver.get_index_mapping())
+        self.topology = topology
+
+        self._dispPauliForce = self._FD_solver.get_disp_pauli_force()
+        self._flucDensForce = self._FD_solver.get_fluc_dens_force()
+
+
+    def _update_force(self):
+        state = self.context.getState(getPositions=True)
+        pos = state.getPositions(True)/uu.bohr
+        fd_pos = np.array([pos[x] for x in self.index_mapping]).flatten()
+        dim = len(self.index_mapping)
+
+        # total_E = self._dispPauliForce.calc_energy(fd_pos)
+        # total_E = self._dispPauliForce.get_pauli_energy()
+        # total_E = self._dispPauliForce.get_disp_energy()
+        # fd_forces = np.array(self._dispPauliForce.get_forces()).reshape((dim, 3))*49614.77640958472
+
+        total_E = self._flucDensForce.calc_energy(fd_pos, True, False)
+        fd_forces = np.array(self._flucDensForce.get_forces()).reshape((dim, 3))*49614.77640958472
+
+
+        # energies = self._FD_solver.calc_energy_forces(fd_pos)
+        # total_E = energies.total()
+        # fd_forces = np.array(self._FD_solver.get_forces()).reshape((dim, 3))*49614.77640958472 # atomic to mm units
+
+        atoms = list(self.topology.atoms())
+        for (omm_particle, index), force in zip(self.index_mapping.items(), fd_forces):
+            self._external_force.setParticleParameters(index, omm_particle, force)
+            #print(atoms[omm_particle], omm_particle, index, force)
+
+
+        self.context.setParameter('fd_energy', total_E*2625.5009)
+        self._external_force.updateParametersInContext(self.context)
+        #self.energies = energies
+
 
 class BFGS(object):
     def __init__(self, context, constraints=None, out_pdb=None, topology=None):
+        raise NotImplementedError("Still working on BFGS Minimizer")
         self._out_file = None
         self._topology = topology
         self._step_num = 0

@@ -99,11 +99,13 @@ void FlucDens::add_del_frz_exclusion(int delta_i, int frz_j)
     exclusions_del_frz[delta_i].insert(frz_j);
 }
 
-void FlucDens::get_del_frz_exclusions(const int particle1, std::set<int> &particles2) const
+std::set<int> FlucDens::get_del_frz_exclusions(const int particle1) const
 {
+    std::set<int> particles2;
     if (particle1 < 0 || particle1 >= (int) exclusions_frz_frz.size()) 
         throw "Index out of range";
     particles2 = exclusions_del_frz[particle1];
+    return particles2;
 }
 
 void FlucDens::add_frz_frz_exclusion(int frz_i, int frz_j)
@@ -125,13 +127,22 @@ int FlucDens::get_num_frz_frz_exclusions() const
     return exclusions_frz_frz.size(); 
 }
 
-void FlucDens::get_frz_frz_exclusions(const int particle1, std::vector<int> &particles2) const
+std::vector<int> FlucDens::get_frz_frz_exclusions(const int particle1) const
 {
     if (particle1 < 0 || particle1 >= (int) exclusions_frz_frz.size()) 
         throw "Index out of range";
+    std::vector<int> particles2;
     particles2.resize(exclusions_frz_frz[particle1].size());
     std::copy(exclusions_frz_frz[particle1].begin(), exclusions_frz_frz[particle1].end(), particles2.begin());
 
+    int i = 0;
+    for(auto &x: exclusions_frz_frz[particle1])
+    {
+        printf("%d  %d  %d \n", (int)i, particles2[i], x);
+        i++;
+    }
+
+    return particles2;
     //particles2 = exclusions_frz_frz[particle1];
 }
 
@@ -190,6 +201,11 @@ void FlucDens::set_calc_forces(bool calculate_forces)
 double FlucDens::get_total_time()
 {
     return total_time;
+}
+
+int FlucDens::get_num_constraints()
+{
+    return constraints.size();
 }
 
 std::vector<vec_d> FlucDens::get_forces()

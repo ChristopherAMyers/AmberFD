@@ -10,8 +10,10 @@
 %include "std_vector.i"
 %include "std_pair.i"
 %include "std_map.i"
+%include "std_set.i"
 %include "std_string.i"
 %include <std_shared_ptr.i>
+%include <typemaps.i>
 
 namespace std {
     %template(MapID) map<int,double>;
@@ -22,6 +24,7 @@ namespace std {
     %template(VectorII) vector < vector<int> >;
     %template(VectorPairII) vector< pair<int,int> >;
     %template(Matrix) vector<Vec3>;
+    %template(SetI) set<int>;
 };
 
 %init %{

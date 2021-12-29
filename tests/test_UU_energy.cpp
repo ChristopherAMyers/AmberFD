@@ -52,8 +52,8 @@ void print_exclusions(const FlucDens &fluc)
 {
     for (int i = 0; i < fluc.get_num_frz_frz_exclusions(); i ++)
     {
-        vector<int> ex_i;
-        fluc.get_frz_frz_exclusions(i, ex_i);
+        //vector<int> ex_i;
+        vector<int>  ex_i = fluc.get_frz_frz_exclusions(i);
         for (int j = 0; j < (int)ex_i.size(); j++)
             printf(" exclusion %3d  %3d \n", i + 1, ex_i[j] + 1);
     }

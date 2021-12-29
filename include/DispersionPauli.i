@@ -8,9 +8,11 @@
                                       (double *coeff, int len3),
                                       (double* coeff_list, int len),
                                       (double* exp_list, int len)}
+%apply double& OUTPUT {double &s6, double &a1, double &a2};
 
 %include "include/DispersionPauli.h"
 %include "include/common.h"
+
 
 %exception DispersionPauli::DispersionPauli {
     $action

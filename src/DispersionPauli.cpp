@@ -127,9 +127,13 @@ void DispersionPauli::get_dispersion_params(double &s6, double &a1, double &a2)
     a2 = disp_a2;
 }
 
-map_id DispersionPauli::get_vdw_radii()
+map_id DispersionPauli::get_vdw_radii_map()
 {
     return vdw_radii_map;
+}
+vec_d DispersionPauli::get_vdw_radii()
+{
+    return vdw_radii;
 }
 map_id DispersionPauli::get_C6_map()
 {

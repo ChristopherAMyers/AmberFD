@@ -30,11 +30,12 @@ class DispersionPauli {
         void set_pauli_exp(int index, double exponent);
 
         void get_dispersion_params(double &s6, double &a1, double &a2);
-        map_id get_vdw_radii();
+        map_id get_vdw_radii_map();
         map_id get_C6_map();
         vec_d get_pauli_radii();
         vec_d get_pauli_exp();
         vec_d get_C6_coeff();
+        vec_d get_vdw_radii();
         double get_pauli_energy();
         double get_disp_energy();
         int get_num_sites();
