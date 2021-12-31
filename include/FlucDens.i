@@ -13,6 +13,7 @@
                                       (double *nuclei, int len2),
                                       (double *frozen_exp, int len3),
                                       (double *dynamic_exp, int len4)}
+%apply double &OUTPUT {double &coeff, double &exponent};
 
 %include "include/DispersionPauli.i"
 %include "include/FlucDens.h"

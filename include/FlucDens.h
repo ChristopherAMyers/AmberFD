@@ -60,15 +60,20 @@ class FlucDens {
         void set_dyn_exp(const int index, const double value);
         void set_dyn_exp(vec_d exponents);
         void set_frz_exp(const int index, const double value);
+        void set_ct_coeff(const double coeff);
 
         int get_num_constraints();
         std::set<int> get_del_frz_exclusions(const int particle1) const;
         vec_d get_rho_coulomb_mat();
         vec_d get_rho_pot_vec();
         vec_d get_delta_rho();
+        void get_dampening(double &coeff, double &exponent);
+        double get_ct_coeff();
         double get_frozen_energy();
         double get_polarization_energy();
+        double get_ct_energy();
         FlucDensEnergies get_energies();
+        std::vector<std::string> get_param_names();
         vec_d get_params_by_name(const std::string param_name);
         std::vector<std::vector<int>> get_constraints();
 
@@ -96,11 +101,11 @@ class FlucDens {
         vec_d damp_sum;
         double damp_exponent;
         double damp_coeff;
+        double ct_coeff;
         std::vector<std::set<int>> exclusions_del_frz;
         std::vector<std::set<int>> exclusions_frz_frz;
         size_t n_sites;
         std::map<std::string, vec_d* > param_data;
-        
         std::vector<std::vector<int>> constraints;
         int n_fragments;
         bool use_frag_constraints;

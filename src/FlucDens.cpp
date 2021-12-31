@@ -25,11 +25,11 @@ FlucDens::FlucDens(const int num_sites,
         frozen_pop.push_back(nuclei[i] - frozen_chg[i]);
 
     //  param_data is for easy access to parameters my names
-    param_data["frozen_charges"] = &frozen_chg;
-    param_data["frozen_pop"] =     &frozen_pop;
-    param_data["frozen_exp"] =     &frozen_exp;
-    param_data["dynamic_exp"] =    &dynamic_exp;
-    param_data["nuclei"] =         &nuclei;
+    param_data["frz_chg"] =    &frozen_chg;
+    param_data["frz_pop"] =    &frozen_pop;
+    param_data["frz_exp"] =    &frozen_exp;
+    param_data["dyn_exp"] =    &dynamic_exp;
+    param_data["nuclei"] =     &nuclei;
 
     //  density distance cutoff info
     dens_cutoff_power_law = dens_cutoff_a*log(dens_cutoff_pct_error) + dens_cutoff_b;
@@ -60,6 +60,7 @@ FlucDens::FlucDens(const int num_sites,
     damp_exponent = 1.0;
     damp_coeff = 0.0;
     damp_sum.resize(n_sites, 0.0);
+    ct_coeff = 0.0;
     calc_forces = true;
 
     //  initialize energies
@@ -191,6 +192,22 @@ void FlucDens::set_dampening(double coeff, double exponent)
 {
     damp_coeff = coeff;
     damp_exponent = exponent;
+}
+
+void FlucDens::get_dampening(double &coeff, double &exponent)
+{
+    coeff = damp_coeff;
+    exponent = damp_exponent;
+}
+
+void FlucDens::set_ct_coeff(const double coeff)
+{
+    ct_coeff = coeff;
+}
+
+double FlucDens::get_ct_coeff()
+{
+    return ct_coeff;
 }
 
 void FlucDens::set_calc_forces(bool calculate_forces)
@@ -613,9 +630,11 @@ void FlucDens::solve_minimization()
             total_forces[k] -= (delta_rho[k]*dPot_dPos[kj_idx] - delta_rho[j]*dPot_dPos_trans[kj_idx]);
             total_forces[k] -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dPos[kj_idx];
         }
-        total_forces[k] += frozen_forces[k];
+        total_forces[k] += frozen_forces[k] + total_forces[k]*ct_coeff;
         //printf(" %.8f  %.8f  %.8f \n", dJ_dx[i*n_sites + i], dJ_dy[i*n_sites + i], dJ_dz[i*n_sites + i]);
     }
+
+    total_energies.vct = ct_coeff*total_energies.pol;
 }
 
 bool FlucDens::use_long_range_approx(double r, double a, double b)
@@ -623,9 +642,22 @@ bool FlucDens::use_long_range_approx(double r, double a, double b)
     return false;
 }
 
+std::vector<std::string> FlucDens::get_param_names()
+{
+    std::vector<std::string> keys;
+    for(std::map<std::string, vec_d* >::iterator it = param_data.begin(); it != param_data.end(); ++it)
+    {
+        keys.push_back(it->first);
+    }
+    return keys;
+}
+
 vec_d FlucDens::get_params_by_name(const std::string param_name)
 {
-    return vec_d(param_data[param_name]->begin(), param_data[param_name]->end());
+    if (param_data.count(param_name) > 0)
+        return vec_d(param_data[param_name]->begin(), param_data[param_name]->end());
+    else
+        return vec_d(0);
 }
 
 void FlucDens::print_params(const std::string message, const std::string param_name)
@@ -667,6 +699,11 @@ double FlucDens::get_frozen_energy()
 double FlucDens::get_polarization_energy()
 {
     return total_energies.pol;
+}
+
+double FlucDens::get_ct_energy()
+{
+    return total_energies.vct;
 }
 
 FlucDensEnergies FlucDens::get_energies()

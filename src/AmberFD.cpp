@@ -78,6 +78,7 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
     //  minimize fluc-dens energy
     flucDens->solve_minimization();
     total_energies.pol = flucDens->get_polarization_energy();
+    total_energies.vct = flucDens->get_ct_energy();
 
     //  copy over forces from the solvers
     std::vector<vec_d> fluc_forces = flucDens->get_forces();
