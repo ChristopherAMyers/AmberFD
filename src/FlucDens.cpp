@@ -11,6 +11,7 @@ FlucDens::FlucDens(const int num_sites,
                    const double *frozen_exp_in, 
                    const double *dynamic_exp_in)
 {
+    remove_core = true;
     n_sites = num_sites;
     frozen_pop.reserve(num_sites);
     frozen_forces.resize(num_sites);
@@ -22,7 +23,11 @@ FlucDens::FlucDens(const int num_sites,
     dynamic_exp.assign(dynamic_exp_in, dynamic_exp_in + n_sites);
     nuclei.assign(nuclei_in, nuclei_in + n_sites);
     for (size_t i = 0; i < n_sites; i++)
+    {
+        if ((nuclei[i] > 2) && remove_core)
+            nuclei[i] -= 2;
         frozen_pop.push_back(nuclei[i] - frozen_chg[i]);
+    }
 
     //  param_data is for easy access to parameters my names
     param_data["frz_chg"] =    &frozen_chg;
@@ -54,12 +59,15 @@ FlucDens::FlucDens(const int num_sites,
 
     //  initially assign all sites the the same fragment ID
     site_frag_ids.resize(n_sites, -1);
+
     n_fragments = 0;
     total_time = 0.0;
     use_frag_constraints = true;
     damp_exponent = 1.0;
     damp_coeff = 0.0;
     damp_sum.resize(n_sites, 0.0);
+    pol_wall_coeff = pow(2.3, 12)*0.0;
+    pol_wall_exponent = 20;
     ct_coeff = 0.0;
     calc_forces = true;
 
@@ -76,6 +84,21 @@ double FlucDens::dot3Vec(const vec_d &coords, int i, int j)
     double y = coords[i + 1] - coords[j + 1];
     double z = coords[i + 2] - coords[j + 2];
     return x*x + y*y + z*z;
+}
+
+void FlucDens::set_site_params(const int index, const double frz_chg_new, const double frz_exp_new, const double dyn_exp_new)
+{
+    frozen_chg[index] = frz_chg_new;
+    frozen_exp[index] = frz_exp_new;
+    dynamic_exp[index] = dyn_exp_new;
+    frozen_pop[index] = nuclei[index] - frozen_chg[index];
+}
+
+void FlucDens::get_site_params(const int index, double &frz_chg, double &frz_exp, double &dyn_exp)
+{
+    frz_chg = frozen_chg[index];
+    frz_exp = frozen_exp[index];
+    dyn_exp = dynamic_exp[index];
 }
 
 void FlucDens::set_frag_constraints(const bool constr_frags)
@@ -188,10 +211,11 @@ void FlucDens::set_frz_exp(const int index, const double value)
     frozen_exp[index] = value;
 }
 
-void FlucDens::set_dampening(double coeff, double exponent)
+void FlucDens::set_dampening(double coeff, double exponent, double pol_wall_Radii)
 {
     damp_coeff = coeff;
     damp_exponent = exponent;
+    pol_wall_coeff = exp(pol_wall_exponent*pol_wall_Radii);
 }
 
 void FlucDens::get_dampening(double &coeff, double &exponent)
@@ -334,10 +358,10 @@ void FlucDens::initialize_calculation()
 
 double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_pol)
 {
+    initialize_calculation();
     if (!calc_pol && !calc_frz)
         return 0.0;
 
-    initialize_calculation();
     size_t i, j;
     Energies energies;
     energies.reset_all();
@@ -358,8 +382,25 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
     }
     if (calc_pol)
         solve_minimization();
+    else
+    {
+        for(size_t i = 0; i < total_forces.size(); i++)
+        {
+            total_forces[i][0] = frozen_forces[i][0];
+            total_forces[i][1] = frozen_forces[i][1];
+            total_forces[i][2] = frozen_forces[i][2];
+        }
+    }
 
     return total_energies.total();
+}
+
+Energies FlucDens::calc_one_frozen(const vec_d &positions, int i, int j)
+{
+    Energies eng_out;
+    DeltaR deltaR(positions, (int)i*3, (int)j*3);
+    calc_one_electro(deltaR, i, j, false, true, eng_out);
+    return eng_out;
 }
 
 void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies)
@@ -416,11 +457,14 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 pot_vec[i] += frozen_pop[j]*del_frz_ee + nuclei[j]*del_a_nuc_b;
                 pot_vec[j] += frozen_pop[i]*frz_del_ee + nuclei[i]*del_b_nuc_a;
 
-                double dampening = exp(-damp_exponent*r);
+                double r_12 = pow(deltaR.r2, 6);
+                //double dampening = exp(-damp_exponent*r) + pol_wall_coeff/r_12;
+                double dampening = exp(-damp_exponent*r) + pol_wall_coeff*exp(-pol_wall_exponent*r);
                 damp_sum[i] += dampening;
                 damp_sum[j] += dampening;
 
-                double dDamp_dR = -damp_exponent*damp_coeff*dampening;
+                // double dDamp_dR = -damp_exponent*damp_coeff*dampening - 12*pol_wall_coeff/r_12*deltaR.r_inv;
+                double dDamp_dR = -damp_exponent*damp_coeff*dampening - pol_wall_exponent*pol_wall_coeff*exp(-pol_wall_exponent*r);
                 dDamp_dPos[idx_ij] =  dDamp_dR*dR;
                 dDamp_dPos[idx_ji] = -dDamp_dR*dR;
 

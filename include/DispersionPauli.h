@@ -40,10 +40,12 @@ class DispersionPauli {
         double get_disp_energy();
         int get_num_sites();
         std::vector<vec_d> get_forces();
+        std::set<int> get_exclusions(const int particle1) const;
 
         void initialize();
         double calc_energy(const vec_d &coords);
         double calc_one_pair(DeltaR &deltaR, int i, int j, Energies& energies);
+        Energies calc_one_pair(const vec_d &pos, int i, int j);
 
         void create_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, int bond_cutoff);
         void create_exclusions_from_fragment(const vec_i frag_idx);

@@ -31,6 +31,7 @@ atom_to_nuc = {'H': 1, 'C': 6, 'N': 7, 'O': 8}
 if __name__ == "__main__":
 
     for data_set in (1, 2):
+        print("     DATA SET %d" % data_set)
         #   import and assign parameters
         data = np.loadtxt('data/u_u_data_%d.txt' % data_set, dtype=object).T
         goal_fluc_forces = np.loadtxt('data/u_u_fluc_forces_%d.txt' % data_set)
@@ -77,15 +78,15 @@ if __name__ == "__main__":
         # np.savetxt('data/u_u_fluc_forces_%d.txt' % data_set, fluc_forces)
         # np.savetxt('data/u_u_disp_forces_%d.txt' % data_set, disp_forces)
         # np.savetxt('data/u_u_total_forces_%d.txt' % data_set, forces)
-        np.testing.assert_allclose(fluc_forces, goal_fluc_forces, atol=1e-12)
-        np.testing.assert_allclose(disp_forces, goal_disp_forces, atol=1e-12)
-        np.testing.assert_allclose(forces, goal_total_forces, atol=1e-12)
+
         
         #   numerical derivatives
-        if False:
-            eps = 1e-5
+        if True:
+            eps = (np.finfo(np.float64).eps)**(1/3)
             for n, coord in enumerate(coords):
                 numerical_force = np.zeros(3)
+                numerical_disp_force = np.zeros(3)
+                numerical_fluc_force = np.zeros(3)
                 for x in [0, 1, 2]:
                     new_coords_p = coords.copy()
                     new_coords_m = coords.copy()
@@ -94,13 +95,28 @@ if __name__ == "__main__":
 
                     energy_p = amber.calc_energy_forces(new_coords_p.flatten()).total()
                     energy_m = amber.calc_energy_forces(new_coords_m.flatten()).total()
-                    # energy_p = disp.calc_energy(new_coords_p.flatten())
-                    # energy_m = disp.calc_energy(new_coords_m.flatten())
-                    # frz_energy_p = fluc.calc_energy(new_coords_p.flatten(), True, False)
-                    # frz_energy_m = fluc.calc_energy(new_coords_m.flatten(), True, False)
+                    energy_disp_p = disp.calc_energy(new_coords_p.flatten())
+                    energy_disp_m = disp.calc_energy(new_coords_m.flatten())
+                    energy_fluc_p = fluc.calc_energy(new_coords_p.flatten(), True, True)
+                    energy_fluc_m = fluc.calc_energy(new_coords_m.flatten(), True, True)
 
                     numerical_force[x] = -(energy_p - energy_m)/(2*eps)*2625.5009*ANG2BOHR
+                    numerical_disp_force[x] = -(energy_disp_p - energy_disp_m)/(2*eps)*2625.5009*ANG2BOHR
+                    numerical_fluc_force[x] = -(energy_fluc_p - energy_fluc_m)/(2*eps)*2625.5009*ANG2BOHR
 
-                diff = (forces[n] - numerical_force)/numerical_force
-                print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(numerical_force)))
+                np.testing.assert_allclose(forces[n],      numerical_force,      rtol=eps, atol=eps)
+                np.testing.assert_allclose(disp_forces[n], numerical_disp_force, rtol=eps, atol=eps)
+                np.testing.assert_allclose(fluc_forces[n], numerical_fluc_force, rtol=eps, atol=eps)
+                
+                # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(numerical_force)))
+                # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(disp_forces[n]), *tuple(numerical_disp_force)))
+                print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(numerical_fluc_force)))
 
+                #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(goal_total_forces[n])))
+                #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(disp_forces[n]), *tuple(goal_disp_forces[n])))
+                print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(goal_fluc_forces[n])))
+        
+        
+        # np.testing.assert_allclose(fluc_forces, goal_fluc_forces, atol=1e-12)
+        # np.testing.assert_allclose(disp_forces, goal_disp_forces, atol=1e-12)
+        # np.testing.assert_allclose(forces, goal_total_forces, atol=1e-12)

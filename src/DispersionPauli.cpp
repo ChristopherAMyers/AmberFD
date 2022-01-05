@@ -204,6 +204,14 @@ void DispersionPauli::add_force(vec_d &force, const Vec3 &dR)
     force[2] += dR[2];
 }
 
+Energies DispersionPauli::calc_one_pair(const vec_d &pos, int i, int j)
+{
+    Energies energies;
+    DeltaR deltaR(pos, (int)i*3, (int)j*3);
+    calc_one_pair(deltaR, i, j, energies);
+    return energies;
+}
+
 double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& energies)
 {
     energies.disp = 0.0;
@@ -268,4 +276,13 @@ void DispersionPauli::add_exclusion(const int index_i, const int index_j)
     }
     exclusions[index_i].insert(index_j);
     exclusions[index_j].insert(index_i);
+}
+
+std::set<int> DispersionPauli::get_exclusions(const int particle1) const
+{
+    std::set<int> particles2;
+    if (particle1 < 0 || particle1 >= (int) exclusions.size()) 
+        throw "Index out of range";
+    particles2 = exclusions[particle1];
+    return particles2;
 }

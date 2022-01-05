@@ -50,6 +50,8 @@ class AmberFD{
         std::shared_ptr<DispersionPauli> create_disp_pauli_force();
         std::map<int, int> get_index_mapping();
 
+        Energies calc_one_pair(const vec_d &positions, int i, int j);
+
     private:
         vec_i nuclei;
         vec_d frz_chg;

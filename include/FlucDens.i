@@ -14,6 +14,7 @@
                                       (double *frozen_exp, int len3),
                                       (double *dynamic_exp, int len4)}
 %apply double &OUTPUT {double &coeff, double &exponent};
+%apply double &OUTPUT {double &frz_chg, double &frz_exp, double &dyn_exp};
 
 %include "include/DispersionPauli.i"
 %include "include/FlucDens.h"

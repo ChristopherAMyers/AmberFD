@@ -47,10 +47,29 @@ std::vector<vec_d> AmberFD::get_forces()
     return forces;
 }
 
+Energies AmberFD::calc_one_pair(const vec_d &positions, int i, int j)
+{
+    Energies pair_energies;
+    DeltaR dR(positions, (int)i*3, (int)j*3);
+
+    //  dispersion and pauli energies
+    dispersionPauli->calc_one_pair(dR, i, j, pair_energies);
+    total_energies.pauli += pair_energies.pauli;
+    total_energies.disp += pair_energies.disp;
+
+    //  fluctuating density and alectrostatics
+    flucDens->calc_one_electro(dR, i, j, true, true, pair_energies);
+    total_energies.elec_elec += pair_energies.elec_elec;
+    total_energies.elec_nuc += pair_energies.elec_nuc;
+    total_energies.nuc_nuc += pair_energies.nuc_nuc;
+    total_energies.frz += pair_energies.frz;
+    total_energies.vct += pair_energies.vct;
+}
+
 Energies AmberFD::calc_energy_forces(const vec_d &positions)
 {
     size_t i, j;
-    total_energies.reset();
+    total_energies.reset_all();
     Energies pair_energies;
 
     //  initialize solvers
@@ -62,7 +81,7 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
         for (j = i+1; j < n_sites; j++)
         {
             //  distances data
-            DeltaR dR(positions, (int)j*3, (int)i*3);
+            DeltaR dR(positions, (int)i*3, (int)j*3);
 
             //  dispersion and pauli energies
             dispersionPauli->calc_one_pair(dR, i, j, pair_energies);
@@ -71,6 +90,9 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
 
             //  fluctuating density and alectrostatics
             flucDens->calc_one_electro(dR, i, j, true, true, pair_energies);
+            total_energies.elec_elec += pair_energies.elec_elec;
+            total_energies.elec_nuc += pair_energies.elec_nuc;
+            total_energies.nuc_nuc += pair_energies.nuc_nuc;
             total_energies.frz += pair_energies.frz;
             total_energies.vct += pair_energies.vct;
         }

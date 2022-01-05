@@ -51,7 +51,7 @@ class Energies{
     public:
         double pauli, disp, frz, pol, vct;
         double elec_elec, elec_nuc, nuc_nuc;
-        Energies(){   reset();  }
+        Energies(){   reset_all();  }
         void reset(){   pauli = disp = frz = pol = vct = 0.0; }
         double total() { return pauli + disp + frz + pol + vct;   }
 

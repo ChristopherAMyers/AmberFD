@@ -43,9 +43,11 @@ class FlucDens {
         double calc_overlap(const vec_d &coords);
         double calc_energy(const vec_d &coords, bool calc_frz=true, bool calc_pol=true);
         void calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies);
+        Energies calc_one_frozen(const vec_d &coords, int i, int j);
         void initialize_calculation();
         void solve_minimization();
-        void set_dampening(double coeff, double exponent);
+        //void set_dampening(double coeff, double exponent);
+        void set_dampening(double coeff, double exponent, double pol_wall=1.2);
 
         //  frozen - frozen exclusions
         void add_frz_frz_exclusion(int frz_i, int frz_j);
@@ -61,6 +63,7 @@ class FlucDens {
         void set_dyn_exp(vec_d exponents);
         void set_frz_exp(const int index, const double value);
         void set_ct_coeff(const double coeff);
+        void set_site_params(const int index, const double frz_chg, const double frz_exp, const double dyn_exp);
 
         int get_num_constraints();
         std::set<int> get_del_frz_exclusions(const int particle1) const;
@@ -76,6 +79,7 @@ class FlucDens {
         std::vector<std::string> get_param_names();
         vec_d get_params_by_name(const std::string param_name);
         std::vector<std::vector<int>> get_constraints();
+        void get_site_params(const int index, double &frz_chg, double &frz_exp, double &dyn_exp);
 
         std::vector<int> site_frag_ids;
         vec_d A_mat_save, B_vec_save;
@@ -90,10 +94,12 @@ class FlucDens {
         double elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br, double &dEdR);
         double elec_nuclei_energy(const double inv_r, const double a, const double exp_ar, double &dEdR);
 
-    private:
-        vec_d frozen_pop;
-        vec_d fluc_pop;
         vec_d nuclei;
+        vec_d frozen_pop;
+    private:
+        
+        vec_d fluc_pop;
+        
         vec_d frozen_chg;
         vec_d frozen_exp;
         vec_d dynamic_exp;
@@ -101,6 +107,8 @@ class FlucDens {
         vec_d damp_sum;
         double damp_exponent;
         double damp_coeff;
+        double pol_wall_coeff;
+        double pol_wall_exponent;
         double ct_coeff;
         std::vector<std::set<int>> exclusions_del_frz;
         std::vector<std::set<int>> exclusions_frz_frz;
@@ -109,6 +117,7 @@ class FlucDens {
         std::vector<std::vector<int>> constraints;
         int n_fragments;
         bool use_frag_constraints;
+        bool remove_core;
 
         bool use_long_range_approx(double r, double a, double b);
         void create_del_exclusions_from_fragment(const std::vector<int> frag_idx);

@@ -7,6 +7,8 @@ from os.path import *
 import numpy as np
 import openmm as mm
 from openmm.app.simulation import string_types
+from scipy.optimize import minimize
+from itertools import combinations
 
 sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
 from AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
@@ -96,6 +98,10 @@ class AmberFDGenerator(object):
             polar_params_present = [x in params for x in ['frz_chg', 'frz_exp', 'dyn_exp']]
             pauli_params_present = [x in params for x in ['pauli_exp', 'pauli_radii']]
             
+            if 'LP' in atom.name and False:
+               polar_params_present = [False]
+               pauli_params_present = [False]
+
             #   fluctuating density force
             if any(polar_params_present):
                 if not all(polar_params_present):
@@ -114,12 +120,14 @@ class AmberFDGenerator(object):
                 particle.pauli_radii = params['pauli_radii']
                 pauli_residues.add(atom.residue)
                 add_atom = True
+
             if add_atom:
                 force.add_particle(atom.index, particle)
                 atom_indices[atom] = len(atom_indices)
 
         #   create polarization force
-        if len(pol_residues) != 0:
+        #if len(pol_residues) != 0:
+        if True:
             pol_force = force.create_fluc_dens_force()
             pol_force.set_dampening(self.damp_coeff, self.damp_exp)
             pol_force.set_ct_coeff(self.ct_coeff)
@@ -129,27 +137,51 @@ class AmberFDGenerator(object):
                     if atom in atom_indices:
                         fragment_idx.append(atom_indices[atom])
                 pol_force.add_fragment(fragment_idx)
-
+            
             #   create frozen-frozen exclusions
-            bonds = []
+            bonds = set()
             index_mapping = force.get_index_mapping()
             for bond in data.bonds:
                 index_1 = bond.atom1
                 index_2 = bond.atom2
                 if index_1 in index_mapping and index_2 in index_mapping:
-                    bonds.append((index_mapping[index_1], index_mapping[index_2]))
-            pol_force.create_frz_exclusions_from_bonds(bonds, 3)
+                    bond_tuple = tuple(sorted((index_mapping[index_1], index_mapping[index_2])))
+                    bonds.add(bond_tuple)
+            
+            #  exclude the virtual sites with the same bonds as it's host atom
+            vs_per_atom = {}
+            for atom in data.atoms:
+                if atom in data.virtualSites and atom.index in index_mapping:
+                    site_data = data.virtualSites[atom]
+                    excluded = site_data[2]
+                    if excluded not in vs_per_atom:
+                        vs_per_atom[excluded] = []
+                    vs_per_atom[excluded].append(atom.index)
+                    for bonded_to in data.bondedToAtom[excluded]:
+                        atom1 = index_mapping[atom.index]
+                        atom2 = index_mapping[bonded_to]
+                        bond_tuple = tuple(sorted((atom1, atom2)))
+                        #bond_tuple = tuple(sorted((atom.index, bonded_to)))
+                        bonds.add(bond_tuple)
 
-
+            # for atoms in vs_per_atom.values():
+            #     if len(atoms) > 1:
+            #         for combo in combinations(atoms, 2):
+            #             bonds.add(tuple(sorted(combo)))
+            
+            pol_force.create_frz_exclusions_from_bonds(tuple(bonds), 3)
+        
         #   create pauli repulsion and dispersion force
-        if len(pauli_residues) != 0:
+        #if len(pauli_residues) != 0:
+        if True:
             pauli_force = force.create_disp_pauli_force()
             for res in pauli_residues:
                 fragment_idx = []
                 for atom in res.atoms():
                     if atom in atom_indices:
                         fragment_idx.append(atom_indices[atom])
-                pauli_force.create_exclusions_from_fragment(fragment_idx)
+                #pauli_force.create_exclusions_from_fragment(fragment_idx)
+            pauli_force.create_exclusions_from_bonds(tuple(bonds), 3)
             pauli_force.set_vdw_radii(MapID(self.dispersion_radii))
             pauli_force.set_C6_map(MapID(self.dispersion_C6))
             params = self.dispersion_params
@@ -173,7 +205,6 @@ class AmberFDGenerator(object):
 
         self.force = force
         sys._amberFDData = {'ext_force': external_force, 'force': force, 'data': data}
-        
 
     def postprocessSystem(self, sys, data, args):
         #   exclude base-base interactions already accounted for in AmberFD
@@ -262,13 +293,134 @@ class MoleculeImporter():
         
 
 class Context(mm.Context):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    '''Construct a new Context in which to run a simulation. ONLY THE CPU PLATFORM IS CURRENTLY SUPPORTED
+
+        Parameters
+        ----------
+        system : System
+            the System which will be simulated
+        integrator : Integrator
+            the Integrator which will be used to simulate the System
+    '''
+    def __init__(self, *args):
+        super().__init__(*args)
+
+        self._system = args[0]
+        self._integrator = args[1]
+        self._FD_solver = self._system._amberFDData['force']
+        self._external_force = self._system._amberFDData['ext_force']
+        self._omm_index_to_FD = dict(self._FD_solver.get_index_mapping())
+        self._n_sites = len(self._omm_index_to_FD)
+
+        self._dispPauliForce = self._FD_solver.get_disp_pauli_force()
+        self._flucDensForce = self._FD_solver.get_fluc_dens_force()
+
+        self._current_energies = None
+        self._current_forces = None
+
+        self._dont_update = False
+        self._currentStep = 0
+
+    def _update_force(self):
+        if self._dont_update: return
+        state = self.getState(getPositions=True)
+        all_pos = state.getPositions(True)
+        pos_bohr = np.array([all_pos[x]/uu.bohr for x in self._omm_index_to_FD])
+        pos_nm = np.array([all_pos[x]/uu.nanometers for x in self._omm_index_to_FD])
         
-    def getState(self, *args, **kwargs):
-        if any([kwargs.get(x, False) in kwargs for x in ['getEnergy', 'getForces', 'getParameterDerivatives']]):
-            pass
-        return super().getState(*args, **kwargs)
+        self._current_energies = self._FD_solver.calc_energy_forces(pos_bohr.flatten())
+
+        # total_E = self._dispPauliForce.calc_energy(pos_bohr.flatten())
+        # total_E = self._dispPauliForce.get_pauli_energy()
+        # total_E = self._dispPauliForce.get_disp_energy()
+        # fd_forces = np.array(self._dispPauliForce.get_forces()).reshape((self._n_sites, 3))*49614.77640958472
+
+        # total_E = self._flucDensForce.calc_energy(pos_bohr.flatten(), True, True)
+        # fd_forces = np.array(self._flucDensForce.get_forces()).reshape((self._n_sites, 3))*49614.77640958472
+
+        if True:
+            ENG = HARTREE_TO_KJ_MOL
+            self._dispPauliForce.calc_energy(pos_bohr.flatten())
+            E_pauli = self._dispPauliForce.get_pauli_energy()*HARTREE_TO_KJ_MOL
+            E_frz = self._flucDensForce.calc_energy(pos_bohr.flatten(), True, False)*HARTREE_TO_KJ_MOL
+            E_pol = self._flucDensForce.calc_energy(pos_bohr.flatten(), False, True)*HARTREE_TO_KJ_MOL
+            dist = np.linalg.norm(pos_nm[5] - pos_nm[22])*10
+            #print(f'{dist=:10.5f}  {E_pauli=:14.5f}  {E_frz=:14.5f}  {E_pol=:14.5f}')
+
+            eng_O_N =  self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 22, 5)
+            eng_LP_N = self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 31, 5)
+            eng_O_H =  self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 22, 9)
+            eng_LP_H = self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 31, 9)
+
+            eng_O_N_dp =  self._dispPauliForce.calc_one_pair(pos_bohr.flatten(), 22, 5)
+            eng_O_H_dp =  self._dispPauliForce.calc_one_pair(pos_bohr.flatten(), 22, 9)
+
+            self._flucDensForce.nuclei[22] -=2
+            self._flucDensForce.nuclei[5] -=2
+            self._flucDensForce.frozen_pop[22] -=2
+            self._flucDensForce.frozen_pop[5] -=2
+            eng_O_N_2 =  self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 22, 5)
+            self._flucDensForce.nuclei[22]     +=2
+            self._flucDensForce.nuclei[5]      +=2
+            self._flucDensForce.frozen_pop[22] +=2
+            self._flucDensForce.frozen_pop[5]  +=2
+
+            print("PARTS: {:5d}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}".format(self._currentStep, dist, eng_O_N.frz*ENG, eng_LP_N.frz*ENG, eng_O_H.frz*ENG, eng_LP_H.frz*ENG, eng_O_N_dp.pauli*ENG, eng_O_N_2.frz*ENG))
+
+        
+
+
+
+            # self._dispPauliForce.calc_energy(pos_bohr.flatten())
+            # print("PAULI ENERGY: ", self._dispPauliForce.get_pauli_energy()*HARTREE_TO_KJ_MOL)
+            # print("FROZEN ENERGY: ", self._flucDensForce.calc_energy(pos_bohr.flatten(), True, False)*HARTREE_TO_KJ_MOL)
+            # print("POL ENERGY: ", self._flucDensForce.calc_energy(pos_bohr.flatten(), False, True)*HARTREE_TO_KJ_MOL)
+            # print("ELEC_ELEC", self._current_energies.elec_elec*HARTREE_TO_KJ_MOL)
+            # print("ELEC_NUC", self._current_energies.elec_nuc*HARTREE_TO_KJ_MOL)
+            # print("NUC_NUC", self._current_energies.nuc_nuc*HARTREE_TO_KJ_MOL)
+
+
+        total_E = self._current_energies.total()
+        fd_forces = np.array(self._FD_solver.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
+
+        if len(fd_forces) != 0:
+            fd_offset = np.mean(fd_forces * pos_nm)*3
+            fd_energy = total_E*HARTREE_TO_KJ_MOL
+            self._current_forces = fd_forces
+            # print(f'{fd_forces=}')
+            # for stuff in zip(self._omm_index_to_FD.values(), pos_nm*10):
+            #     print(stuff)
+            
+            #   update external force and global parameters
+            for (omm_particle, index), force in zip(self._omm_index_to_FD.items(), fd_forces):
+                self._external_force.setParticleParameters(index, omm_particle, force)
+                #print(index, omm_particle, force)
+            self.setParameter('fd_offset', fd_offset)
+            self.setParameter('fd_energy', fd_energy)
+            self._external_force.updateParametersInContext(self)
+        
+    def getState(self, getPositions=False, getVelocities=False,
+                 getForces=False, getEnergy=False, getParameters=False,
+                 getParameterDerivatives=False, getIntegratorParameters=False,
+                 enforcePeriodicBox=False, groups=-1):
+
+        if not self._dont_update:
+            if getEnergy or getForces or getParameterDerivatives:
+                if groups == -1:
+                    self._update_force()
+                elif isinstance(groups, int):
+                    mask = (1 << self._external_force.getForceGroup())
+                    if mask == groups:
+                        self._update_force()
+                elif self._external_force.getForceGroup() in groups:
+                    self._update_force()
+
+        return super().getState(getPositions=getPositions, getVelocities=getVelocities,
+                 getForces=getForces, getEnergy=getEnergy, getParameters=getParameters,
+                 getParameterDerivatives=getParameterDerivatives, getIntegratorParameters=getIntegratorParameters,
+                 enforcePeriodicBox=enforcePeriodicBox, groups=groups)
+
+
 
 class AmberFDSimulation(Simulation):
     def __init__(self, topology, system, integrator, state=None):
@@ -322,101 +474,101 @@ class AmberFDSimulation(Simulation):
             self._usesPBC = topology.getUnitCellDimensions() is not None
         ######### End Copied  #########
 
-        self._FD_solver = system._amberFDData['force']
-        self._external_force = system._amberFDData['ext_force']
-        self.index_mapping = dict(self._FD_solver.get_index_mapping())
-        self._n_sites = len(self.index_mapping)
-        self.topology = topology
+        self._integrator_step_old = self.integrator.step
+        self.integrator.step = self._integrator_step_override
 
-        self._dispPauliForce = self._FD_solver.get_disp_pauli_force()
-        self._flucDensForce = self._FD_solver.get_fluc_dens_force()
-        self._current_energies = None
-
-    def _update_force(self):
-
-        state = self.context.getState(getPositions=True)
-        pos_bohr = state.getPositions(True)/uu.bohr
-        pos_nm = state.getPositions(True)/uu.nanometers
-        fd_pos = np.array([pos_bohr[x] for x in self.index_mapping]).flatten()
-        
-
-        # total_E = self._dispPauliForce.calc_energy(fd_pos)
-        # total_E = self._dispPauliForce.get_pauli_energy()
-        # total_E = self._dispPauliForce.get_disp_energy()
-        # fd_forces = np.array(self._dispPauliForce.get_forces()).reshape((dim, 3))*49614.77640958472
-
-        # total_E = self._flucDensForce.calc_energy(fd_pos, False, True)
-        # fd_forces = np.array(self._flucDensForce.get_forces()).reshape((dim, 3))*49614.77640958472
+    def _integrator_step_override(self, n_steps):
+        for n in range(n_steps):
+            self.context._currentStep = self.currentStep
+            self.context._update_force()
+            self._integrator_step_old(1)
 
 
-        self._current_energies = self._FD_solver.calc_energy_forces(fd_pos)
-        total_E = self._current_energies.total()
-        fd_forces = np.array(self._FD_solver.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
-        fd_offset = np.mean(fd_forces * pos_nm)*3
-        fd_energy = total_E*HARTREE_TO_KJ_MOL
-        
-        #   update external force and global parameters
-        atoms = list(self.topology.atoms())
-        for (omm_particle, index), force in zip(self.index_mapping.items(), fd_forces):
-            self._external_force.setParticleParameters(index, omm_particle, force)
-            #print(atoms[omm_particle], omm_particle, index, force)
-        self.context.setParameter('fd_offset', fd_offset)
-        self.context.setParameter('fd_energy', fd_energy)
-        self._external_force.updateParametersInContext(self.context)
+    def minimizeEnergy(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, PDBOutFile=None):
+        if isinstance(PDBOutFile, str):
+            solver = BFGS(self.context, out_pdb=PDBOutFile, topology=self.topology)
+        else:
+            solver = BFGS(self.context, topology=self.topology)
+
+        solver.minimize(tolerance, maxIterations)
 
 
 class BFGS(object):
-    def __init__(self, context, constraints=None, out_pdb=None, topology=None):
-        raise NotImplementedError("Still working on BFGS Minimizer")
+    def __init__(self, context, out_pdb=None, topology=None):
+        #raise NotImplementedError("Still working on BFGS Minimizer")
         self._out_file = None
         self._topology = topology
         self._step_num = 0
-        self._constraints = constraints
         self._context = context
         if out_pdb is not None and topology is not None:
             self._out_file = open(out_pdb, 'w')
 
+        #   only use atoms that are not lone pairs (element == None) or have non-zero mass
+        self._force_index_list = []
+        for atom in topology.atoms():
+            if atom.element is None: continue
+            mass = atom.element.mass
+            mass = mass/mass.unit
+            if mass == 0: continue
+            self._force_index_list.append(atom.index)
+
+        self._current_all_pos = np.empty(len(self._force_index_list))
 
     def _callback(self, pos):
+        
         if self._out_file is not None:
-            PDBFile.writeModel(self._topology, pos.reshape(-1,3)*nanometer, file=self._out_file, modelIndex=self._step_num)
+            PDBFile.writeModel(self._topology, self._current_all_pos.reshape(-1,3)*uu.nanometer, file=self._out_file, modelIndex=self._step_num)
         self._step_num += 1
 
 
-    def minimize(self):
-        #constraints = dict(zip(np.arange(64), ['Z']*64))
-
+    def minimize(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500):
         init_state = self._context.getState(getForces=True, getEnergy=True, getPositions=True)
-        init_pos = init_state.getPositions(True).value_in_unit(nanometer)
-        init_energy, init_forces = self._target_func(init_pos, self._context, self._constraints)
+        self._current_all_pos = init_state.getPositions(True).value_in_unit(uu.nanometer)
+        init_pos = self._current_all_pos[self._force_index_list].flatten()
+        init_energy, init_forces = self._target_func(init_pos, self._context)
         force_norms = [np.linalg.norm(f) for f in init_forces]
         print(" Initial max. force: {:15.3f} kJ/mol".format(np.max(force_norms)))
         print(" Initial energy:     {:15.3f} kJ/mol/nm".format(init_energy))
+        dim = len(init_pos)
 
-
+        print(f'{maxIterations=}')
         self._step_num = 0
-        args = (self._context, self._constraints)
+        args = (self._context, True)
         self._callback(init_pos)
-        res = optimize.minimize(self._target_func, init_pos, args=args, method='L-BFGS-B', jac=True, callback=self._callback,
-        options=dict(maxiter=500, disp=False, gtol=5))
+        res = minimize(self._target_func, init_pos, 
+            args=args, 
+            method='l-bfgs-b', 
+            jac=True, 
+            callback=self._callback,
+            options={'maxiter': maxIterations, 'disp': True, 'gtol': 10, 'maxfun': maxIterations*3*dim})
         final_pos = res.x.reshape(-1,3)
 
-        final_energy, final_forces = self._target_func(final_pos, self._context, self._constraints)
+        final_energy, final_forces = self._target_func(final_pos, self._context)
         force_norms = [np.linalg.norm(f) for f in final_forces]
         print(" Final max. force:   {:15.3f} kJ/mol".format(np.max(force_norms)))
         print(" Final energy:       {:15.3f} kJ/mol/nm".format(final_energy))
+        if self._out_file is not None:
+            self._out_file.close()
 
 
-    def _target_func(self, pos, context, constraints=None):
-        context.setPositions(pos.reshape(-1,3))
-        state = context.getState(getEnergy=True, getForces=True)
-        forces = state.getForces(asNumpy=True)
-        energy = state.getPotentialEnergy().value_in_unit(kilojoule_per_mole)
-        forces = forces.value_in_unit(kilojoule_per_mole/nanometer)
+    def _target_func(self, pos, context, return_deriv=True):
 
-        if constraints is not None:
-            for n, constr in constraints.items():
-                for idx in constr_2_idx[constr.upper()]:
-                    forces[n][idx] *= 0
+        pos_to_set = np.copy(self._current_all_pos).reshape(-1, 3)
+        pos = np.reshape(pos, (-1, 3))
+        for idx, new_pos in zip(self._force_index_list, pos):
+            pos_to_set[idx] = new_pos
+        context.setPositions(pos_to_set)
+        context.applyConstraints(0.0001)
 
-        return energy, -forces.flatten()
+        state = context.getState(getEnergy=True, getForces=True, getPositions=True)
+        forces_all = state.getForces(asNumpy=True).value_in_unit(uu.kilojoule_per_mole/uu.nanometer)
+        forces = np.array([forces_all[idx] for idx in self._force_index_list]).flatten()
+        energy = state.getPotentialEnergy().value_in_unit(uu.kilojoule_per_mole)
+        self._current_all_pos = state.getPositions(True).value_in_unit(uu.nanometer).flatten()
+
+        #print(len(forces), len(forces_all), forces)
+
+        if return_deriv:
+            return energy, -forces
+        else:
+            return energy
