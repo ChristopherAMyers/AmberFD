@@ -54,16 +54,11 @@ Energies AmberFD::calc_one_pair(const vec_d &positions, int i, int j)
 
     //  dispersion and pauli energies
     dispersionPauli->calc_one_pair(dR, i, j, pair_energies);
-    total_energies.pauli += pair_energies.pauli;
-    total_energies.disp += pair_energies.disp;
 
     //  fluctuating density and alectrostatics
     flucDens->calc_one_electro(dR, i, j, true, true, pair_energies);
-    total_energies.elec_elec += pair_energies.elec_elec;
-    total_energies.elec_nuc += pair_energies.elec_nuc;
-    total_energies.nuc_nuc += pair_energies.nuc_nuc;
-    total_energies.frz += pair_energies.frz;
-    total_energies.vct += pair_energies.vct;
+
+    return pair_energies;
 }
 
 Energies AmberFD::calc_energy_forces(const vec_d &positions)

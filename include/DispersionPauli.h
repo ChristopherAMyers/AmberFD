@@ -79,6 +79,11 @@ class DispersionPauli {
         double radii_to_coeff(double radii, double exponent);
         const double kcal = 4.184/2625.5009; // 1 kcal/mol in atomic units
 
+        vec_d secondary_radii;
+        double secondary_exp;
+        map_id secondary_radii_map;
+        void set_all_secondary_radii();
+
         
 };
 

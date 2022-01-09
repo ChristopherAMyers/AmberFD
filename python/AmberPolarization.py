@@ -10,8 +10,12 @@ from openmm.app.simulation import string_types
 from scipy.optimize import minimize
 from itertools import combinations
 
-sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
-from AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
+try:
+    sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
+    from AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
+except:
+    sys.path.insert(1, join(dirname(realpath(__file__)), '../build_minerva/'))
+    from AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
 
 HARTREE_TO_KJ_MOL = 2625.5009
 ANG_TO_BOHR = uu.angstrom.conversion_factor_to(uu.bohr)
@@ -355,17 +359,17 @@ class Context(mm.Context):
             eng_O_N_dp =  self._dispPauliForce.calc_one_pair(pos_bohr.flatten(), 22, 5)
             eng_O_H_dp =  self._dispPauliForce.calc_one_pair(pos_bohr.flatten(), 22, 9)
 
-            self._flucDensForce.nuclei[22] -=2
-            self._flucDensForce.nuclei[5] -=2
-            self._flucDensForce.frozen_pop[22] -=2
-            self._flucDensForce.frozen_pop[5] -=2
-            eng_O_N_2 =  self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 22, 5)
-            self._flucDensForce.nuclei[22]     +=2
-            self._flucDensForce.nuclei[5]      +=2
-            self._flucDensForce.frozen_pop[22] +=2
-            self._flucDensForce.frozen_pop[5]  +=2
+            # self._flucDensForce.nuclei[22] -=2
+            # self._flucDensForce.nuclei[5] -=2
+            # self._flucDensForce.frozen_pop[22] -=2
+            # self._flucDensForce.frozen_pop[5] -=2
+            # eng_O_N_2 =  self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 22, 5)
+            # self._flucDensForce.nuclei[22]     +=2
+            # self._flucDensForce.nuclei[5]      +=2
+            # self._flucDensForce.frozen_pop[22] +=2
+            # self._flucDensForce.frozen_pop[5]  +=2
 
-            print("PARTS: {:5d}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}".format(self._currentStep, dist, eng_O_N.frz*ENG, eng_LP_N.frz*ENG, eng_O_H.frz*ENG, eng_LP_H.frz*ENG, eng_O_N_dp.pauli*ENG, eng_O_N_2.frz*ENG))
+            #print("PARTS: {:5d}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}".format(self._currentStep, dist, eng_O_N.frz*ENG, eng_LP_N.frz*ENG, eng_O_H.frz*ENG, eng_LP_H.frz*ENG, eng_O_N_dp.pauli*ENG, eng_O_N_2.frz*ENG))
 
         
 
@@ -456,7 +460,7 @@ class AmberFDSimulation(Simulation):
         else:
             self.integrator = integrator
         ## The index of the current time step
-        self.currentStep = 0
+        # self.currentStep = 0
         ## A list of reporters to invoke during the simulation
         self.reporters = []
 
@@ -531,7 +535,6 @@ class BFGS(object):
         print(" Initial energy:     {:15.3f} kJ/mol/nm".format(init_energy))
         dim = len(init_pos)
 
-        print(f'{maxIterations=}')
         self._step_num = 0
         args = (self._context, True)
         self._callback(init_pos)

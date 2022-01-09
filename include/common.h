@@ -57,6 +57,18 @@ class Energies{
 
         void reset_all()
         { reset(); elec_elec = elec_nuc = nuc_nuc = 0.0;    }
+
+        void add(Energies &eng)
+        {
+            pauli     += eng.pauli;
+            disp      += eng.disp;
+            frz       += eng.frz;
+            pol       += eng.pol;
+            vct       += eng.vct;
+            elec_elec += eng.elec_elec;
+            elec_nuc  += eng.elec_nuc;
+            nuc_nuc   += eng.nuc_nuc;
+        }
 };
 
 #endif // TYPEDEFS_H

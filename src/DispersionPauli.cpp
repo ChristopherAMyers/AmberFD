@@ -49,9 +49,25 @@ DispersionPauli::DispersionPauli(const int num_sites, const int* nuclei_in, cons
     set_all_vdw_radii();
 
     forces.resize(n_sites, vec_d(3, 0));
+
+    secondary_radii_map = {
+        {1, 0.0*0.5*ANG2BOHR},
+        {6, 2.8*0.5*ANG2BOHR},
+        {7, 2.4*0.5*ANG2BOHR},
+        {8, 2.2*0.5*ANG2BOHR}
+    };
+    secondary_exp = 6.0/ANG2BOHR;
+    set_all_secondary_radii();
 }
 
 DispersionPauli::~DispersionPauli(){}
+
+void DispersionPauli::set_all_secondary_radii()
+{
+    secondary_radii.resize(n_sites, 0.0);
+    for(int i = 0; i < n_sites; i++)
+        secondary_radii[i] = secondary_radii_map[nuclei[i]]; 
+}
 
 void DispersionPauli::set_all_vdw_radii()
 {
@@ -243,6 +259,16 @@ double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& en
 
         //  Pauli forces
         dE_dR = -energies.pauli*exponent;
+        Nonbonded::add_Vec3_to_vector(forces[i], -dE_dR*dR_dPos);
+        Nonbonded::add_Vec3_to_vector(forces[j],  dE_dR*dR_dPos);
+
+        // backup secondary force energy
+        double radii_2 = secondary_radii[i] + secondary_radii[j];
+        double eng = kcal*exp(-secondary_exp*(deltaR.r - radii_2));
+        energies.pauli += eng;
+
+        // backup secondary force force
+        dE_dR = -eng*secondary_exp;
         Nonbonded::add_Vec3_to_vector(forces[i], -dE_dR*dR_dPos);
         Nonbonded::add_Vec3_to_vector(forces[j],  dE_dR*dR_dPos);
     }
