@@ -11,14 +11,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 find_package(Python3 COMPONENTS Interpreter Development NumPy)
 find_package(SWIG REQUIRED)
-find_package(OpenMP REQUIRED)
+#find_package(OpenMP REQUIRED)
 include(${SWIG_USE_FILE})
 set(CMAKE_SWIG_FLAGS -py3)
 
 #   lapack and blas
 #find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
-set(LAPACK_INCLUDE_DIR /usr/include)
+#set(LAPACK_INCLUDE_DIR /usr/include)
 
 #   print out python versions and locations
 message("PYTHONLIBS_VERSION_STRING: ${PYTHONLIBS_VERSION_STRING}")
@@ -56,7 +56,8 @@ endif()
 add_library(AmberFD STATIC ${SOURCES})
 target_link_libraries(AmberFD ${BLAS_LIBRARIES})
 target_link_libraries(AmberFD ${LAPACK_LIBRARIES})
-target_link_libraries(AmberFD /usr/lib/x86_64-linux-gnu/liblapacke.so)
+#arget_link_libraries(AmberFD /network/rit/lab/ChenRNALab/bin/OpenBLAS-0.3.6/lib/libopenblas.so)
+#target_link_libraries(AmberFD /usr/lib/x86_64-linux-gnu/liblapacke.so)
 
 #   needed for tests
 target_include_directories(AmberFD PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
