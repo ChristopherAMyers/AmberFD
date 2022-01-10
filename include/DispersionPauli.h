@@ -51,6 +51,8 @@ class DispersionPauli {
         void create_exclusions_from_fragment(const vec_i frag_idx);
         void add_exclusion(const int i, const int j);
 
+        void set_use_secondary_radii(bool use_radii=true);
+
         //class Info;
         vec_i nuclei;
     private:
@@ -79,6 +81,7 @@ class DispersionPauli {
         double radii_to_coeff(double radii, double exponent);
         const double kcal = 4.184/2625.5009; // 1 kcal/mol in atomic units
 
+        bool use_secondary_radii;
         vec_d secondary_radii;
         double secondary_exp;
         map_id secondary_radii_map;

@@ -215,7 +215,7 @@ void FlucDens::set_dampening(double coeff, double exponent, double pol_wall_Radi
 {
     damp_coeff = coeff;
     damp_exponent = exponent;
-    pol_wall_coeff = exp(pol_wall_exponent*pol_wall_Radii);
+    pol_wall_coeff = exp(pol_wall_exponent*pol_wall_Radii)*0;
 }
 
 void FlucDens::get_dampening(double &coeff, double &exponent)

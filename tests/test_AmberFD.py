@@ -52,6 +52,7 @@ if __name__ == "__main__":
 
     #   create dispersion-pauli force
     disp = amber.create_disp_pauli_force()
+    disp.set_use_secondary_radii(False)
     disp.create_exclusions_from_fragment(np.arange(0, n_atoms))
     disp.create_exclusions_from_fragment(np.arange(n_atoms, n_atoms*2))
 

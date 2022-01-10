@@ -58,6 +58,7 @@ if __name__ == "__main__":
 
         #   create dispersion-pauli force
         disp = amber.create_disp_pauli_force()
+        disp.set_use_secondary_radii(True)
         disp.create_exclusions_from_fragment(np.arange(0, n_atoms))
         disp.create_exclusions_from_fragment(np.arange(n_atoms, n_atoms*2))
 
@@ -104,17 +105,18 @@ if __name__ == "__main__":
                     numerical_disp_force[x] = -(energy_disp_p - energy_disp_m)/(2*eps)*2625.5009*ANG2BOHR
                     numerical_fluc_force[x] = -(energy_fluc_p - energy_fluc_m)/(2*eps)*2625.5009*ANG2BOHR
 
+                print("Data set: {:d} force {:d}".format(data_set, n))
                 np.testing.assert_allclose(forces[n],      numerical_force,      rtol=eps, atol=eps)
                 np.testing.assert_allclose(disp_forces[n], numerical_disp_force, rtol=eps, atol=eps)
                 np.testing.assert_allclose(fluc_forces[n], numerical_fluc_force, rtol=eps, atol=eps)
                 
                 # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(numerical_force)))
                 # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(disp_forces[n]), *tuple(numerical_disp_force)))
-                print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(numerical_fluc_force)))
+                #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(numerical_fluc_force)))
 
                 #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(goal_total_forces[n])))
                 #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(disp_forces[n]), *tuple(goal_disp_forces[n])))
-                print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(goal_fluc_forces[n])))
+                #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(goal_fluc_forces[n])))
         
         
         # np.testing.assert_allclose(fluc_forces, goal_fluc_forces, atol=1e-12)
