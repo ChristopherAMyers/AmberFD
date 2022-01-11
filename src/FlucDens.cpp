@@ -381,7 +381,9 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
         }
     }
     if (calc_pol)
+    {
         solve_minimization();
+    }
     else
     {
         for(size_t i = 0; i < total_forces.size(); i++)
