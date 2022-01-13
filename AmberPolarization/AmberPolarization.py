@@ -11,6 +11,8 @@ from openmm.app.simulation import string_types
 from scipy.optimize import minimize
 from itertools import combinations
 
+import time
+
 try:
     sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
     from AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
@@ -36,6 +38,7 @@ class AmberFDGenerator(object):
         self.ct_coeff = 0.0
 
         self.residues = {}
+        self._ignore = False
         
     def registerDispersion(self, element):
         for param in ['s6', 'a1', 'a2']:
@@ -129,6 +132,13 @@ class AmberFDGenerator(object):
             if add_atom:
                 force.add_particle(atom.index, particle)
                 atom_indices[atom] = len(atom_indices)
+        
+        #   if no atoms were found to have parameters, then don't use the custom force
+        if not atom_indices:
+            print("Ignoring AmberFD")
+            self._ignore = True
+            sys._amberFDData = {'ext_force': None, 'force': None, 'data': None}
+            return
 
         #   create polarization force
         #if len(pol_residues) != 0:
@@ -213,6 +223,7 @@ class AmberFDGenerator(object):
 
     def postprocessSystem(self, sys, data, args):
         #   exclude base-base interactions already accounted for in AmberFD
+        if self._ignore: return
         for force in sys.getForces():
             if isinstance(force, NonbondedForce):
                 index_mapping = self.force.get_index_mapping()
@@ -385,7 +396,7 @@ class Context(mm.Context):
             # print("ELEC_NUC", self._current_energies.elec_nuc*HARTREE_TO_KJ_MOL)
             # print("NUC_NUC", self._current_energies.nuc_nuc*HARTREE_TO_KJ_MOL)
 
-
+        #print("PAULI WALL: ", self._currentStep, self._current_energies.pauli_wall*2625.5009)
         total_E = self._current_energies.total()
         fd_forces = np.array(self._FD_solver.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
 
@@ -430,7 +441,9 @@ class Context(mm.Context):
 
 
 class AmberFDSimulation(Simulation):
-    def __init__(self, topology, system, integrator, state=None):
+    def __init__(self, topology, system, integrator, platform=None, platformProperties=None, state=None):
+
+    # def __init__(self, topology, system, integrator, state=None):
         """Create a Simulation.
 
         Parameters
@@ -443,11 +456,29 @@ class AmberFDSimulation(Simulation):
         integrator : Integrator or XML file name
             The OpenMM Integrator to use for simulating the System (or the name
             of an XML file with a serialized System)
+        platform : Platform=None
+            If not None, the OpenMM Platform to use. When using AmberFD, only the CPU platform is available.
+        platformProperties : map=None
+            If not None, a set of platform-specific properties to pass to the
+            Context's constructor. NOT IMPLIMENTED IN AmberFD
         state : XML file name=None
             The name of an XML file containing a serialized State. If not None,
             the information stored in state will be transferred to the generated
-            Simulation object.
+            Simulation object. NOT YET IMPLIMENTED IN AmberFD
         """
+        if hasattr(system, 'sys._amberFDData'):
+            if system._amberFDData['force'] is not None:
+                if platform != mm.Platform_getPlatformByName('CPU') and platform is not None:
+                    raise NotImplementedError("Only the CPU Platform is implimented in AmberFD")
+                if state is not None:
+                    raise NotImplementedError("States are not yet implimented in AmberFD")
+            else:
+                super().__init__(topology, system, integrator, platform=platform, platformProperties=platformProperties, state=state)
+                return
+        else:
+            super().__init__(topology, system, integrator, platform=platform, platformProperties=platformProperties, state=state)
+            return
+
         ######### Copied from openmm.py 7.6.0 #########
         self.topology = topology
         ## The System being simulated
@@ -485,11 +516,13 @@ class AmberFDSimulation(Simulation):
         self.integrator.step = self._integrator_step_override
 
     def _integrator_step_override(self, n_steps):
+        ''' Overrides the step function for the integrator. This is needed to that
+            AmberFD can calculate it's force and updates the CustomExternalForce
+            parameters before the actual integration step is taken in OpenMM.'''
         for n in range(n_steps):
             self.context._currentStep = self.currentStep
             self.context._update_force()
             self._integrator_step_old(1)
-
 
     def minimizeEnergy(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, PDBOutFile=None):
         if isinstance(PDBOutFile, str):
@@ -513,11 +546,16 @@ class BFGS(object):
 
         #   only use atoms that are not lone pairs (element == None) or have non-zero mass
         self._force_index_list = []
+        self._zero_force_index_list = []
         for atom in topology.atoms():
-            if atom.element is None: continue
+            if atom.element is None:
+                self._zero_force_index_list.append(atom.index)
+                continue
             mass = atom.element.mass
             mass = mass/mass.unit
-            if mass == 0: continue
+            if mass == 0:
+                self._zero_force_index_list.append(atom.index)
+                continue
             self._force_index_list.append(atom.index)
 
         self._current_all_pos = np.empty(len(self._force_index_list))
@@ -525,12 +563,26 @@ class BFGS(object):
         self._current_forces = None
 
         #   params for harmonic cost functions used to add constraints
-        self._constraint_tol = self._context.integrator.getConstraintTolerance()
+        integrator = self._context.getIntegrator()
+        self._constraint_tol = integrator.getConstraintTolerance()
         self._working_constraint_tol = np.max((1e-4, self._constraint_tol))
         self._k = 100/self._working_constraint_tol
 
         self._silent = False
         self._print_header = True
+        self._total_time = 0
+
+        #   get constraint information
+        self._constraint_idx_1 = []
+        self._constraint_idx_2 = []
+        self._constraint_distances = []
+        print("Number of constraints: ", self._system.getNumConstraints())
+        for n in range(self._system.getNumConstraints()):
+            p1, p2, distance = self._system.getConstraintParameters(n)
+            self._constraint_idx_1.append(p1)
+            self._constraint_idx_2.append(p2)
+            self._constraint_distances.append(distance/uu.nanometer)
+
 
     def _callback(self, pos):
         
@@ -543,7 +595,7 @@ class BFGS(object):
             print(" {:5d}  {:15.3f}  {:15.3f}".format(self._step_num, self._current_energy, max_force_norm))
         
         if self._out_file is not None:
-            PDBFile.writeModel(self._topology, pos.reshape(-1,3)*uu.nanometer, file=self._out_file, modelIndex=self._step_num)
+            PDBFile.writeModel(self._topology, self._current_all_pos.reshape(-1,3)*uu.nanometer, file=self._out_file, modelIndex=self._step_num)
         self._step_num += 1
 
     def _test(self, x0):
@@ -580,6 +632,11 @@ class BFGS(object):
         print(" Initial energy:     {:15.3f} kJ/mol/nm".format(init_energy))
         dim = len(init_pos)
 
+        # self._total_time = 0
+        # self._profile(init_pos)
+        # print("Total time: ", self._total_time)
+        # exit()
+
         # Repeatedly minimize, steadily increasing the strength of the springs until all constraints are satisfied.
 
         self._step_num = 0
@@ -592,7 +649,7 @@ class BFGS(object):
                 method='l-bfgs-b', 
                 jac=True, 
                 callback=self._callback,
-                options={'maxiter': maxIterations, 'disp': False, 'gtol': gtol, 'maxfun': maxIterations*3*dim})
+                options={'maxiter': maxIterations, 'disp': False, 'gtol': tolerance, 'maxfun': maxIterations*3*dim})
 
             print(" L-BFGS-B Solver says: ", res.message)
             #   Check whether all constraints are satisfied.
@@ -645,6 +702,9 @@ class BFGS(object):
         if (self._constraint_tol < self._working_constraint_tol):
             self._context.applyConstraints(self._working_constraint_tol)
 
+    def _profile(self, pos):
+        for n in range(10):
+            self._target_func(pos)
 
     def _target_func(self, pos):
 
@@ -658,39 +718,56 @@ class BFGS(object):
         # context.setPositions(updated_pos)
         # context.applyConstraints(self._working_constraint_tol)
 
+        
+        #### 2
         new_pos = np.reshape(pos, (-1, 3))
         self._context.setPositions(new_pos)
         self._context.computeVirtualSites()
         #self._context.applyConstraints(self._working_constraint_tol)
 
+        #### 1
         state = self._context.getState(getEnergy=True, getForces=True, getPositions=True)
         forces_all = state.getForces(asNumpy=True).value_in_unit(uu.kilojoule_per_mole/uu.nanometer)
         pos_all = state.getPositions(True).value_in_unit(uu.nanometer)
         self._current_all_pos = pos_all.flatten()
         energy = state.getPotentialEnergy().value_in_unit(uu.kilojoule_per_mole)
         
+        #### 3
+        start = time.time()
         #   zero out all forces not being updated
-        for n in range(len(forces_all)):
-            if n not in self._force_index_list:
-                forces_all[n] *= 0
+        # for n in range(len(forces_all)):
+        #     if n not in self._force_index_list:
+        #         forces_all[n] *= 0
+        forces_all[self._zero_force_index_list] *= 0
 
-        #   Add harmonic forces for any constraints 
-        for n in range(self._system.getNumConstraints()):
-            p1, p2, distance = self._system.getConstraintParameters(n)
-            distance = distance/uu.nanometer
-            delta = (pos_all[p2] - pos_all[p1])
-            r2 = np.dot(delta, delta)
-            r = np.sqrt(r2)
-            delta *= 1/r
-            dr = r-distance
+        if len(self._constraint_distances) != 0:
+            delta = pos_all[self._constraint_idx_2] - pos_all[self._constraint_idx_1]
+            r = np.linalg.norm(delta, axis=1)
+            delta /= r[:, None]
+            dr = r - self._constraint_distances
             kdr = self._k*dr
-            energy += 0.5*kdr*dr
+            energy += 0.5*np.sum(kdr*dr)
+            forces_all[self._constraint_idx_1] += kdr[:, None]*delta
+            forces_all[self._constraint_idx_2] -= kdr[:, None]*delta
 
-            forces_all[p1] += kdr*delta
-            forces_all[p2] -= kdr*delta
+        #### 4
+        #   Add harmonic forces for any constraints 
+        # for n in range(self._system.getNumConstraints()):
+        #     p1, p2, distance = self._system.getConstraintParameters(n)
+        #     distance = distance/uu.nanometer
+        #     delta = (pos_all[p2] - pos_all[p1])
+        #     r2 = np.dot(delta, delta)
+        #     r = np.sqrt(r2)
+        #     delta *= 1/r
+        #     dr = r-distance
+        #     kdr = self._k*dr
+        #     energy += 0.5*kdr*dr
+
+        #     forces_all[p1] += kdr*delta
+        #     forces_all[p2] -= kdr*delta
 
 
-    
+        #### 5
         forces = np.array([forces_all[idx] for idx in self._force_index_list])
         atoms = list(self._topology.atoms())
         force_norms = np.linalg.norm(forces, axis=1)
@@ -708,5 +785,10 @@ class BFGS(object):
 
         self._current_energy = energy
         self._current_forces = forces
+
+        end = time.time()
+        self._total_time += (end - start)
+
+
         return energy, -forces_all.flatten()
  
