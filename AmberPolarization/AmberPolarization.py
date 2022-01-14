@@ -1,14 +1,14 @@
 from copy import deepcopy, copy
 import enum
 from openmm.app import forcefield as ff, Simulation, Element, GromacsTopFile, GromacsGroFile, PDBFile, Modeller
-from openmm.openmm import CustomExternalForce, Force, NonbondedForce, _openmm, Context as CT
+from openmm.openmm import CustomExternalForce, Vec3, NonbondedForce, Context as CT
 import openmm.unit as uu
 import sys
 from os.path import *
 import numpy as np
 import openmm as mm
 from openmm.app.simulation import string_types
-from scipy.optimize import minimize
+from scipy.optimize import minimize, OptimizeResult
 from itertools import combinations
 
 import time
@@ -306,7 +306,32 @@ class MoleculeImporter():
         self.positions = modeller.getPositions()
         self.topology = modeller.getTopology()
         self.forcefield = forcefield
-        
+
+        if not solvate:
+            if 'boxSize' in solvate_kwargs:
+                boxSize = solvate_kwargs['boxSize']
+                if uu.is_quantity(boxSize):
+                    boxSize = boxSize.value_in_unit(uu.nanometer)
+                #box = Vec3(boxSize[0], boxSize[1], boxSize[2])
+                vectors = (Vec3(boxSize[0], 0, 0), Vec3(0, boxSize[1], 0), Vec3(0, 0, boxSize[2]))
+                self.topology.setPeriodicBoxVectors(vectors)
+            if 'boxVectors' in solvate_kwargs:
+                boxVectors = solvate_kwargs['boxVectors']
+                if uu.is_quantity(boxVectors[0]):
+                    boxVectors = (boxVectors[0].value_in_unit(uu.nanometer), boxVectors[1].value_in_unit(uu.nanometer), boxVectors[2].value_in_unit(uu.nanometer))
+                #box = Vec3(boxVectors[0][0], boxVectors[1][1], boxVectors[2][2])
+                vectors = boxVectors
+                self.topology.setPeriodicBoxVectors(vectors)
+        else:
+            min_pos = np.min(positions, axis=0)
+            max_pos = np.max(positions, axis=0)
+            boxSize = max_pos - min_pos
+            if uu.is_quantity(boxSize):
+                boxSize = boxSize.value_in_unit(uu.nanometer)
+            vectors = (Vec3(boxSize[0], 0, 0), Vec3(0, boxSize[1], 0), Vec3(0, 0, boxSize[2]))
+            self.topology.setPeriodicBoxVectors(vectors)
+
+
 
 class Context(mm.Context):
     '''Construct a new Context in which to run a simulation. ONLY THE CPU PLATFORM IS CURRENTLY SUPPORTED
@@ -524,16 +549,16 @@ class AmberFDSimulation(Simulation):
             self.context._update_force()
             self._integrator_step_old(1)
 
-    def minimizeEnergy(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, PDBOutFile=None):
+    def minimizeEnergy(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, PDBOutFile=None, output_interval=1):
         if isinstance(PDBOutFile, str):
-            solver = BFGS(self.context, out_pdb=PDBOutFile, topology=self.topology)
+            minimizer = Minimizer(self.context, out_pdb=PDBOutFile, topology=self.topology)
         else:
-            solver = BFGS(self.context, topology=self.topology)
+            minimizer = Minimizer(self.context, topology=self.topology)
 
-        solver.minimize(tolerance, maxIterations)
+        minimizer.minimize(tolerance, maxIterations, output_interval=output_interval)
 
 
-class BFGS(object):
+class Minimizer(object):
     def __init__(self, context, out_pdb=None, topology=None):
         #raise NotImplementedError("Still working on BFGS Minimizer")
         self._out_file = None
@@ -571,32 +596,43 @@ class BFGS(object):
         self._silent = False
         self._print_header = True
         self._total_time = 0
+        self._force_time = 0
 
         #   get constraint information
         self._constraint_idx_1 = []
         self._constraint_idx_2 = []
         self._constraint_distances = []
-        print("Number of constraints: ", self._system.getNumConstraints())
         for n in range(self._system.getNumConstraints()):
             p1, p2, distance = self._system.getConstraintParameters(n)
             self._constraint_idx_1.append(p1)
             self._constraint_idx_2.append(p2)
             self._constraint_distances.append(distance/uu.nanometer)
 
+        self._keep_idx = self._force_index_list.copy()
+        self._other_to_report = None
+        self._print_interval = 1
 
-    def _callback(self, pos):
-        
-        if not self._silent:
-            if self._print_header:
-                print("\n {:>5s}  {:>15s}  {:>15s}".format("Step", "Func (kJ/mol)", "Max Force"))
-                self._print_header = False
 
-            max_force_norm = np.linalg.norm(self._current_forces, axis=1).max()
-            print(" {:5d}  {:15.3f}  {:15.3f}".format(self._step_num, self._current_energy, max_force_norm))
-        
-        if self._out_file is not None:
-            PDBFile.writeModel(self._topology, self._current_all_pos.reshape(-1,3)*uu.nanometer, file=self._out_file, modelIndex=self._step_num)
-        self._step_num += 1
+    def _callback(self, pos, inc_step_count=True, override=False):
+        if (self._step_num % self._print_interval == 0) or override:
+            if not self._silent:
+                if self._print_header:
+                    print("\n {:>5s}  {:>15s}  {:>15s}".format("Step", "Func (kJ/mol)", "Max Force"))
+                    self._print_header = False
+
+                force_norms = np.linalg.norm(self._current_forces, axis=1)
+                max_force_norm = force_norms.max()
+                output_line = " {:5d}  {:15.3f}  {:15.3f}".format(self._step_num, self._current_energy, max_force_norm)
+                if self._other_to_report is not None:
+                    for val in self._other_to_report:
+                        output_line += " {:15.5E}".format(val)
+                output_line += " {:15d}".format(np.argmax(force_norms))
+                print(output_line)
+            
+            if self._out_file is not None:
+                PDBFile.writeModel(self._topology, self._current_all_pos.reshape(-1,3)*uu.nanometer, file=self._out_file, modelIndex=self._step_num)
+        if inc_step_count:
+            self._step_num += 1
 
     def _test(self, x0):
         energy, grad = self._target_func(x0)
@@ -619,39 +655,56 @@ class BFGS(object):
             new_energy, new_grad = self._target_func(new_pos)
             print("{:10.3e}  {:15.8f}".format(step, new_energy))
 
-    def minimize(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500):
+    def minimize(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, output_interval=1):
         self._context.applyConstraints(self._working_constraint_tol)
         gtol = tolerance
         init_state = self._context.getState(getForces=True, getEnergy=True, getPositions=True)
         init_pos_all = init_state.getPositions(True).value_in_unit(uu.nanometer)
         self._current_all_pos = init_pos_all
-        init_pos = init_pos_all.flatten()
+        #self._keep_idx = list(range(len(init_pos_all)))
+        init_pos = init_pos_all[self._keep_idx].flatten()
         init_energy, init_forces = self._target_func(init_pos)
         force_norms = [np.linalg.norm(f) for f in init_forces]
+
+
+        print(" Number of coordinates: %d" % len(init_pos_all))
+        print(" Number of Degrees of Freedom: %d" % len(self._keep_idx))
         print(" Initial max. force: {:15.3f} kJ/mol".format(np.max(force_norms)))
         print(" Initial energy:     {:15.3f} kJ/mol/nm".format(init_energy))
-        dim = len(init_pos)
 
         # self._total_time = 0
         # self._profile(init_pos)
         # print("Total time: ", self._total_time)
+        # print("force_time: ", self._force_time)
         # exit()
 
         # Repeatedly minimize, steadily increasing the strength of the springs until all constraints are satisfied.
 
         self._step_num = 0
-        self._callback(init_pos)
+        #self._callback(init_pos)
         prevMaxError = 1e10
+        if output_interval:
+            self._print_interval = output_interval
 
+        # self.test_forces(self._target_func, init_pos)
+        # return
+
+        
         while(True):
             self._print_header = True
             res = minimize(self._target_func, init_pos, 
                 method='l-bfgs-b', 
                 jac=True, 
                 callback=self._callback,
-                options={'maxiter': maxIterations, 'disp': False, 'gtol': tolerance, 'maxfun': maxIterations*3*dim})
+                options={'maxiter': maxIterations, 'disp': False, 'gtol': tolerance})
 
-            print(" L-BFGS-B Solver says: ", res.message)
+            print(" SciPy L-BFGS-B Solver says: \n         ", res.message)
+            if res.success == False or np.max(np.abs(res.jac)) > tolerance:
+                print(" Solver failed fo find minimum")
+                print(" Falling back to Steepest descent algorithm")
+
+            self._callback(res.x, inc_step_count=False, override=True)
+
             #   Check whether all constraints are satisfied.
 
             positions = self._context.getState(getPositions=True).getPositions()
@@ -664,10 +717,6 @@ class BFGS(object):
                 error = np.abs(r-distance)
                 if error > maxError:
                     maxError = error
-            
-            if self._step_num > maxIterations:
-                print(" Maximum number of iterations exceded")
-                break
 
             if maxError <= self._working_constraint_tol:
                 print(" All constraints are satisified. Current Max error = {:15.10f} nm".format(maxError))
@@ -684,7 +733,7 @@ class BFGS(object):
                 # We've gotten far enough from a valid state that we might have trouble getting
                 # back, so reset to the original positions.
                 #init_pos = init_pos_all[self._force_index_list].flatten()
-                init_pos = np.copy(init_pos_all).flatten()
+                init_pos = np.copy(init_pos_all[self._keep_idx]).flatten()
             else:
                 print(" Increasing constraint cost. Current Max error = {:15.10f} nm".format(maxError))
                 init_pos = res.x
@@ -694,6 +743,8 @@ class BFGS(object):
         force_norms = [np.linalg.norm(f) for f in final_forces]
         print(" Final max. force:   {:15.3f} kJ/mol".format(np.max(force_norms)))
         print(" Final energy:       {:15.3f} kJ/mol/nm".format(final_energy))
+        print(" Total function evaluation time: {:10.2f} s".format(self._total_time))
+        print(" Total Force and Energy time:    {:10.2f} s".format(self._force_time))
         if self._out_file is not None:
             self._out_file.close()
 
@@ -702,44 +753,144 @@ class BFGS(object):
         if (self._constraint_tol < self._working_constraint_tol):
             self._context.applyConstraints(self._working_constraint_tol)
 
+    def test_forces(self, fun, x0):
+
+        #self.k = 0
+        f0, g0 = fun(x0)
+        grads = []
+        h = (np.finfo(np.float64).eps)**(1/3)*10
+        h = 0.1*0.0001
+        for n in range(len(x0)):
+            xp = x0.copy()
+            xp[n] += h
+            xn = x0.copy()
+            xn[n] -= h
+
+            fp = fun(xp)[0]
+            fn = fun(xn)[0]
+            num_deriv = (fp - fn)/(2*h)
+            grads.append(num_deriv)
+            print(" {:6d}  {:15.10f}  {:15.10f}".format(n, num_deriv, g0[n]))
+        grads = np.reshape(grads, (-1, 3))
+        exit()
+
+        self._context.setPositions(np.reshape(x0, (-1, 3)))
+        pos = self._context.getState(getPositions=True).getPositions(True).value_in_unit(uu.nanometers)[self._keep_idx]
+        g0 = -self._context.getState(getForces=True).getForces(True).value_in_unit(uu.kilojoule_per_mole/uu.nanometers)
+        h = (np.finfo(np.float64).eps)**(1/3)*10
+        h = 0.1*0.0001
+        pos0 = np.array(pos)
+        for n in range(len(pos)):
+            num_deriv = [0, 0, 0]
+            for i in range(3):
+                xp = pos0.copy()
+                xp[n, i] += h
+                xn = pos0.copy()
+                xn[n, i] -= h
+
+                self._context.setPositions(xp)
+                energy_p = self._context.getState(getEnergy=True).getPotentialEnergy().value_in_unit(uu.kilojoule_per_mole)
+                
+                self._context.setPositions(xn)
+                energy_n = self._context.getState(getEnergy=True).getPotentialEnergy().value_in_unit(uu.kilojoule_per_mole)
+
+
+                num_deriv[i] = (energy_p - energy_n)/(2*h)
+            print(" {:6d}  [ {:10.5} {:10.5} {:10.5} ]  [ {:10.5} {:10.5} {:10.5} ]".format(n, *tuple(num_deriv), *tuple(g0[n])))
+
+        exit()
+
+    def _grad_descent(self, fun, init_x, tolerance, callback, maxiters=500):
+        
+        max_line_search = 15
+        line_searches = 0
+        step_size = 1e-6
+        message = ""
+        n_iters = 1
+
+        f0, g0 = fun(init_x)
+        run = True
+
+        x0 = np.copy(init_x)
+        while True:
+            if not run:
+                break
+            line_searches = 0
+            step_size0 = step_size
+            while True:
+                x = x0 - g0*step_size
+                f, g = fun(x)
+                if f < f0:
+                    f0 = copy(f)
+                    x0 = x.copy()
+                    g0 = g.copy()
+                    break
+                else:
+                    step_size *= 0.1
+                    line_searches += 1
+                    if step_size < 1e-10 and (f - f0) < 10:
+                        print("Proceeding ahead anyway ", f - f0, step_size0)
+                        f0 = f.copy()
+                        x0 = x.copy()
+                        g0 = g.copy()
+                        step_size = 1e-6
+                        break
+                    if line_searches == max_line_search:
+                        run = False
+                        message = "Maximum line searches reached"
+                        break
+            
+            step_size *= 2
+            n_iters += 1
+            self._other_to_report = [step_size]
+            callback(x0)
+            if np.max(np.abs(g)) < tolerance:
+                message = "Tolerance reached"
+                run = False
+            elif n_iters == maxiters:
+                message = "Maximum iterations achieved"
+                run = False
+
+        success = not("Maximum" in message)
+        res = OptimizeResult(x=x, success=success, fun=f, jac=g, nit=n_iters,
+                            message=message)
+        return res
+            
+
     def _profile(self, pos):
-        for n in range(10):
+        for n in range(5):
             self._target_func(pos)
 
     def _target_func(self, pos):
-
-        # pos_to_set = np.copy(self._current_all_pos).reshape(-1, 3)
-
-        # curr_pos = context.getState(getPositions=True).getPositions(True)/uu.nanometer
-        # updated_pos = np.copy(curr_pos)
-        # pos = np.reshape(pos, (-1, 3))
-        # for idx, new_pos in zip(self._force_index_list, pos):
-        #     updated_pos[idx] = new_pos
-        # context.setPositions(updated_pos)
-        # context.applyConstraints(self._working_constraint_tol)
-
         
-        #### 2
-        new_pos = np.reshape(pos, (-1, 3))
+
+        # self._context.setPositions(np.reshape(pos, (-1, 3)))
+        # state = self._context.getState(getEnergy=True, getForces=True, getPositions=True)
+        # energy = state.getPotentialEnergy().value_in_unit(uu.kilojoule_per_mole)
+        # forces_all = state.getForces(asNumpy=True).value_in_unit(uu.kilojoule_per_mole/uu.nanometer)
+        # return energy, -forces_all.flatten()
+
+        start_all = time.time()
+
+        new_pos = self._context.getState(getPositions=True).getPositions(True).value_in_unit(uu.nanometer)
+        new_pos[self._keep_idx] = np.reshape(pos, (-1, 3))
+
+        # calculate new virtual site positions
+        #new_pos = np.reshape(pos, (-1, 3))
         self._context.setPositions(new_pos)
         self._context.computeVirtualSites()
-        #self._context.applyConstraints(self._working_constraint_tol)
 
-        #### 1
+        #   calculates forces and energies
+        start_f = time.time()
         state = self._context.getState(getEnergy=True, getForces=True, getPositions=True)
         forces_all = state.getForces(asNumpy=True).value_in_unit(uu.kilojoule_per_mole/uu.nanometer)
         pos_all = state.getPositions(True).value_in_unit(uu.nanometer)
         self._current_all_pos = pos_all.flatten()
         energy = state.getPotentialEnergy().value_in_unit(uu.kilojoule_per_mole)
-        
-        #### 3
-        start = time.time()
-        #   zero out all forces not being updated
-        # for n in range(len(forces_all)):
-        #     if n not in self._force_index_list:
-        #         forces_all[n] *= 0
-        forces_all[self._zero_force_index_list] *= 0
+        end_f = time.time()
+        self._force_time += (end_f - start_f)
 
+        #   apply harmonic cost functions for constraints
         if len(self._constraint_distances) != 0:
             delta = pos_all[self._constraint_idx_2] - pos_all[self._constraint_idx_1]
             r = np.linalg.norm(delta, axis=1)
@@ -747,48 +898,32 @@ class BFGS(object):
             dr = r - self._constraint_distances
             kdr = self._k*dr
             energy += 0.5*np.sum(kdr*dr)
-            forces_all[self._constraint_idx_1] += kdr[:, None]*delta
-            forces_all[self._constraint_idx_2] -= kdr[:, None]*delta
 
-        #### 4
-        #   Add harmonic forces for any constraints 
-        # for n in range(self._system.getNumConstraints()):
-        #     p1, p2, distance = self._system.getConstraintParameters(n)
-        #     distance = distance/uu.nanometer
-        #     delta = (pos_all[p2] - pos_all[p1])
-        #     r2 = np.dot(delta, delta)
-        #     r = np.sqrt(r2)
-        #     delta *= 1/r
-        #     dr = r-distance
-        #     kdr = self._k*dr
-        #     energy += 0.5*kdr*dr
+            if False:
+                k_dr_delta = kdr[:, None]*delta
+                for n in range(len(self._constraint_distances)):
+                    p1 = self._constraint_idx_1[n]
+                    p2 = self._constraint_idx_2[n]
+                    forces_all[self._constraint_idx_1[n]] += k_dr_delta[n]
+                    forces_all[self._constraint_idx_2[n]] -= k_dr_delta[n]
+            else:
+                k_dr_delta = kdr[:, None]*delta
+                np.add.at(forces_all, self._constraint_idx_1,  k_dr_delta)
+                np.add.at(forces_all, self._constraint_idx_2, -k_dr_delta)
+                #forces_all[self._constraint_idx_1] += kdr[:, None]*delta
+                #forces_all[self._constraint_idx_2] -= kdr[:, None]*delta
 
-        #     forces_all[p1] += kdr*delta
-        #     forces_all[p2] -= kdr*delta
-
-
-        #### 5
-        forces = np.array([forces_all[idx] for idx in self._force_index_list])
-        atoms = list(self._topology.atoms())
-        force_norms = np.linalg.norm(forces, axis=1)
-        pos_diff = np.linalg.norm(new_pos - pos_all)
-        max_diff = np.max(pos_diff)
-        #print("MAX DIFF: ", np.argmax(max_diff), max_diff, atoms[np.argmax(max_diff)])
-        # for n, idx in enumerate(self._force_index_list):
-        #     print(idx, atoms[idx], force_norms[n])
-        max_force_idx = np.argmax(force_norms)
-        max_force_atom = atoms[self._force_index_list[max_force_idx]]
-        #print(max_force_idx, np.max(force_norms), max_force_atom, max_force_atom.residue.id, max_force_atom.id)
-        # exit()
-
-        #print(len(forces), len(forces_all), forces)
-
+        #   zero out all forces not being updated
+        forces_all[self._zero_force_index_list] *= 0
+ 
+        #forces = forces_all[self._force_index_list]
+        forces = forces_all[self._keep_idx]
         self._current_energy = energy
         self._current_forces = forces
 
-        end = time.time()
-        self._total_time += (end - start)
+        end_all = time.time()
+        self._total_time += (end_all - start_all)
 
-
+        return energy, -forces.flatten()
         return energy, -forces_all.flatten()
  
