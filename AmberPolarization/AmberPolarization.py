@@ -1,6 +1,7 @@
 from copy import deepcopy, copy
 import enum
 from openmm.app import forcefield as ff, Simulation, Element, GromacsTopFile, GromacsGroFile, PDBFile, Modeller
+from openmm.app.topology import Topology
 from openmm.openmm import CustomExternalForce, Vec3, NonbondedForce, Context as CT
 import openmm.unit as uu
 import sys
@@ -279,6 +280,25 @@ class MoleculeImporter():
             box_dims = gro.getPeriodicBoxVectors()
         else:
             raise ValueError("Structure files must be .pdb or (.gro, .top)")
+
+        #   add additional bond deffinitions
+
+        # #   first add out own deffinitions
+        # res_file = join(dirname(__file__), 'residues.xml')
+        # if isfile(res_file):
+        #     print("ADDING")
+        #     Topology.loadBondDefinitions(res_file)
+        # for file in ff_files:
+        #     try:
+        #         # this handles either filenames or open file-like objects
+        #         Topology.loadBondDefinitions(file)
+        #     except FileNotFoundError:
+        #         for dataDir in ff._getDataDirectories(): 
+        #             f = join(dataDir, file)
+        #             if isfile(f):
+        #                 Topology.loadBondDefinitions(f)
+        #                 break
+        # topology.createStandardBonds()
 
         #   add virtual sites to model
         modeller = Modeller(topology, positions)
@@ -626,7 +646,7 @@ class Minimizer(object):
                 if self._other_to_report is not None:
                     for val in self._other_to_report:
                         output_line += " {:15.5E}".format(val)
-                output_line += " {:15d}".format(np.argmax(force_norms))
+                #output_line += " {:15d}".format(np.argmax(force_norms))
                 print(output_line)
             
             if self._out_file is not None:
@@ -634,26 +654,6 @@ class Minimizer(object):
         if inc_step_count:
             self._step_num += 1
 
-    def _test(self, x0):
-        energy, grad = self._target_func(x0)
-
-        eps = 1e-8
-        for n in range(len(x0)):
-            xp = x0.copy()
-            xp[n] += eps
-            xn = x0.copy()
-            xn[n] -= eps
-
-            energy_p = self._target_func(xp)[0]
-            energy_n = self._target_func(xn)[0]
-            num_grad = (energy_p - energy_n)/(2*eps)
-            print(n, num_grad, grad[n])
-
-        max_step = 0.0000001
-        for step in np.arange(0, max_step, max_step/20):
-            new_pos = x0 - grad*step
-            new_energy, new_grad = self._target_func(new_pos)
-            print("{:10.3e}  {:15.8f}".format(step, new_energy))
 
     def minimize(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, output_interval=1):
         self._context.applyConstraints(self._working_constraint_tol)
@@ -667,29 +667,20 @@ class Minimizer(object):
         force_norms = [np.linalg.norm(f) for f in init_forces]
 
 
-        print(" Number of coordinates: %d" % len(init_pos_all))
-        print(" Number of Degrees of Freedom: %d" % len(self._keep_idx))
+        print(" Number of total coordinates:        %d" % len(init_pos_all))
+        print(" Number of coordinates to optimize:  %d" % len(self._keep_idx))
+        print(" Number of Degrees of Freedom:       %d" % (len(self._keep_idx)*3))
         print(" Initial max. force: {:15.3f} kJ/mol".format(np.max(force_norms)))
         print(" Initial energy:     {:15.3f} kJ/mol/nm".format(init_energy))
-
-        # self._total_time = 0
-        # self._profile(init_pos)
-        # print("Total time: ", self._total_time)
-        # print("force_time: ", self._force_time)
-        # exit()
 
         # Repeatedly minimize, steadily increasing the strength of the springs until all constraints are satisfied.
 
         self._step_num = 0
-        #self._callback(init_pos)
         prevMaxError = 1e10
         if output_interval:
             self._print_interval = output_interval
-
-        # self.test_forces(self._target_func, init_pos)
-        # return
-
-        
+            
+        start_all = time.time()
         while(True):
             self._print_header = True
             res = minimize(self._target_func, init_pos, 
@@ -699,9 +690,9 @@ class Minimizer(object):
                 options={'maxiter': maxIterations, 'disp': False, 'gtol': tolerance})
 
             print(" SciPy L-BFGS-B Solver says: \n         ", res.message)
-            if res.success == False or np.max(np.abs(res.jac)) > tolerance:
-                print(" Solver failed fo find minimum")
-                print(" Falling back to Steepest descent algorithm")
+            # if res.success == False or np.max(np.abs(res.jac)) > tolerance:
+            #     print(" Solver failed fo find minimum")
+            #     print(" Falling back to Steepest descent algorithm")
 
             self._callback(res.x, inc_step_count=False, override=True)
 
@@ -737,13 +728,15 @@ class Minimizer(object):
             else:
                 print(" Increasing constraint cost. Current Max error = {:15.10f} nm".format(maxError))
                 init_pos = res.x
+        end_all = time.time()
+        self._total_time += (end_all - start_all)
 
         final_pos = res.x.reshape(-1,3)
         final_energy, final_forces = self._target_func(final_pos)
         force_norms = [np.linalg.norm(f) for f in final_forces]
-        print(" Final max. force:   {:15.3f} kJ/mol".format(np.max(force_norms)))
-        print(" Final energy:       {:15.3f} kJ/mol/nm".format(final_energy))
-        print(" Total function evaluation time: {:10.2f} s".format(self._total_time))
+        print(" Final max. force:   {:15.3f} kJ/mol/nm".format(np.max(force_norms)))
+        print(" Final energy:       {:15.3f} kJ/mol".format(final_energy))
+        print(" Total time:                     {:10.2f} s".format(self._total_time))
         print(" Total Force and Energy time:    {:10.2f} s".format(self._force_time))
         if self._out_file is not None:
             self._out_file.close()
@@ -753,7 +746,7 @@ class Minimizer(object):
         if (self._constraint_tol < self._working_constraint_tol):
             self._context.applyConstraints(self._working_constraint_tol)
 
-    def test_forces(self, fun, x0):
+    def _test_forces(self, fun, x0):
 
         #self.k = 0
         f0, g0 = fun(x0)
@@ -821,7 +814,7 @@ class Minimizer(object):
                 x = x0 - g0*step_size
                 f, g = fun(x)
                 if f < f0:
-                    f0 = copy(f)
+                    f0 = f
                     x0 = x.copy()
                     g0 = g.copy()
                     break
@@ -830,7 +823,7 @@ class Minimizer(object):
                     line_searches += 1
                     if step_size < 1e-10 and (f - f0) < 10:
                         print("Proceeding ahead anyway ", f - f0, step_size0)
-                        f0 = f.copy()
+                        f0 = f
                         x0 = x.copy()
                         g0 = g.copy()
                         step_size = 1e-6
@@ -862,15 +855,6 @@ class Minimizer(object):
             self._target_func(pos)
 
     def _target_func(self, pos):
-        
-
-        # self._context.setPositions(np.reshape(pos, (-1, 3)))
-        # state = self._context.getState(getEnergy=True, getForces=True, getPositions=True)
-        # energy = state.getPotentialEnergy().value_in_unit(uu.kilojoule_per_mole)
-        # forces_all = state.getForces(asNumpy=True).value_in_unit(uu.kilojoule_per_mole/uu.nanometer)
-        # return energy, -forces_all.flatten()
-
-        start_all = time.time()
 
         new_pos = self._context.getState(getPositions=True).getPositions(True).value_in_unit(uu.nanometer)
         new_pos[self._keep_idx] = np.reshape(pos, (-1, 3))
@@ -898,20 +882,9 @@ class Minimizer(object):
             dr = r - self._constraint_distances
             kdr = self._k*dr
             energy += 0.5*np.sum(kdr*dr)
-
-            if False:
-                k_dr_delta = kdr[:, None]*delta
-                for n in range(len(self._constraint_distances)):
-                    p1 = self._constraint_idx_1[n]
-                    p2 = self._constraint_idx_2[n]
-                    forces_all[self._constraint_idx_1[n]] += k_dr_delta[n]
-                    forces_all[self._constraint_idx_2[n]] -= k_dr_delta[n]
-            else:
-                k_dr_delta = kdr[:, None]*delta
-                np.add.at(forces_all, self._constraint_idx_1,  k_dr_delta)
-                np.add.at(forces_all, self._constraint_idx_2, -k_dr_delta)
-                #forces_all[self._constraint_idx_1] += kdr[:, None]*delta
-                #forces_all[self._constraint_idx_2] -= kdr[:, None]*delta
+            k_dr_delta = kdr[:, None]*delta
+            np.add.at(forces_all, self._constraint_idx_1,  k_dr_delta)
+            np.add.at(forces_all, self._constraint_idx_2, -k_dr_delta)
 
         #   zero out all forces not being updated
         forces_all[self._zero_force_index_list] *= 0
@@ -920,9 +893,6 @@ class Minimizer(object):
         forces = forces_all[self._keep_idx]
         self._current_energy = energy
         self._current_forces = forces
-
-        end_all = time.time()
-        self._total_time += (end_all - start_all)
 
         return energy, -forces.flatten()
         return energy, -forces_all.flatten()

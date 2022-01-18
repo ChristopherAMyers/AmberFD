@@ -7,14 +7,23 @@ class PDBReporterExtra(PDBReporter):
         super().__init__(file, reportInterval, enforcePeriodicBox=enforcePeriodicBox)
 
         self._exclude_residues = None
-        if self._exclude_residues is not None:
-            self._exclude_residues = tuple(excludeResidueNames)
+        if excludeResidueNames is not None:
+            if isinstance(excludeResidueNames, str):
+                self._exclude_residues = tuple([excludeResidueNames])
+            else:
+                self._exclude_residues = tuple(excludeResidueNames)
+        self._keep_atom_idx = []
 
     def _create_excluded_top(self, orig_top, positions):
         modeller = Modeller(orig_top, positions)
+        res_to_delete = []
         for res in orig_top.residues():
             if res.name in self._exclude_residues:
-                modeller.delete(res)
+                res_to_delete.append(res)
+            else:
+                for atom in res.atoms():
+                    self._keep_atom_idx.append(atom.index)
+        modeller.delete(res_to_delete)
         return modeller.topology
 
     def report(self, simulation, state):
@@ -36,7 +45,10 @@ class PDBReporterExtra(PDBReporter):
             PDBFile.writeHeader(self._topology, self._out)
             self._nextModel += 1
 
-        PDBFile.writeModel(self._topology, state.getPositions(), self._out, self._nextModel)
+        pos = state.getPositions(True)
+        if self._exclude_residues is not None:
+            pos = pos[self._keep_atom_idx]
+        PDBFile.writeModel(self._topology, pos, self._out, self._nextModel)
         self._nextModel += 1
         if hasattr(self._out, 'flush') and callable(self._out.flush):
             self._out.flush()

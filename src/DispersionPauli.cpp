@@ -273,7 +273,7 @@ double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& en
             // backup secondary force energy
             double radii_2 = secondary_radii[i] + secondary_radii[j];
             double eng = kcal*exp(-secondary_exp*(deltaR.r - radii_2));
-            energies.pauli += eng;
+            energies.pauli_wall = eng;
 
             // backup secondary force force
             dE_dR = -eng*secondary_exp;
@@ -281,7 +281,7 @@ double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& en
             Nonbonded::add_Vec3_to_vector(forces[j],  dE_dR*dR_dPos);
         }
     }
-    return energies.disp + energies.pauli;
+    return energies.disp + energies.pauli + energies.pauli_wall;
 }
 
 void DispersionPauli::create_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)

@@ -1,0 +1,50 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+#   editor
+.vscode*
+
+#   builds
+build*
+
+#   testing and debugging
+debug*
+backups/
+tests/__pycache__/
+tests/res
+tests/
+tests/create_asserts.py
+
+AmberPolarization/tests/*
+self.solution_table[section]['variable_table'].update(variable_table)/__pycache__*
+python/__pycache__/AmberPolarization.cpython-39.pyc

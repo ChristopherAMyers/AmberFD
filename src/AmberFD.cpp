@@ -82,6 +82,7 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
             dispersionPauli->calc_one_pair(dR, i, j, pair_energies);
             total_energies.pauli += pair_energies.pauli;
             total_energies.disp += pair_energies.disp;
+            total_energies.pauli_wall += pair_energies.pauli_wall;
 
             //  fluctuating density and alectrostatics
             flucDens->calc_one_electro(dR, i, j, true, true, pair_energies);
