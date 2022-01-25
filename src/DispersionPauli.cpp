@@ -255,7 +255,7 @@ double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& en
         double C6 = sqrt(C6_coeff[i]*C6_coeff[j]);
         double r6_shift_inv = 1/(r6 + shift6);
 
-        energies.disp = -disp_s6*C6*r6_shift_inv*0;
+        energies.disp = -disp_s6*C6*r6_shift_inv;
         
         //  dispersion forces
         double dE_dR = -energies.disp * 6 * r6 * deltaR.r_inv * r6_shift_inv;
@@ -265,7 +265,7 @@ double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& en
         //  Pauli energy
         double coeff = pauli_coeff[i]*pauli_coeff[j];
         double exponent = 0.5*(pauli_exponents[i] + pauli_exponents[j]);
-        energies.pauli = coeff*exp(-exponent*deltaR.r)*0;
+        energies.pauli = coeff*exp(-exponent*deltaR.r);
 
         //  Pauli forces
         dE_dR = -energies.pauli*exponent;

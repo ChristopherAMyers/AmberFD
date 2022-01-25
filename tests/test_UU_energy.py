@@ -77,11 +77,11 @@ if __name__ == "__main__":
         print("Pol. (kJ/mol): {:15.16f}".format((total_fluc - frz_energy)))
 
         
-        AssertEqual(frz_energy,  -153.9164545736028913, 1e-14)
-        AssertEqual(frz_energy_1, -57.9401318692427196, 1e-14)
-        AssertEqual(frz_energy_2, -58.5616039140674047, 1e-14)
-        AssertEqual(eng_diff,     -37.4147187902929517, 1e-14)
-        AssertEqual(pol_energy,   -10.0445370280187092, 1e-14)
+        AssertEqual(frz_energy,  -149.2014396519202535, 1e-14)
+        AssertEqual(frz_energy_1, -57.1334380438952394, 1e-14)
+        AssertEqual(frz_energy_2, -57.7070355050438337, 1e-14)
+        AssertEqual(eng_diff,     -34.3609661029811804, 1e-14)
+        AssertEqual(pol_energy,   -10.1261050926210316, 1e-14)
 
         
 

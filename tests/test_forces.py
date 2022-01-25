@@ -112,11 +112,11 @@ if __name__ == "__main__":
                 
                 # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(numerical_force)))
                 # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(disp_forces[n]), *tuple(numerical_disp_force)))
-                #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(numerical_fluc_force)))
+                # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(numerical_fluc_force)))
 
-                #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(goal_total_forces[n])))
-                #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(disp_forces[n]), *tuple(goal_disp_forces[n])))
-                #print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(goal_fluc_forces[n])))
+                # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(goal_total_forces[n])))
+                # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(disp_forces[n]), *tuple(goal_disp_forces[n])))
+                # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(fluc_forces[n]), *tuple(goal_fluc_forces[n])))
         
         
         # np.testing.assert_allclose(fluc_forces, goal_fluc_forces, atol=1e-12)

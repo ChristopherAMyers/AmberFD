@@ -68,7 +68,10 @@ if __name__ == "__main__":
     disp.calc_energy(coords.flatten())
     fluc.calc_energy(coords.flatten())
 
-    AssertEqual(energies.frz*AU_2_KJ_PER_MOL,   -153.9164545736028913,    1e-14)
-    AssertEqual(energies.pol*AU_2_KJ_PER_MOL,    -10.0445370280187092,    1e-14)
+    print('{:.16f}'.format(energies.frz*AU_2_KJ_PER_MOL))
+    print('{:.16f}'.format(energies.pol*AU_2_KJ_PER_MOL))
+
+    AssertEqual(energies.frz*AU_2_KJ_PER_MOL,   -149.2014396519202535,    1e-14)
+    AssertEqual(energies.pol*AU_2_KJ_PER_MOL,    -10.1261050926210281,    1e-14)
     AssertEqual(energies.pauli*AU_2_KJ_PER_MOL,    0.4749888820543172741, 1e-14)
     AssertEqual(energies.disp*AU_2_KJ_PER_MOL,    -8.4318942845087168081, 1e-14)

@@ -108,13 +108,13 @@ int main(int argc, char *argv[])
     
     try{
         double energy = fluc.calc_energy(sites)*AU_2_KJ_PER_MOL;
-        assert_equal_tol(energy, -163.9609916016171383, 1e-13);
+        assert_equal_tol(energy, -159.3275447445412851, 1e-13);
 
         double pol_energy = fluc.calc_energy(sites, false)*AU_2_KJ_PER_MOL;
-        assert_equal_tol(pol_energy, -10.0445370280187074, 1e-13);
+        assert_equal_tol(pol_energy, -10.1261050926210316, 1e-13);
 
         double frz_energy = fluc.calc_energy(sites, true, false)*AU_2_KJ_PER_MOL;
-        assert_equal_tol(frz_energy, -153.9164545735984291, 1e-13);
+        assert_equal_tol(frz_energy, -149.2014396519202535, 1e-13);
         }
     catch(const std::exception& e) {
         cout << " exception: " << e.what() << endl;

@@ -39,6 +39,7 @@ if __name__ == "__main__":
     n_atoms = int(len(coords)/2)
 
     disp = DispersionPauli(nuclei, pauli_exp, pauli_radii)
+    disp.set_use_secondary_radii(False)
     disp.create_exclusions_from_fragment(np.arange(0, n_atoms))
     disp.create_exclusions_from_fragment(np.arange(n_atoms, n_atoms*2))
 
