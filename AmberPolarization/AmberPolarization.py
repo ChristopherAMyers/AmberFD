@@ -382,6 +382,8 @@ class Context(mm.Context):
         self._dont_update = False
         self._currentStep = 0
 
+        
+
     def _update_force(self):
         #return
         if self._dont_update: return
@@ -392,6 +394,9 @@ class Context(mm.Context):
         
         self._current_energies = self._FD_solver.calc_energy_forces(pos_bohr.flatten())
 
+        total_E = self._current_energies.total()
+        fd_forces = np.array(self._FD_solver.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
+
         # total_E = self._dispPauliForce.calc_energy(pos_bohr.flatten())
         # total_E = self._dispPauliForce.get_pauli_energy()
         # total_E = self._dispPauliForce.get_disp_energy()
@@ -401,60 +406,44 @@ class Context(mm.Context):
         # fd_forces = np.array(self._flucDensForce.get_forces()).reshape((self._n_sites, 3))*49614.77640958472
 
         if False:
+
+            forces_fluc_all = np.array(self._flucDensForce.get_forces() ).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
+            forces_dp_all =   np.array(self._dispPauliForce.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
+
+            self._flucDensForce.initialize_calculation()
+            self._dispPauliForce.initialize()
             ENG = HARTREE_TO_KJ_MOL
-            self._dispPauliForce.calc_energy(pos_bohr.flatten())
-            E_pauli = self._dispPauliForce.get_pauli_energy()*HARTREE_TO_KJ_MOL
-            E_frz = self._flucDensForce.calc_energy(pos_bohr.flatten(), True, False)*HARTREE_TO_KJ_MOL
-            E_pol = self._flucDensForce.calc_energy(pos_bohr.flatten(), False, True)*HARTREE_TO_KJ_MOL
-            dist = np.linalg.norm(pos_nm[5] - pos_nm[22])*10
-            #print(f'{dist=:10.5f}  {E_pauli=:14.5f}  {E_frz=:14.5f}  {E_pol=:14.5f}')
+            pos_flat = pos_bohr.flatten()
 
-            eng_O_N =  self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 22, 5)
-            eng_LP_N = self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 31, 5)
-            eng_O_H =  self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 22, 9)
-            eng_LP_H = self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 31, 9)
+            # LP_C = self._omm_index_to_FD[17]
+            # LP_G = self._omm_index_to_FD[55]
 
-            eng_O_N_dp =  self._dispPauliForce.calc_one_pair(pos_bohr.flatten(), 22, 5)
-            eng_O_H_dp =  self._dispPauliForce.calc_one_pair(pos_bohr.flatten(), 22, 9)
+            LP_C = self._omm_index_to_FD[655]
+            LP_G = self._omm_index_to_FD[796]
 
-            # self._flucDensForce.nuclei[22] -=2
-            # self._flucDensForce.nuclei[5] -=2
-            # self._flucDensForce.frozen_pop[22] -=2
-            # self._flucDensForce.frozen_pop[5] -=2
-            # eng_O_N_2 =  self._flucDensForce.calc_one_frozen(pos_bohr.flatten(), 22, 5)
-            # self._flucDensForce.nuclei[22]     +=2
-            # self._flucDensForce.nuclei[5]      +=2
-            # self._flucDensForce.frozen_pop[22] +=2
-            # self._flucDensForce.frozen_pop[5]  +=2
+            print(np.linalg.norm(pos_nm[LP_C] - pos_nm[LP_G])*10)
+            eng = self._FD_solver.calc_one_pair(pos_flat, LP_C, LP_G)
+            forces_dp =   np.array(self._dispPauliForce.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
+            forces_fluc = np.array(self._flucDensForce.get_forces() ).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
+            # print(eng.pauli*ENG)
+            # print(eng.pauli_wall*ENG)
+            # print(eng.frz*ENG)
+            # print(eng.total()*ENG)
+            print(forces_dp[LP_G], forces_dp[LP_C])
+            print(forces_fluc[LP_G], forces_fluc[LP_C])
+            print()
+            print(forces_dp_all[LP_G], forces_dp_all[LP_C])
+            print(forces_fluc_all[LP_G], forces_fluc_all[LP_C])
 
-            #print("PARTS: {:5d}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}  {:10.5f}".format(self._currentStep, dist, eng_O_N.frz*ENG, eng_LP_N.frz*ENG, eng_O_H.frz*ENG, eng_LP_H.frz*ENG, eng_O_N_dp.pauli*ENG, eng_O_N_2.frz*ENG))
+            
 
-        
-
-
-
-            # self._dispPauliForce.calc_energy(pos_bohr.flatten())
-            # print("PAULI ENERGY: ", self._dispPauliForce.get_pauli_energy()*HARTREE_TO_KJ_MOL)
-            # print("FROZEN ENERGY: ", self._flucDensForce.calc_energy(pos_bohr.flatten(), True, False)*HARTREE_TO_KJ_MOL)
-            # print("POL ENERGY: ", self._flucDensForce.calc_energy(pos_bohr.flatten(), False, True)*HARTREE_TO_KJ_MOL)
-            # print("ELEC_ELEC", self._current_energies.elec_elec*HARTREE_TO_KJ_MOL)
-            # print("ELEC_NUC", self._current_energies.elec_nuc*HARTREE_TO_KJ_MOL)
-            # print("NUC_NUC", self._current_energies.nuc_nuc*HARTREE_TO_KJ_MOL)
-
-        #print("PAULI WALL: ", self._currentStep, self._current_energies.pauli_wall*2625.5009)
-        total_E = self._current_energies.total()
-        fd_forces = np.array(self._FD_solver.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
 
         if len(fd_forces) != 0:
             fd_offset = np.mean(fd_forces * pos_nm)*3
             fd_energy = total_E*HARTREE_TO_KJ_MOL
             self._current_forces = fd_forces
-            # print(f'{fd_forces=}')
-            # for stuff in zip(self._omm_index_to_FD.values(), pos_nm*10):
-            #     print(stuff)
             
             #   update external force and global parameters
-            #print(fd_forces[np.argmax(np.linalg.norm(fd_forces, axis=1))])
             for (omm_particle, index), force in zip(self._omm_index_to_FD.items(), fd_forces):
                 self._external_force.setParticleParameters(index, omm_particle, force)
                 #print(index, omm_particle, force)
@@ -511,10 +500,11 @@ class AmberFDSimulation(Simulation):
             the information stored in state will be transferred to the generated
             Simulation object. NOT YET IMPLIMENTED IN AmberFD
         """
-        if hasattr(system, 'sys._amberFDData'):
+        if hasattr(system, '_amberFDData'):
             if system._amberFDData['force'] is not None:
-                if platform != mm.Platform_getPlatformByName('CPU') and platform is not None:
-                    raise NotImplementedError("Only the CPU Platform is implimented in AmberFD")
+                if platform is not None:
+                    if platform.getName() not in ['Reference', 'CPU']:
+                        raise NotImplementedError("Only the Reference or CPU Platform is implimented in AmberFD")
                 if state is not None:
                     raise NotImplementedError("States are not yet implimented in AmberFD")
             else:

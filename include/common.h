@@ -54,7 +54,7 @@ class Energies{
         double pauli_wall;
         Energies(){   reset_all();  }
         void reset(){   pauli = disp = frz = pol = vct = pauli_wall = 0.0; }
-        double total() { return pauli + disp + frz + pol + vct;   }
+        double total() { return pauli + disp + frz + pol + vct + pauli_wall;   }
 
         void reset_all()
         { reset(); elec_elec = elec_nuc = nuc_nuc = 0.0;    }
