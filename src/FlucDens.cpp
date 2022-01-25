@@ -364,7 +364,7 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
 
     size_t i, j;
     Energies energies;
-    energies.reset_all();
+    energies.zero();
 
     for (i = 0; i < n_sites; i++)
     {

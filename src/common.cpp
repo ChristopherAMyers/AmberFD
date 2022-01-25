@@ -80,3 +80,32 @@ void DeltaR::get_pointer(double *deltaR)
     deltaR[Nonbonded::RIdx] = r;
     deltaR[Nonbonded::RInvIdx] = r_inv;
 }
+
+Energies::Energies()
+{
+    zero();
+}
+
+void Energies::add(Energies &eng)
+{
+    pauli      += eng.pauli;
+    disp       += eng.disp;
+    frz        += eng.frz;
+    pol        += eng.pol;
+    vct        += eng.vct;
+    elec_elec  += eng.elec_elec;
+    elec_nuc   += eng.elec_nuc;
+    nuc_nuc    += eng.nuc_nuc;
+    pauli_wall += eng.pauli_wall;
+}
+
+void Energies::zero()
+{
+    pauli = disp = frz = pol = vct = pauli_wall = 0.0;
+    elec_elec = elec_nuc = nuc_nuc = 0.0;
+}
+
+double Energies::total()
+{
+     return pauli + disp + frz + pol + vct + pauli_wall;
+}

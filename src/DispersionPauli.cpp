@@ -213,6 +213,7 @@ double DispersionPauli::calc_energy(const vec_d &positions)
 
             calc_one_pair(deltaR, i, j, energies);
             total_pauli_energy += energies.pauli;
+            total_pauli_energy += energies.pauli_wall;
             total_disp_energy += energies.disp;
         }
     }
@@ -239,6 +240,7 @@ double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& en
 {
     energies.disp = 0.0;
     energies.pauli = 0.0;
+    energies.pauli_wall = 0.0;
     if (std::find(exclusions[i].begin(), exclusions[i].end(), j) == exclusions[i].end())
     {      
         Vec3 dR_dPos = deltaR.dR*deltaR.r_inv;
@@ -252,7 +254,8 @@ double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& en
         double r6 = r2*r2*r2;
         double C6 = sqrt(C6_coeff[i]*C6_coeff[j]);
         double r6_shift_inv = 1/(r6 + shift6);
-        energies.disp = -disp_s6*C6*r6_shift_inv;
+
+        energies.disp = -disp_s6*C6*r6_shift_inv*0;
         
         //  dispersion forces
         double dE_dR = -energies.disp * 6 * r6 * deltaR.r_inv * r6_shift_inv;
@@ -262,7 +265,7 @@ double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& en
         //  Pauli energy
         double coeff = pauli_coeff[i]*pauli_coeff[j];
         double exponent = 0.5*(pauli_exponents[i] + pauli_exponents[j]);
-        energies.pauli = coeff*exp(-exponent*deltaR.r);
+        energies.pauli = coeff*exp(-exponent*deltaR.r)*0;
 
         //  Pauli forces
         dE_dR = -energies.pauli*exponent;

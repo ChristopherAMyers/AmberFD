@@ -52,25 +52,10 @@ class Energies{
         double pauli, disp, frz, pol, vct;
         double elec_elec, elec_nuc, nuc_nuc;
         double pauli_wall;
-        Energies(){   reset_all();  }
-        void reset(){   pauli = disp = frz = pol = vct = pauli_wall = 0.0; }
-        double total() { return pauli + disp + frz + pol + vct + pauli_wall;   }
-
-        void reset_all()
-        { reset(); elec_elec = elec_nuc = nuc_nuc = 0.0;    }
-
-        void add(Energies &eng)
-        {
-            pauli      += eng.pauli;
-            disp       += eng.disp;
-            frz        += eng.frz;
-            pol        += eng.pol;
-            vct        += eng.vct;
-            elec_elec  += eng.elec_elec;
-            elec_nuc   += eng.elec_nuc;
-            nuc_nuc    += eng.nuc_nuc;
-            pauli_wall += eng.pauli_wall;
-        }
+        Energies();
+        double total();
+        void zero();
+        void add(Energies &eng);
 };
 
 #endif // TYPEDEFS_H

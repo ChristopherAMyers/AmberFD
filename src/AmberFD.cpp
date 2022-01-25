@@ -64,7 +64,7 @@ Energies AmberFD::calc_one_pair(const vec_d &positions, int i, int j)
 Energies AmberFD::calc_energy_forces(const vec_d &positions)
 {
     size_t i, j;
-    total_energies.reset_all();
+    total_energies.zero();
     Energies pair_energies;
 
     //  initialize solvers

@@ -106,9 +106,9 @@ if __name__ == "__main__":
                     numerical_fluc_force[x] = -(energy_fluc_p - energy_fluc_m)/(2*eps)*2625.5009*ANG2BOHR
 
                 print("Data set: {:d} force {:d}".format(data_set, n))
-                np.testing.assert_allclose(forces[n],      numerical_force,      rtol=eps, atol=eps)
-                np.testing.assert_allclose(disp_forces[n], numerical_disp_force, rtol=eps, atol=eps)
-                np.testing.assert_allclose(fluc_forces[n], numerical_fluc_force, rtol=eps, atol=eps)
+                np.testing.assert_allclose(forces[n],      numerical_force,      rtol=eps, atol=eps*10)
+                np.testing.assert_allclose(disp_forces[n], numerical_disp_force, rtol=eps, atol=eps*10)
+                np.testing.assert_allclose(fluc_forces[n], numerical_fluc_force, rtol=eps, atol=eps*10)
                 
                 # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(forces[n]), *tuple(numerical_force)))
                 # print(('{:15.12f} '*3 + ' | ' + '{:15.12f} '*3).format(*tuple(disp_forces[n]), *tuple(numerical_disp_force)))
