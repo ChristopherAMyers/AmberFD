@@ -62,6 +62,15 @@ DeltaR::DeltaR(double *deltaR)
 }
 DeltaR::DeltaR(const vec_d &coords, int i, int j)
 {
+    getDeltaR(coords, i, j);
+}
+DeltaR::DeltaR(const vec_d &coords, int i, int j, Periodicity p)
+{
+    getDeltaR(coords, i, j, p);
+}
+
+void DeltaR::getDeltaR(const vec_d &coords, int i, int j)
+{
     double dx = coords[i + 0] - coords[j + 0];
     double dy = coords[i + 1] - coords[j + 1];
     double dz = coords[i + 2] - coords[j + 2];
@@ -70,6 +79,22 @@ DeltaR::DeltaR(const vec_d &coords, int i, int j)
     r = sqrt(r2);
     r_inv = 1/r;
 }
+
+void DeltaR::getDeltaR(const vec_d &coords, int i, int j, Periodicity p)
+{
+    double dx = coords[i + 0] - coords[j + 0];
+    double dy = coords[i + 1] - coords[j + 1];
+    double dz = coords[i + 2] - coords[j + 2];
+    dR = Vec3(dx, dy, dz);
+    dR[2] -= p.box_size[2]*ceil(dR[2]*p.inv_box_size[2] - 0.5);
+    dR[1] -= p.box_size[1]*ceil(dR[1]*p.inv_box_size[1] - 0.5);
+    dR[0] -= p.box_size[0]*ceil(dR[0]*p.inv_box_size[0] - 0.5);
+    r2 = dR.dot(dR);
+    r = sqrt(r2);
+    r_inv = 1/r;
+    //printf(" IN getDeltaR: %.10f  %.10f  %.10f  %.10f \n", p.inv_box_size[2], dR[0], dR[1], dR[2]);
+}
+
 void DeltaR::get_pointer(double *deltaR)
 {
     //double deltaR[Nonbonded::RMaxIdx];
@@ -108,4 +133,21 @@ void Energies::zero()
 double Energies::total()
 {
      return pauli + disp + frz + pol + vct + pauli_wall;
+}
+
+
+void Periodicity::set(bool is_periodic_in, const double x, const double y, const double z)
+{
+    is_periodic = is_periodic_in;
+    box_size = Vec3(x, y, z);
+    inv_box_size = Vec3(1/x, 1/y, 1/z);
+    box_vectors[0] = Vec3(x, 0, 0);
+    box_vectors[1] = Vec3(0, y, 0);
+    box_vectors[2] = Vec3(0, 0, z);
+    box_size[0] = x;
+    box_size[1] = y;
+    box_size[2] = z;
+    inv_box_size[0] = 1/x;
+    inv_box_size[1] = 1/y;
+    inv_box_size[2] = 1/z;
 }

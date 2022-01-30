@@ -15,9 +15,10 @@ from itertools import combinations
 import time
 
 try:
-    sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
+    sys.path.insert(1, join(dirname(realpath(__file__)), '../build_debug/'))
     from AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
 except:
+    exit()
     sys.path.insert(1, join(dirname(realpath(__file__)), '../build_minerva/'))
     from AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
 
@@ -140,6 +141,11 @@ class AmberFDGenerator(object):
             self._ignore = True
             sys._amberFDData = {'ext_force': None, 'force': None, 'data': None}
             return
+
+        if sys.usesPeriodicBoundaryConditions():
+            boxVecs = sys.getDefaultPeriodicBoxVectors()
+            boxVecs = [x.value_in_unit(uu.bohr) for x in boxVecs]
+            force.set_use_PBC(True, boxVecs[0][0], boxVecs[1][1], boxVecs[2][2])
 
         #   create polarization force
         #if len(pol_residues) != 0:
@@ -371,6 +377,7 @@ class Context(mm.Context):
         self._FD_solver = self._system._amberFDData['force']
         self._external_force = self._system._amberFDData['ext_force']
         self._omm_index_to_FD = dict(self._FD_solver.get_index_mapping())
+        self._omm_indicies = list(self._omm_index_to_FD.keys())
         self._n_sites = len(self._omm_index_to_FD)
 
         self._dispPauliForce = self._FD_solver.get_disp_pauli_force()
@@ -384,13 +391,17 @@ class Context(mm.Context):
 
         
 
+        
+
     def _update_force(self):
         #return
         if self._dont_update: return
         state = self.getState(getPositions=True)
         all_pos = state.getPositions(True)
-        pos_bohr = np.array([all_pos[x]/uu.bohr for x in self._omm_index_to_FD])
-        pos_nm = np.array([all_pos[x]/uu.nanometers for x in self._omm_index_to_FD])
+        pos_bohr = (all_pos[self._omm_indicies])/uu.bohr
+        pos_nm = pos_bohr * uu.bohr.conversion_factor_to(uu.nanometer)
+        #pos_bohr = np.array([all_pos[x]/uu.bohr for x in self._omm_index_to_FD])
+        #pos_nm = np.array([all_pos[x]/uu.nanometers for x in self._omm_index_to_FD])
         
         self._current_energies = self._FD_solver.calc_energy_forces(pos_bohr.flatten())
 
@@ -415,25 +426,25 @@ class Context(mm.Context):
             ENG = HARTREE_TO_KJ_MOL
             pos_flat = pos_bohr.flatten()
 
-            # LP_C = self._omm_index_to_FD[17]
-            # LP_G = self._omm_index_to_FD[55]
+            ID_1 = self._omm_index_to_FD[650 - 1]
+            ID_2 = self._omm_index_to_FD[791 - 1]
 
-            LP_C = self._omm_index_to_FD[655]
-            LP_G = self._omm_index_to_FD[796]
-
-            print(np.linalg.norm(pos_nm[LP_C] - pos_nm[LP_G])*10)
-            eng = self._FD_solver.calc_one_pair(pos_flat, LP_C, LP_G)
+            print(np.linalg.norm(pos_nm[ID_1] - pos_nm[ID_2])*10)
+            print(self._FD_solver.get_use_PBC())
+            print(self._FD_solver.getDeltaR(pos_flat, ID_1, ID_2).r)
+            print()
+            eng = self._FD_solver.calc_one_pair(pos_flat, ID_1, ID_2)
             forces_dp =   np.array(self._dispPauliForce.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
             forces_fluc = np.array(self._flucDensForce.get_forces() ).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
             # print(eng.pauli*ENG)
             # print(eng.pauli_wall*ENG)
             # print(eng.frz*ENG)
             # print(eng.total()*ENG)
-            print(forces_dp[LP_G], forces_dp[LP_C])
-            print(forces_fluc[LP_G], forces_fluc[LP_C])
+            print(forces_dp[ID_2], forces_dp[ID_1])
+            print(forces_fluc[ID_2], forces_fluc[ID_1])
             print()
-            print(forces_dp_all[LP_G], forces_dp_all[LP_C])
-            print(forces_fluc_all[LP_G], forces_fluc_all[LP_C])
+            print(forces_dp_all[ID_2], forces_dp_all[ID_1])
+            print(forces_fluc_all[ID_2], forces_fluc_all[ID_1])
 
             
 
@@ -442,6 +453,9 @@ class Context(mm.Context):
             fd_offset = np.mean(fd_forces * pos_nm)*3
             fd_energy = total_E*HARTREE_TO_KJ_MOL
             self._current_forces = fd_forces
+
+            # print("FD ENERGY: ", fd_energy/HARTREE_TO_KJ_MOL)
+            # np.savetxt('positions_2.txt', pos_bohr)
             
             #   update external force and global parameters
             for (omm_particle, index), force in zip(self._omm_index_to_FD.items(), fd_forces):

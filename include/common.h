@@ -37,11 +37,24 @@ class Nonbonded{
         static std::vector<std::set<int> > calc_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, const int bond_cutoff, const int n_sites);
 };
 
+class Periodicity{
+    public:
+        Periodicity() : is_periodic(false){};
+        bool is_periodic;
+        Vec3 box_vectors[3];
+        Vec3 box_size;
+        Vec3 inv_box_size;
+        void set(const bool is_periodic, const double x, const double y, const double z);
+};
+
 class DeltaR{
     public:
         DeltaR() = default;
         DeltaR(double *deltaR);
         DeltaR(const vec_d &coords, int i, int j);
+        DeltaR(const vec_d &coords, int i, int j, Periodicity period);
+        void getDeltaR(const vec_d &coords, int i, int j);
+        void getDeltaR(const vec_d &coords, int i, int j, Periodicity period);
         Vec3 dR;
         double r, r_inv, r2;
         void get_pointer(double *deltaR);
@@ -57,5 +70,7 @@ class Energies{
         void zero();
         void add(Energies &eng);
 };
+
+
 
 #endif // TYPEDEFS_H

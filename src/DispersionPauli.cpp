@@ -138,6 +138,21 @@ void DispersionPauli::set_pauli_exp(int index, double exponent)
         throw std::out_of_range("exponent index must be greater than zero");
     pauli_exponents[index] = exponent;
 }
+
+void DispersionPauli::set_use_PBC(const bool is_periodic)
+{
+    periodicity.is_periodic = is_periodic;
+}
+void DispersionPauli::set_use_PBC(const bool is_periodic, const double x, const double y, const double z)
+{
+    periodicity.set(is_periodic, x, y, z);
+}
+
+bool DispersionPauli::get_use_PBC()
+{
+    return periodicity.is_periodic;
+}
+
 void DispersionPauli::get_dispersion_params(double &s6, double &a1, double &a2)
 {
     s6 = disp_s6;
@@ -202,6 +217,7 @@ void DispersionPauli::initialize()
 double DispersionPauli::calc_energy(const vec_d &positions)
 {
     size_t i, j;
+    DeltaR deltaR;
     initialize();
 
     Energies energies;
@@ -209,7 +225,10 @@ double DispersionPauli::calc_energy(const vec_d &positions)
     {
         for (j = i+1; j < n_sites; j++)
         {
-            DeltaR deltaR(positions, (int)i*3, (int)j*3);
+            if (periodicity.is_periodic)
+                deltaR.getDeltaR(positions, (int)i*3, (int)j*3, periodicity);
+            else
+                deltaR.getDeltaR(positions, (int)i*3, (int)j*3);
 
             calc_one_pair(deltaR, i, j, energies);
             total_pauli_energy += energies.pauli;
@@ -231,7 +250,11 @@ void DispersionPauli::add_force(vec_d &force, const Vec3 &dR)
 Energies DispersionPauli::calc_one_pair(const vec_d &pos, int i, int j)
 {
     Energies energies;
-    DeltaR deltaR(pos, (int)i*3, (int)j*3);
+    DeltaR deltaR;
+    if (periodicity.is_periodic)
+        deltaR.getDeltaR(pos, (int)i*3, (int)j*3, periodicity);
+    else
+        deltaR.getDeltaR(pos, (int)i*3, (int)j*3);
     calc_one_pair(deltaR, i, j, energies);
     return energies;
 }

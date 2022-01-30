@@ -94,12 +94,17 @@ class FlucDens {
         double elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br, double &dEdR);
         double elec_nuclei_energy(const double inv_r, const double a, const double exp_ar, double &dEdR);
 
-        vec_d nuclei;
-        vec_d frozen_pop;
+
+        //  periodic boundary conditions
+        void set_use_PBC(const bool is_periodic);
+        void set_use_PBC(const bool is_periodic, const double x, const double y, const double z);
+        bool get_use_PBC();
+
     private:
         
         vec_d fluc_pop;
-        
+        vec_d nuclei;
+        vec_d frozen_pop;
         vec_d frozen_chg;
         vec_d frozen_exp;
         vec_d dynamic_exp;
@@ -118,6 +123,7 @@ class FlucDens {
         int n_fragments;
         bool use_frag_constraints;
         bool remove_core;
+        
 
         bool use_long_range_approx(double r, double a, double b);
         void create_del_exclusions_from_fragment(const std::vector<int> frag_idx);
@@ -142,6 +148,7 @@ class FlucDens {
         bool calc_forces;
         
         FlucDensEnergies total_energies;
+        Periodicity periodicity;
 };
 
 

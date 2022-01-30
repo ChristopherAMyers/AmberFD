@@ -53,6 +53,11 @@ class DispersionPauli {
 
         void set_use_secondary_radii(bool use_radii=true);
 
+        //  periodic boundary conditions
+        void set_use_PBC(const bool is_periodic);
+        void set_use_PBC(const bool is_periodic, const double x, const double y, const double z);
+        bool get_use_PBC();
+
         //class Info;
         vec_i nuclei;
     private:
@@ -86,7 +91,7 @@ class DispersionPauli {
         double secondary_exp;
         map_id secondary_radii_map;
         void set_all_secondary_radii();
-
+        Periodicity periodicity;
         
 };
 

@@ -364,6 +364,7 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
 
     size_t i, j;
     Energies energies;
+    DeltaR deltaR;
     energies.zero();
 
     for (i = 0; i < n_sites; i++)
@@ -371,8 +372,11 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
         for (j = i+1; j < n_sites; j++)
         {
             //  distances and inverse distances
-            DeltaR deltaR(positions, (int)i*3, (int)j*3);
-
+            if (periodicity.is_periodic)
+                deltaR.getDeltaR(positions, (int)i*3, (int)j*3, periodicity);
+            else
+                deltaR.getDeltaR(positions, (int)i*3, (int)j*3);
+            
             calc_one_electro(deltaR, i, j, calc_pol, calc_frz, energies);
             total_energies.frz += energies.frz;
             total_energies.nuc_nuc += energies.nuc_nuc;
@@ -400,9 +404,28 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
 Energies FlucDens::calc_one_frozen(const vec_d &positions, int i, int j)
 {
     Energies eng_out;
-    DeltaR deltaR(positions, (int)i*3, (int)j*3);
+    DeltaR deltaR;
+    if (periodicity.is_periodic)
+        deltaR.getDeltaR(positions, (int)i*3, (int)j*3, periodicity);
+    else
+        deltaR.getDeltaR(positions, (int)i*3, (int)j*3);
     calc_one_electro(deltaR, i, j, false, true, eng_out);
     return eng_out;
+}
+
+void FlucDens::set_use_PBC(const bool is_periodic)
+{
+    periodicity.is_periodic = is_periodic;
+}
+
+void FlucDens::set_use_PBC(const bool is_periodic, const double x, const double y, const double z)
+{
+    periodicity.set(is_periodic, x, y, z);
+}
+
+bool FlucDens::get_use_PBC()
+{
+    return periodicity.is_periodic;
 }
 
 void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies)
