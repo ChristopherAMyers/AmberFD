@@ -51,14 +51,18 @@ class FlucDens {
 
         //  frozen - frozen exclusions
         void add_frz_frz_exclusion(int frz_i, int frz_j);
-        std::vector<int>  get_frz_frz_exclusions(const int particle1) const;
+        std::set<int>  get_frz_frz_exclusions(const int particle1) const;
         void create_frz_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, int bond_cutoff);
         int get_num_frz_frz_exclusions() const;
 
         
         //  delta_rho - frozen exclusions and fragments
         void add_del_frz_exclusion(int delta_i, int frz_j);
+        std::set<int> get_del_frz_exclusions(const int particle1) const;
         void add_fragment(const std::vector<int> site_idx_list);
+        int get_num_fragments();
+        std::vector<vec_i> get_fragments();
+        
         void set_dyn_exp(const int index, const double value);
         void set_dyn_exp(vec_d exponents);
         void set_frz_exp(const int index, const double value);
@@ -66,7 +70,6 @@ class FlucDens {
         void set_site_params(const int index, const double frz_chg, const double frz_exp, const double dyn_exp);
 
         int get_num_constraints();
-        std::set<int> get_del_frz_exclusions(const int particle1) const;
         vec_d get_rho_coulomb_mat();
         vec_d get_rho_pot_vec();
         vec_d get_delta_rho();
@@ -82,6 +85,7 @@ class FlucDens {
         void get_site_params(const int index, double &frz_chg, double &frz_exp, double &dyn_exp);
 
         std::vector<int> site_frag_ids;
+        std::vector<std::vector<int> > site_frag_ids_partitioned;
         vec_d A_mat_save, B_vec_save;
 
         void set_frag_constraints(const bool constr_frags);

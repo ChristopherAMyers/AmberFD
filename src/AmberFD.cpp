@@ -224,11 +224,67 @@ void AmberFD::dump_to_file(std::string file_loc)
     bool created_disp = (dispersionPauli != nullptr);
     fprintf(file, "FLUC_FORCE %d\n", created_fluc);
     fprintf(file, "DISP_FORCE %d\n", created_disp);
+    //  site parameters
     for(int i = 0; i < n_sites; i++)
     {
         int omm_index = index_to_omm[i];
         fprintf(file, "ATOM %d  %.15e  %.15e  %.15e  %.15e  %.15e  %d \n", nuclei[i], frz_chg[i], frz_exp[i], dyn_exp[i], pauli_exp[i], pauli_radii[i], omm_index);
     }
+    //  flucDens frozen-frozen exclusions
+    for(int i = 0; i < n_sites; i++)
+    {
+        std::set<int> exclusions = flucDens->get_frz_frz_exclusions(i);
+        fprintf(file, "FRZ_FRZ_EXCLUSION %d ", i);
+        for (auto exc: exclusions)
+            fprintf(file, "%d ", exc);
+        fprintf(file, "\n");    
+    }
+    //  flucDens dynamic-frozen exclusions
+    for(int i = 0; i < n_sites; i++)
+    {
+        std::set<int> exclusions = flucDens->get_del_frz_exclusions(i);
+        fprintf(file, "DYN_FRZ_EXCLUSION %d ", i);
+        for (auto exc: exclusions)
+            fprintf(file, "%d ", exc);
+        fprintf(file, "\n");    
+    }
+    //  FlucDens fragments
+    std::vector<std::vector<int>> fragment_info = flucDens->get_fragments();
+    fprintf(file, "N_FRAGMENTS %d \n", (int)fragment_info.size());
+    for(int frag_i = 0; frag_i < (int)fragment_info.size(); frag_i++)
+    {
+        fprintf(file, "FLUC_FRAGMENT %d ", frag_i);
+        for(auto index: fragment_info[frag_i])
+            fprintf(file, "%d ", index);
+        fprintf(file, "\n");
+    }
+
+    //  FlucDens dampening and charge-transfer
+    double damp_coeff, damp_exp;
+    flucDens->get_dampening(damp_coeff, damp_exp);
+    fprintf(file, "FLUC_DAMP %.15e  %.15e \n", damp_coeff, damp_exp);
+    fprintf(file, "FLUC_CT %.15e \n", flucDens->get_ct_coeff());
+
+     //  dispersion Pauli exclusions
+    for(int i = 0; i < n_sites; i++)
+    {
+        std::set<int> exclusions = dispersionPauli->get_exclusions(i);
+        fprintf(file, "DISP_PAULI_EXCLUSION %d ", i);
+        for (auto exc: exclusions)
+            fprintf(file, "%d ", exc);
+        fprintf(file, "\n");    
+    }
+
+    for(auto x: dispersionPauli->get_C6_map())
+        fprintf(file, "C6_MAP %d  %.15e \n", x.first, x.second);
+    //  vdw radii map
+    for(auto x: dispersionPauli->get_vdw_radii_map())
+        fprintf(file, "VDW_MAP %d  %.15e \n", x.first, x.second);
+    //  dispersion parameters
+    double s6, a1, a2;
+    dispersionPauli->get_dispersion_params(s6, a1, a2);
+    fprintf(file, "DISPERSION %.15e  %.15e  %.15e\n", s6, a1, a2);
+
     fclose(file);
 }
 
@@ -239,6 +295,7 @@ void AmberFD::load_from_file(std::string file_loc)
     using std::stod;
     string key, line;
     int num_sites = 0;
+    int num_fragments = 0;
     bool created_fluc, created_disp;
 
     nuclei.clear();
@@ -250,11 +307,19 @@ void AmberFD::load_from_file(std::string file_loc)
     n_sites = 0;
     forces.clear();
 
+    std::vector<std::set<int>> frz_frz_exclusions, del_frz_exclusions, disp_exclusions;
+    std::vector<std::vector<int>> fragment_info;
+    std::map<int, double> c6_map, vdw_radii_map;
+    double damp_coeff, damp_exp, fluc_ct;
+    double s6, a1, a2;
+
     std::ifstream file;
     file.open(file_loc.c_str());
     int line_count = 0;
     std::vector<std::string> tokens;
     std::string token;
+
+
     if (file)
     {
         while(getline(file, line))
@@ -265,7 +330,12 @@ void AmberFD::load_from_file(std::string file_loc)
                     tokens.push_back(token);
                 key = tokens[0];
                 if (key.compare("N_SITES") == 0)
-                    num_sites == stoi(tokens[1]);
+                {
+                    num_sites = stoi(tokens[1]);
+                    frz_frz_exclusions.resize(num_sites);
+                    del_frz_exclusions.resize(num_sites);
+                    disp_exclusions.resize(num_sites);
+                }
                 else if (key.compare("PERIODICITY") == 0)
                 {
                     set_use_PBC(stoi(tokens[1]), stod(tokens[2]), stod(tokens[3]), stod(tokens[4]));
@@ -281,6 +351,67 @@ void AmberFD::load_from_file(std::string file_loc)
                     created_fluc = stoi(tokens[1]);
                 else if (key.compare("DISP_FORCE") == 0)
                     created_disp = stoi(tokens[1]);
+
+                else if (key.compare("FRZ_FRZ_EXCLUSION") == 0)
+                {
+                    std::set<int> exclusions;
+                    for(int i = 2; i < tokens.size(); i++)
+                        exclusions.insert(stoi(tokens[i]));
+                    frz_frz_exclusions[stoi(tokens[1])] = exclusions;
+                }
+
+                else if (key.compare("N_FRAGMENTS") == 0)
+                {
+                    num_fragments = stoi(tokens[1]);
+                    fragment_info.resize(num_fragments);
+                }
+                else if (key.compare("FLUC_FRAGMENT") == 0)
+                {
+                    int frag_num = stoi(tokens[1]);
+                    for(int i = 2; i < tokens.size(); i++)
+                        fragment_info[frag_num].push_back(stoi(tokens[i]));
+                }
+
+                else if (key.compare("DYN_FRZ_EXCLUSION") == 0)
+                {
+                    std::set<int> exclusions;
+                    for(int i = 2; i < tokens.size(); i++)
+                        exclusions.insert(stoi(tokens[i]));
+                    del_frz_exclusions[stoi(tokens[1])] = exclusions;
+                }
+
+                else if (key.compare("DISP_PAULI_EXCLUSION") == 0)
+                {
+                    std::set<int> exclusions;
+                    for(int i = 2; i < tokens.size(); i++)
+                        exclusions.insert(stoi(tokens[i]));
+                    disp_exclusions[stoi(tokens[1])] = exclusions;
+                }
+
+                else if (key.compare("FLUC_DAMP") == 0)
+                {
+                    damp_coeff = stod(tokens[1]); 
+                    damp_exp = stod(tokens[2]);
+                }
+                else if (key.compare("FLUC_CT") == 0)
+                    fluc_ct = stod(tokens[1]);
+                else if (key.compare("C6_MAP") == 0)
+                {
+                    std::pair<int, double> p(stoi(tokens[1]), stod(tokens[2]));
+                    c6_map.insert(p);
+                }
+                else if (key.compare("VDW_MAP") == 0)
+                {
+                    std::pair<int, double> p(stoi(tokens[1]), stod(tokens[2]));
+                    vdw_radii_map.insert(p);
+                }
+                else if (key.compare("DISPERSION") == 0)
+                {
+                    s6 = stof(tokens[1]);
+                    a1 = stof(tokens[2]);
+                    a2 = stof(tokens[3]);
+                }
+                
         }
     }
 
@@ -288,11 +419,30 @@ void AmberFD::load_from_file(std::string file_loc)
     {
         flucDens.reset();
         create_fluc_dens_force();
+        for(size_t i = 0; i < num_sites; i++)
+        {
+            for(auto exc: frz_frz_exclusions[i])
+                flucDens->add_frz_frz_exclusion(i, exc);
+            for(auto exc: del_frz_exclusions[i])
+                flucDens->add_del_frz_exclusion(i, exc);
+        }
+        flucDens->set_dampening(damp_coeff, damp_exp);
+        flucDens->set_ct_coeff(fluc_ct);
+        for(auto frag_ids: fragment_info)
+            flucDens->add_fragment(frag_ids);
     }
     if (created_disp)
     {
         dispersionPauli.reset();
         create_disp_pauli_force();
+        for(size_t i = 0; i < num_sites; i++)
+        {
+            for(auto exc: disp_exclusions[i])
+                dispersionPauli->add_exclusion(i, exc);
+        }
+        dispersionPauli->set_dispersion_params(s6, a1, a2);
+        dispersionPauli->set_C6_map(c6_map);
+        dispersionPauli->set_vdw_radii(vdw_radii_map);
     }
 
     file.close();

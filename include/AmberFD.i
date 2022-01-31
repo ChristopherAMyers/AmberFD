@@ -15,6 +15,21 @@
 %include <std_shared_ptr.i>
 %include <typemaps.i>
 
+//  TODO: Test for performance hits
+%include exception.i       
+%exception {
+    try {
+        $action
+    }
+    catch (const std::exception& e) {
+        SWIG_exception(SWIG_RuntimeError,std::string(e.what()).c_str());
+        //PyErr_SetString(PyExc_IndexError,"index out-of-bounds");
+        return NULL;
+    }
+}
+
+
+
 namespace std {
     %template(MapID) map<int,double>;
     %template(PairII) pair<int,int>;

@@ -48,16 +48,6 @@ void form_bonds(const vector<Vec3> coords, const vector<double> nuclei, vector<p
     }
 }
 
-void print_exclusions(const FlucDens &fluc)
-{
-    for (int i = 0; i < fluc.get_num_frz_frz_exclusions(); i ++)
-    {
-        //vector<int> ex_i;
-        vector<int>  ex_i = fluc.get_frz_frz_exclusions(i);
-        for (int j = 0; j < (int)ex_i.size(); j++)
-            printf(" exclusion %3d  %3d \n", i + 1, ex_i[j] + 1);
-    }
-}
 
 
 int main(int argc, char *argv[])
@@ -101,7 +91,6 @@ int main(int argc, char *argv[])
     fluc.create_frz_exclusions_from_bonds(bonds, 3);
     fluc.add_fragment(frag1_idx);
     fluc.add_fragment(frag2_idx);
-    //print_exclusions(fluc);
 
     //fluc.print_params("frozen_exp parameters", "frozen_exp");
     //fluc.print_params("dynamic_exp parameters", "dynamic_exp");

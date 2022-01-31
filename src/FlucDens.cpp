@@ -151,23 +151,21 @@ int FlucDens::get_num_frz_frz_exclusions() const
     return exclusions_frz_frz.size(); 
 }
 
-std::vector<int> FlucDens::get_frz_frz_exclusions(const int particle1) const
+std::set<int> FlucDens::get_frz_frz_exclusions(const int particle1) const
 {
     if (particle1 < 0 || particle1 >= (int) exclusions_frz_frz.size()) 
         throw "Index out of range";
-    std::vector<int> particles2;
-    particles2.resize(exclusions_frz_frz[particle1].size());
-    std::copy(exclusions_frz_frz[particle1].begin(), exclusions_frz_frz[particle1].end(), particles2.begin());
-
-    int i = 0;
-    for(auto &x: exclusions_frz_frz[particle1])
-    {
-        printf("%d  %d  %d \n", (int)i, particles2[i], x);
-        i++;
-    }
-
-    return particles2;
-    //particles2 = exclusions_frz_frz[particle1];
+    // std::vector<int> particles2;
+    // particles2.resize(exclusions_frz_frz[particle1].size());
+    // std::copy(exclusions_frz_frz[particle1].begin(), exclusions_frz_frz[particle1].end(), particles2.begin());
+    // int i = 0;
+    // for(auto &x: exclusions_frz_frz[particle1])
+    // {
+    //     printf("%d  %d  %d \n", (int)i, particles2[i], x);
+    //     i++;
+    // }
+    // return particles2;
+    return exclusions_frz_frz[particle1];
 }
 
 void FlucDens::create_frz_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)
@@ -550,6 +548,18 @@ double FlucDens::elec_nuclei_energy(const double inv_r, const double a, const do
     return nuc_elec;
 }
 
+std::vector<vec_i> FlucDens::get_fragments()
+{
+    if (site_frag_ids_partitioned.size() != n_fragments)
+    {
+        site_frag_ids_partitioned.resize(n_fragments);
+        for (int i = 0; i < n_sites; i++)
+        {
+            site_frag_ids_partitioned[site_frag_ids[i]].push_back(i);
+        }
+    }
+    return site_frag_ids_partitioned;
+}
 
 double FlucDens::elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br, double &dEdR)
 {
@@ -594,13 +604,20 @@ double FlucDens::elec_elec_energy(const double inv_r, const double a, const doub
     return E_ee;
 }
 
+int FlucDens::get_num_fragments()
+{
+    return n_fragments;
+}
 
 void FlucDens::assign_constraints()
 {
     if (use_frag_constraints)
     {
+        if (n_fragments == 0)
+            throw std::runtime_error("No fragments defined when fragment constraints are enabled");
         if ((int)constraints.size() != n_fragments)
-        {
+        {   
+            
             constraints.resize(n_fragments, std::vector<int>(n_sites, 0));
             for(int i = 0; i < n_sites; i ++)
             {

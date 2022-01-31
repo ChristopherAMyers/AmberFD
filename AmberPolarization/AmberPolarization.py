@@ -1,5 +1,6 @@
 from copy import deepcopy, copy
 import enum
+from statistics import harmonic_mean
 from openmm.app import forcefield as ff, Simulation, Element, GromacsTopFile, GromacsGroFile, PDBFile, Modeller
 from openmm.app.topology import Topology
 from openmm.openmm import CustomExternalForce, Vec3, NonbondedForce, Context as CT
@@ -15,10 +16,10 @@ from itertools import combinations
 import time
 
 try:
-    sys.path.insert(1, join(dirname(realpath(__file__)), '../build_debug/'))
+    sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
     from AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
 except:
-    exit()
+    print(" WARNING: Using MINERVA Build")
     sys.path.insert(1, join(dirname(realpath(__file__)), '../build_minerva/'))
     from AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
 
@@ -333,7 +334,7 @@ class MoleculeImporter():
         self.topology = modeller.getTopology()
         self.forcefield = forcefield
 
-        if not solvate:
+        if solvate:
             if 'boxSize' in solvate_kwargs:
                 boxSize = solvate_kwargs['boxSize']
                 if uu.is_quantity(boxSize):
@@ -407,6 +408,16 @@ class Context(mm.Context):
 
         total_E = self._current_energies.total()
         fd_forces = np.array(self._FD_solver.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
+
+        # np.savetxt('rho2.txt', self._flucDensForce.get_delta_rho())
+        # print(self._flucDensForce.get_num_constraints())
+        print("TOTAL ENERGY: ", total_E*HARTREE_TO_KJ_MOL)
+        print("FRZ ENERGY: ", self._current_energies.frz*HARTREE_TO_KJ_MOL)
+        print("POL ENERGY: ", self._current_energies.pol*HARTREE_TO_KJ_MOL)
+        print("VCT ENERGY: ", self._current_energies.vct*HARTREE_TO_KJ_MOL)
+        print("DISP ENERGY: ", self._current_energies.disp*HARTREE_TO_KJ_MOL)
+        print("PAULI ENERGY: ", self._current_energies.pauli*HARTREE_TO_KJ_MOL)
+        print("WALL ENERGY: ", self._current_energies.pauli_wall*HARTREE_TO_KJ_MOL)
 
         # total_E = self._dispPauliForce.calc_energy(pos_bohr.flatten())
         # total_E = self._dispPauliForce.get_pauli_energy()
