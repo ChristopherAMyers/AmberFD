@@ -55,6 +55,8 @@ class DeltaR{
         DeltaR(const vec_d &coords, int i, int j, Periodicity period);
         void getDeltaR(const vec_d &coords, int i, int j);
         void getDeltaR(const vec_d &coords, int i, int j, Periodicity period);
+        void getDeltaR(const Vec3 &r1, const Vec3 &r2);
+        void getDeltaR(const Vec3 &r1, const Vec3 &r2, Periodicity period);
         Vec3 dR;
         double r, r_inv, r2;
         void get_pointer(double *deltaR);

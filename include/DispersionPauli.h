@@ -44,7 +44,7 @@ class DispersionPauli {
 
         void initialize();
         double calc_energy(const vec_d &coords);
-        double calc_one_pair(DeltaR &deltaR, int i, int j, Energies& energies);
+        double calc_one_pair(const vec_d &pos, DeltaR &deltaR, int i, int j, Energies& energies);
         Energies calc_one_pair(const vec_d &pos, int i, int j);
 
         void create_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, int bond_cutoff);
@@ -54,14 +54,16 @@ class DispersionPauli {
         void set_use_secondary_radii(bool use_radii=true);
 
         //  periodic boundary conditions
-        void set_use_PBC(const bool is_periodic);
-        void set_use_PBC(const bool is_periodic, const double x, const double y, const double z);
+        void set_use_PBC(bool is_periodic);
+        void set_use_PBC(bool is_periodic, const double x, const double y, const double z);
         bool get_use_PBC();
 
-        //class Info;
-        vec_i nuclei;
-    private:
+        //  pseudo-spheroid repulsion
+        void set_use_two_site_repulsion(bool on_off);
+        void create_repulsion_sites(double vertical_dist, const std::vector<std::pair<int, int> > &bonds);
         
+    private:
+        vec_i nuclei;
         vec_d pauli_exponents;
         vec_d pauli_coeff;
         vec_d pauli_radii;
@@ -92,7 +94,14 @@ class DispersionPauli {
         map_id secondary_radii_map;
         void set_all_secondary_radii();
         Periodicity periodicity;
-        
+
+        //  out of plane repulsion
+        std::vector<std::pair<int, int>> two_site_indicies;
+        bool two_site_indicies_set, use_two_site_repulsion;
+        void calc_two_site_repulsion(const vec_d &pos, DeltaR &deltaR, int i, int j, Energies& energies);
+        double two_site_dist;
+        Vec3 get_perp_vector(const vec_d &pos, int i, int j, int k);
+
 };
 
 class Info

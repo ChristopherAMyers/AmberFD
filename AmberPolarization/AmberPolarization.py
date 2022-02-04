@@ -2,17 +2,15 @@ from copy import deepcopy, copy
 import enum
 from statistics import harmonic_mean
 from openmm.app import forcefield as ff, Simulation, Element, GromacsTopFile, GromacsGroFile, PDBFile, Modeller
-from openmm.app.topology import Topology
 from openmm.openmm import CustomExternalForce, Vec3, NonbondedForce, Context as CT
 import openmm.unit as uu
+from openmm.app import Topology
 import sys
 from os.path import *
 import numpy as np
 import openmm as mm
 from openmm.app.simulation import string_types
 from scipy.optimize import minimize, OptimizeResult
-from itertools import combinations
-
 import time
 
 try:
@@ -259,6 +257,26 @@ class MoleculeImporter():
         self.positions = None
         self.forcefield = None
 
+        #   add additional bond deffinitions
+        #   first create a blank topology to force openmm.app.Topology
+        #   to load their standard bonds
+        _blank_top = Topology()
+        _blank_top.createStandardBonds()
+        #   then add out own deffinitions
+        res_file = join(dirname(__file__), 'residues.xml')
+        if isfile(res_file):
+            Topology.loadBondDefinitions(res_file)
+        for file in ff_files:
+            try:
+                # this handles either filenames or open file-like objects
+                Topology.loadBondDefinitions(file)
+            except FileNotFoundError:
+                for dataDir in ff._getDataDirectories(): 
+                    f = join(dataDir, file)
+                    if isfile(f):
+                        Topology.loadBondDefinitions(f)
+                        break
+
         if isinstance(structure_files, str):
             structure_files = tuple([structure_files])
         elif isinstance(structure_files, list):
@@ -287,25 +305,6 @@ class MoleculeImporter():
             box_dims = gro.getPeriodicBoxVectors()
         else:
             raise ValueError("Structure files must be .pdb or (.gro, .top)")
-
-        #   add additional bond deffinitions
-
-        # #   first add out own deffinitions
-        # res_file = join(dirname(__file__), 'residues.xml')
-        # if isfile(res_file):
-        #     print("ADDING")
-        #     Topology.loadBondDefinitions(res_file)
-        # for file in ff_files:
-        #     try:
-        #         # this handles either filenames or open file-like objects
-        #         Topology.loadBondDefinitions(file)
-        #     except FileNotFoundError:
-        #         for dataDir in ff._getDataDirectories(): 
-        #             f = join(dataDir, file)
-        #             if isfile(f):
-        #                 Topology.loadBondDefinitions(f)
-        #                 break
-        # topology.createStandardBonds()
 
         #   add virtual sites to model
         modeller = Modeller(topology, positions)
@@ -390,10 +389,6 @@ class Context(mm.Context):
         self._dont_update = False
         self._currentStep = 0
 
-        
-
-        
-
     def _update_force(self):
         #return
         if self._dont_update: return
@@ -409,15 +404,14 @@ class Context(mm.Context):
         total_E = self._current_energies.total()
         fd_forces = np.array(self._FD_solver.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
 
-        # np.savetxt('rho2.txt', self._flucDensForce.get_delta_rho())
-        # print(self._flucDensForce.get_num_constraints())
-        print("TOTAL ENERGY: ", total_E*HARTREE_TO_KJ_MOL)
-        print("FRZ ENERGY: ", self._current_energies.frz*HARTREE_TO_KJ_MOL)
-        print("POL ENERGY: ", self._current_energies.pol*HARTREE_TO_KJ_MOL)
-        print("VCT ENERGY: ", self._current_energies.vct*HARTREE_TO_KJ_MOL)
-        print("DISP ENERGY: ", self._current_energies.disp*HARTREE_TO_KJ_MOL)
+        # print("TOTAL ENERGY: ", total_E*HARTREE_TO_KJ_MOL)
+        print("FRZ ENERGY:   ", self._current_energies.frz*HARTREE_TO_KJ_MOL)
+        print("POL ENERGY:   ", (self._current_energies.pol + self._current_energies.vct)*HARTREE_TO_KJ_MOL)
+        print("VCT ENERGY:   ", self._current_energies.vct*HARTREE_TO_KJ_MOL)
+        print("DISP ENERGY:  ", self._current_energies.disp*HARTREE_TO_KJ_MOL)
         print("PAULI ENERGY: ", self._current_energies.pauli*HARTREE_TO_KJ_MOL)
-        print("WALL ENERGY: ", self._current_energies.pauli_wall*HARTREE_TO_KJ_MOL)
+        print("WALL ENERGY:  ", self._current_energies.pauli_wall*HARTREE_TO_KJ_MOL)
+        print()
 
         # total_E = self._dispPauliForce.calc_energy(pos_bohr.flatten())
         # total_E = self._dispPauliForce.get_pauli_energy()

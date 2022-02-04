@@ -1,0 +1,1683 @@
+<ForceField>
+  <Info>
+    <DateGenerated>2021-01-26</DateGenerated>
+    <Source Source="oldff/leaprc.ff99SB" md5hash="85de6ec9f96bd4ddf3b43161444cbc16" sourcePackage="AmberTools" sourcePackageVersion="20.15">oldff/leaprc.ff99SB</Source>
+    <Reference>Hornak, V., Abel, R., Okur, A., Strockbine, B., Roitberg, A., and Simmerling, C. (2006). Comparison of multiple Amber force fields and development of improved protein backbone parameters. Proteins 65, 712-725.</Reference>
+  </Info>
+  <AtomTypes>
+    <Type element="C" name="C" class="C" mass="12.01" />
+    <Type element="C" name="CA" class="CA" mass="12.01" />
+    <Type element="C" name="CB" class="CB" mass="12.01" />
+    <Type element="C" name="CC" class="CC" mass="12.01" />
+    <Type element="C" name="CK" class="CK" mass="12.01" />
+    <Type element="C" name="CM" class="CM" mass="12.01" />
+    <Type element="C" name="CN" class="CN" mass="12.01" />
+    <Type element="C" name="CQ" class="CQ" mass="12.01" />
+    <Type element="C" name="CR" class="CR" mass="12.01" />
+    <Type element="C" name="CT" class="CT" mass="12.01" />
+    <Type element="C" name="CV" class="CV" mass="12.01" />
+    <Type element="C" name="CW" class="CW" mass="12.01" />
+    <Type element="C" name="C*" class="C*" mass="12.01" />
+    <Type element="H" name="H" class="H" mass="1.008" />
+    <Type element="H" name="HC" class="HC" mass="1.008" />
+    <Type element="H" name="H1" class="H1" mass="1.008" />
+    <Type element="H" name="H2" class="H2" mass="1.008" />
+    <Type element="H" name="HA" class="HA" mass="1.008" />
+    <Type element="H" name="H4" class="H4" mass="1.008" />
+    <Type element="H" name="H5" class="H5" mass="1.008" />
+    <Type element="H" name="HO" class="HO" mass="1.008" />
+    <Type element="H" name="HS" class="HS" mass="1.008" />
+    <Type element="H" name="HP" class="HP" mass="1.008" />
+    <Type element="N" name="N" class="N" mass="14.01" />
+    <Type element="N" name="NA" class="NA" mass="14.01" />
+    <Type element="N" name="NB" class="NB" mass="14.01" />
+    <Type element="N" name="NC" class="NC" mass="14.01" />
+    <Type element="N" name="N2" class="N2" mass="14.01" />
+    <Type element="N" name="N3" class="N3" mass="14.01" />
+    <Type element="N" name="N*" class="N*" mass="14.01" />
+    <Type element="O" name="O" class="O" mass="16.0" />
+    <Type element="O" name="O2" class="O2" mass="16.0" />
+    <Type element="O" name="OH" class="OH" mass="16.0" />
+    <!-- Begin Chen-Garica -->
+      <Type element="O" name="OSS" class="OSS" mass="16.0" />
+    <!-- End Chen-Garica -->
+    <Type element="O" name="OS" class="OS" mass="16.0" />
+    <Type element="P" name="P" class="P" mass="30.97" />
+    <Type element="S" name="S" class="S" mass="32.06" />
+    <Type element="S" name="SH" class="SH" mass="32.06" />
+     <Type name="Na" class="Na" element="Na" mass="22.989769282" />
+     <Type name="Cl" class="Cl" element="Cl" mass="35.4532" />
+    <!-- Lone Pair Additions -->
+    <Type name="LP" class="LP" mass="0.0" />
+  </AtomTypes>
+  <Residues>
+      <Residue name="A">
+      <Atom  name="H9"   type="H"     charge="0.1241"    frz_exp="2.60000"   dyn_exp="0.00000"   frz_chg="0.12410"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N9"   type="N*"    charge="-0.0251"   frz_exp="3.24043"   dyn_exp="1.30032"   frz_chg="0.23200"   pauli_exp="1.74595"   pauli_radii="5.96013" />
+      <Atom  name="C8"   type="CK"    charge="0.2006"    frz_exp="2.03006"   dyn_exp="1.91126"   frz_chg="-0.37370"  pauli_exp="1.12440"   pauli_radii="5.65655" />
+      <Atom  name="H8"   type="H5"    charge="0.1553"    frz_exp="3.30649"   dyn_exp="1.30614"   frz_chg="0.24310"   pauli_exp="1.58769"   pauli_radii="3.80466" />
+      <Atom  name="N7"   type="NB"    charge="-0.6073"   frz_exp="2.47348"   dyn_exp="1.88718"   frz_chg="0.26940"   pauli_exp="1.74595"   pauli_radii="5.99266" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.73695"   dyn_exp="1.30037"   frz_chg="-0.38790"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.0515"    frz_exp="2.36947"   dyn_exp="2.54211"   frz_chg="-0.18280"  pauli_exp="1.12440"   pauli_radii="5.62459" />
+      <Atom  name="C6"   type="CA"    charge="0.7009"    frz_exp="2.28337"   dyn_exp="2.03863"   frz_chg="0.55180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N6"   type="N2"    charge="-0.9019"   frz_exp="2.12346"   dyn_exp="1.30017"   frz_chg="-0.88270"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H61"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="H62"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="N1"   type="NC"    charge="-0.7615"   frz_exp="2.31903"   dyn_exp="4.23179"   frz_chg="-0.10230"  pauli_exp="1.62260"   pauli_radii="6.33396" />
+      <Atom  name="LP1"  type="LP"    charge="0.0000"    frz_exp="2.66573"   dyn_exp="1.67707"   frz_chg="-0.26860"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="CQ"    charge="0.5875"    frz_exp="2.04883"   dyn_exp="4.86285"   frz_chg="-0.03480"  pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="H2"   type="H5"    charge="0.0473"    frz_exp="3.19819"   dyn_exp="1.32082"   frz_chg="0.17110"   pauli_exp="1.58769"   pauli_radii="3.77945" />
+      <Atom  name="N3"   type="NC"    charge="-0.6997"   frz_exp="2.56710"   dyn_exp="1.94933"   frz_chg="-0.02250"  pauli_exp="1.74595"   pauli_radii="5.88708" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="2.89854"   dyn_exp="1.30199"   frz_chg="-0.28780"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.3053"    frz_exp="2.33934"   dyn_exp="2.26428"   frz_chg="0.14630"   pauli_exp="1.12440"   pauli_radii="5.62568" />
+      <VirtualSite type="localCoords" siteName="LP1" atomName1="N1" atomName2="C2" atomName3="C6" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C5" atomName3="C8" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H9" atomName2="N9" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="N6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N6" atomName2="H61" />
+      <Bond atomName1="N6" atomName2="H62" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="H2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="LP1" atomName2="C2" />
+      <Bond atomName1="LP1" atomName2="C6" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+    </Residue>
+    <Residue name="AM">
+      <Atom  name="H91"  type="HC"    charge="0.1493"    frz_exp="2.71446"   dyn_exp="3.08237"   frz_chg="0.14930"   pauli_exp="1.58769"   pauli_radii="3.77961" />
+      <Atom  name="H92"  type="HC"    charge="0.1493"    frz_exp="2.71446"   dyn_exp="3.08237"   frz_chg="0.14930"   pauli_exp="1.58769"   pauli_radii="3.77961" />
+      <Atom  name="H93"  type="HC"    charge="0.1493"    frz_exp="2.71446"   dyn_exp="3.08237"   frz_chg="0.14930"   pauli_exp="1.58769"   pauli_radii="3.77961" />
+      <Atom  name="C9"   type="CT"    charge="-0.3239"   frz_exp="2.20636"   dyn_exp="3.37142"   frz_chg="-0.32390"  pauli_exp="1.12440"   pauli_radii="5.48851" />
+      <Atom  name="N9"   type="N*"    charge="-0.0251"   frz_exp="3.24043"   dyn_exp="1.30032"   frz_chg="0.23200"   pauli_exp="1.74595"   pauli_radii="5.96013" />
+      <Atom  name="C8"   type="CK"    charge="0.2006"    frz_exp="2.03006"   dyn_exp="1.91126"   frz_chg="-0.37370"  pauli_exp="1.12440"   pauli_radii="5.65655" />
+      <Atom  name="H8"   type="H5"    charge="0.1553"    frz_exp="3.30649"   dyn_exp="1.30614"   frz_chg="0.24310"   pauli_exp="1.58769"   pauli_radii="3.80466" />
+      <Atom  name="N7"   type="NB"    charge="-0.6073"   frz_exp="2.47348"   dyn_exp="1.88718"   frz_chg="0.26940"   pauli_exp="1.74595"   pauli_radii="5.99266" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.73695"   dyn_exp="1.30037"   frz_chg="-0.38790"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.0515"    frz_exp="2.36947"   dyn_exp="2.54211"   frz_chg="-0.18280"  pauli_exp="1.12440"   pauli_radii="5.62459" />
+      <Atom  name="C6"   type="CA"    charge="0.7009"    frz_exp="2.28337"   dyn_exp="2.03863"   frz_chg="0.55180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N6"   type="N2"    charge="-0.9019"   frz_exp="2.12346"   dyn_exp="1.30017"   frz_chg="-0.88270"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H61"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="H62"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="N1"   type="NC"    charge="-0.7615"   frz_exp="2.31903"   dyn_exp="4.23179"   frz_chg="-0.10230"  pauli_exp="1.62260"   pauli_radii="6.33396" />
+      <Atom  name="LP1"  type="LP"    charge="0.0000"    frz_exp="2.66573"   dyn_exp="1.67707"   frz_chg="-0.26860"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="CQ"    charge="0.5875"    frz_exp="2.04883"   dyn_exp="4.86285"   frz_chg="-0.03480"  pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="H2"   type="H5"    charge="0.0473"    frz_exp="3.19819"   dyn_exp="1.32082"   frz_chg="0.17110"   pauli_exp="1.58769"   pauli_radii="3.77945" />
+      <Atom  name="N3"   type="NC"    charge="-0.6997"   frz_exp="2.56710"   dyn_exp="1.94933"   frz_chg="-0.02250"  pauli_exp="1.74595"   pauli_radii="5.88708" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="2.89854"   dyn_exp="1.30199"   frz_chg="-0.28780"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.3053"    frz_exp="2.33934"   dyn_exp="2.26428"   frz_chg="0.14630"   pauli_exp="1.12440"   pauli_radii="5.62568" />
+      <VirtualSite type="localCoords" siteName="LP1" atomName1="N1" atomName2="C2" atomName3="C6" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C5" atomName3="C8" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="C9" atomName2="H91" />
+      <Bond atomName1="C9" atomName2="H92" />
+      <Bond atomName1="C9" atomName2="H93" />
+      <Bond atomName1="C9" atomName2="N9" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="N6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N6" atomName2="H61" />
+      <Bond atomName1="N6" atomName2="H62" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="H2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="LP1" atomName2="C2" />
+      <Bond atomName1="LP1" atomName2="C6" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+    </Residue>
+    <Residue name="RA">
+      <Atom  name="P"    type="P"     charge="1.1662"  />
+      <Atom  name="O1P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O2P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O5'"  type="OS"    charge="-0.4989" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0394"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2007"  />
+      <Atom  name="N9"   type="N*"    charge="-0.0251"   frz_exp="3.24043"   dyn_exp="1.30032"   frz_chg="0.23200"   pauli_exp="1.74595"   pauli_radii="5.96013" />
+      <Atom  name="C8"   type="CK"    charge="0.2006"    frz_exp="2.03006"   dyn_exp="1.91126"   frz_chg="-0.37370"  pauli_exp="1.12440"   pauli_radii="5.65655" />
+      <Atom  name="H8"   type="H5"    charge="0.1553"    frz_exp="3.30649"   dyn_exp="1.30614"   frz_chg="0.24310"   pauli_exp="1.58769"   pauli_radii="3.80466" />
+      <Atom  name="N7"   type="NB"    charge="-0.6073"   frz_exp="2.47348"   dyn_exp="1.88718"   frz_chg="0.26940"   pauli_exp="1.74595"   pauli_radii="5.99266" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.73695"   dyn_exp="1.30037"   frz_chg="-0.38790"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.0515"    frz_exp="2.36947"   dyn_exp="2.54211"   frz_chg="-0.18280"  pauli_exp="1.12440"   pauli_radii="5.62459" />
+      <Atom  name="C6"   type="CA"    charge="0.7009"    frz_exp="2.28337"   dyn_exp="2.03863"   frz_chg="0.55180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N6"   type="N2"    charge="-0.9019"   frz_exp="2.12346"   dyn_exp="1.30017"   frz_chg="-0.88270"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H61"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="H62"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="N1"   type="NC"    charge="-0.7615"   frz_exp="2.31903"   dyn_exp="4.23179"   frz_chg="-0.10230"  pauli_exp="1.62260"   pauli_radii="6.33396" />
+      <Atom  name="LP1"  type="LP"    charge="0.0000"    frz_exp="2.66573"   dyn_exp="1.67707"   frz_chg="-0.26860"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="CQ"    charge="0.5875"    frz_exp="2.04883"   dyn_exp="4.86285"   frz_chg="-0.03480"  pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="H2"   type="H5"    charge="0.0473"    frz_exp="3.19819"   dyn_exp="1.32082"   frz_chg="0.17110"   pauli_exp="1.58769"   pauli_radii="3.77945" />
+      <Atom  name="N3"   type="NC"    charge="-0.6997"   frz_exp="2.56710"   dyn_exp="1.94933"   frz_chg="-0.02250"  pauli_exp="1.74595"   pauli_radii="5.88708" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="2.89854"   dyn_exp="1.30199"   frz_chg="-0.28780"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.3053"    frz_exp="2.33934"   dyn_exp="2.26428"   frz_chg="0.14630"   pauli_exp="1.12440"   pauli_radii="5.62568" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OS"    charge="-0.5246" />
+      <VirtualSite type="localCoords" siteName="LP1" atomName1="N1" atomName2="C2" atomName3="C6" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C5" atomName3="C8" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="P" atomName2="O1P" />
+      <Bond atomName1="P" atomName2="O2P" />
+      <Bond atomName1="P" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N9" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="N6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N6" atomName2="H61" />
+      <Bond atomName1="N6" atomName2="H62" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="H2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="LP1" atomName2="C2" />
+      <Bond atomName1="LP1" atomName2="C6" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+      <ExternalBond atomName="P" />
+      <ExternalBond atomName="O3'" />
+    </Residue>
+    <Residue name="RA3">
+      <Atom  name="P"    type="P"     charge="1.1662"  />
+      <Atom  name="O1P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O2P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O5'"  type="OS"    charge="-0.4989" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0394"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2007"  />
+      <Atom  name="N9"   type="N*"    charge="-0.0251"   frz_exp="3.24043"   dyn_exp="1.30032"   frz_chg="0.23200"   pauli_exp="1.74595"   pauli_radii="5.96013" />
+      <Atom  name="C8"   type="CK"    charge="0.2006"    frz_exp="2.03006"   dyn_exp="1.91126"   frz_chg="-0.37370"  pauli_exp="1.12440"   pauli_radii="5.65655" />
+      <Atom  name="H8"   type="H5"    charge="0.1553"    frz_exp="3.30649"   dyn_exp="1.30614"   frz_chg="0.24310"   pauli_exp="1.58769"   pauli_radii="3.80466" />
+      <Atom  name="N7"   type="NB"    charge="-0.6073"   frz_exp="2.47348"   dyn_exp="1.88718"   frz_chg="0.26940"   pauli_exp="1.74595"   pauli_radii="5.99266" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.73695"   dyn_exp="1.30037"   frz_chg="-0.38790"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.0515"    frz_exp="2.36947"   dyn_exp="2.54211"   frz_chg="-0.18280"  pauli_exp="1.12440"   pauli_radii="5.62459" />
+      <Atom  name="C6"   type="CA"    charge="0.7009"    frz_exp="2.28337"   dyn_exp="2.03863"   frz_chg="0.55180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N6"   type="N2"    charge="-0.9019"   frz_exp="2.12346"   dyn_exp="1.30017"   frz_chg="-0.88270"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H61"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="H62"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="N1"   type="NC"    charge="-0.7615"   frz_exp="2.31903"   dyn_exp="4.23179"   frz_chg="-0.10230"  pauli_exp="1.62260"   pauli_radii="6.33396" />
+      <Atom  name="LP1"  type="LP"    charge="0.0000"    frz_exp="2.66573"   dyn_exp="1.67707"   frz_chg="-0.26860"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="CQ"    charge="0.5875"    frz_exp="2.04883"   dyn_exp="4.86285"   frz_chg="-0.03480"  pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="H2"   type="H5"    charge="0.0473"    frz_exp="3.19819"   dyn_exp="1.32082"   frz_chg="0.17110"   pauli_exp="1.58769"   pauli_radii="3.77945" />
+      <Atom  name="N3"   type="NC"    charge="-0.6997"   frz_exp="2.56710"   dyn_exp="1.94933"   frz_chg="-0.02250"  pauli_exp="1.74595"   pauli_radii="5.88708" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="2.89854"   dyn_exp="1.30199"   frz_chg="-0.28780"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.3053"    frz_exp="2.33934"   dyn_exp="2.26428"   frz_chg="0.14630"   pauli_exp="1.12440"   pauli_radii="5.62568" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OH"    charge="-0.6541" />
+      <Atom  name="H3T"  type="HO"    charge="0.4376"  />
+      <VirtualSite type="localCoords" siteName="LP1" atomName1="N1" atomName2="C2" atomName3="C6" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C5" atomName3="C8" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="P" atomName2="O1P" />
+      <Bond atomName1="P" atomName2="O2P" />
+      <Bond atomName1="P" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N9" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="N6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N6" atomName2="H61" />
+      <Bond atomName1="N6" atomName2="H62" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="H2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="O3'" atomName2="H3T" />
+      <Bond atomName1="LP1" atomName2="C2" />
+      <Bond atomName1="LP1" atomName2="C6" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+      <ExternalBond atomName="P" />
+    </Residue>
+    <Residue name="RA5">
+      <Atom  name="H5T"  type="HO"    charge="0.4295"  />
+      <Atom  name="O5'"  type="OH"    charge="-0.6223" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0394"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2007"  />
+      <Atom  name="N9"   type="N*"    charge="-0.0251"   frz_exp="3.24043"   dyn_exp="1.30032"   frz_chg="0.23200"   pauli_exp="1.74595"   pauli_radii="5.96013" />
+      <Atom  name="C8"   type="CK"    charge="0.2006"    frz_exp="2.03006"   dyn_exp="1.91126"   frz_chg="-0.37370"  pauli_exp="1.12440"   pauli_radii="5.65655" />
+      <Atom  name="H8"   type="H5"    charge="0.1553"    frz_exp="3.30649"   dyn_exp="1.30614"   frz_chg="0.24310"   pauli_exp="1.58769"   pauli_radii="3.80466" />
+      <Atom  name="N7"   type="NB"    charge="-0.6073"   frz_exp="2.47348"   dyn_exp="1.88718"   frz_chg="0.26940"   pauli_exp="1.74595"   pauli_radii="5.99266" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.73695"   dyn_exp="1.30037"   frz_chg="-0.38790"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.0515"    frz_exp="2.36947"   dyn_exp="2.54211"   frz_chg="-0.18280"  pauli_exp="1.12440"   pauli_radii="5.62459" />
+      <Atom  name="C6"   type="CA"    charge="0.7009"    frz_exp="2.28337"   dyn_exp="2.03863"   frz_chg="0.55180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N6"   type="N2"    charge="-0.9019"   frz_exp="2.12346"   dyn_exp="1.30017"   frz_chg="-0.88270"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H61"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="H62"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="N1"   type="NC"    charge="-0.7615"   frz_exp="2.31903"   dyn_exp="4.23179"   frz_chg="-0.10230"  pauli_exp="1.62260"   pauli_radii="6.33396" />
+      <Atom  name="LP1"  type="LP"    charge="0.0000"    frz_exp="2.66573"   dyn_exp="1.67707"   frz_chg="-0.26860"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="CQ"    charge="0.5875"    frz_exp="2.04883"   dyn_exp="4.86285"   frz_chg="-0.03480"  pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="H2"   type="H5"    charge="0.0473"    frz_exp="3.19819"   dyn_exp="1.32082"   frz_chg="0.17110"   pauli_exp="1.58769"   pauli_radii="3.77945" />
+      <Atom  name="N3"   type="NC"    charge="-0.6997"   frz_exp="2.56710"   dyn_exp="1.94933"   frz_chg="-0.02250"  pauli_exp="1.74595"   pauli_radii="5.88708" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="2.89854"   dyn_exp="1.30199"   frz_chg="-0.28780"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.3053"    frz_exp="2.33934"   dyn_exp="2.26428"   frz_chg="0.14630"   pauli_exp="1.12440"   pauli_radii="5.62568" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OS"    charge="-0.5246" />
+      <VirtualSite type="localCoords" siteName="LP1" atomName1="N1" atomName2="C2" atomName3="C6" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C5" atomName3="C8" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H5T" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N9" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="N6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N6" atomName2="H61" />
+      <Bond atomName1="N6" atomName2="H62" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="H2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="LP1" atomName2="C2" />
+      <Bond atomName1="LP1" atomName2="C6" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+      <ExternalBond atomName="O3'" />
+    </Residue>
+    <Residue name="RAN">
+      <Atom  name="H5T"  type="HO"    charge="0.4295"  />
+      <Atom  name="O5'"  type="OH"    charge="-0.6223" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0394"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2007"  />
+      <Atom  name="N9"   type="N*"    charge="-0.0251"   frz_exp="3.24043"   dyn_exp="1.30032"   frz_chg="0.23200"   pauli_exp="1.74595"   pauli_radii="5.96013" />
+      <Atom  name="C8"   type="CK"    charge="0.2006"    frz_exp="2.03006"   dyn_exp="1.91126"   frz_chg="-0.37370"  pauli_exp="1.12440"   pauli_radii="5.65655" />
+      <Atom  name="H8"   type="H5"    charge="0.1553"    frz_exp="3.30649"   dyn_exp="1.30614"   frz_chg="0.24310"   pauli_exp="1.58769"   pauli_radii="3.80466" />
+      <Atom  name="N7"   type="NB"    charge="-0.6073"   frz_exp="2.47348"   dyn_exp="1.88718"   frz_chg="0.26940"   pauli_exp="1.74595"   pauli_radii="5.99266" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.73695"   dyn_exp="1.30037"   frz_chg="-0.38790"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.0515"    frz_exp="2.36947"   dyn_exp="2.54211"   frz_chg="-0.18280"  pauli_exp="1.12440"   pauli_radii="5.62459" />
+      <Atom  name="C6"   type="CA"    charge="0.7009"    frz_exp="2.28337"   dyn_exp="2.03863"   frz_chg="0.55180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N6"   type="N2"    charge="-0.9019"   frz_exp="2.12346"   dyn_exp="1.30017"   frz_chg="-0.88270"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H61"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="H62"  type="H"     charge="0.4115"    frz_exp="2.40750"   dyn_exp="1.46329"   frz_chg="0.40270"   pauli_exp="1.72214"   pauli_radii="3.64717" />
+      <Atom  name="N1"   type="NC"    charge="-0.7615"   frz_exp="2.31903"   dyn_exp="4.23179"   frz_chg="-0.10230"  pauli_exp="1.62260"   pauli_radii="6.33396" />
+      <Atom  name="LP1"  type="LP"    charge="0.0000"    frz_exp="2.66573"   dyn_exp="1.67707"   frz_chg="-0.26860"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="CQ"    charge="0.5875"    frz_exp="2.04883"   dyn_exp="4.86285"   frz_chg="-0.03480"  pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="H2"   type="H5"    charge="0.0473"    frz_exp="3.19819"   dyn_exp="1.32082"   frz_chg="0.17110"   pauli_exp="1.58769"   pauli_radii="3.77945" />
+      <Atom  name="N3"   type="NC"    charge="-0.6997"   frz_exp="2.56710"   dyn_exp="1.94933"   frz_chg="-0.02250"  pauli_exp="1.74595"   pauli_radii="5.88708" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="2.89854"   dyn_exp="1.30199"   frz_chg="-0.28780"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.3053"    frz_exp="2.33934"   dyn_exp="2.26428"   frz_chg="0.14630"   pauli_exp="1.12440"   pauli_radii="5.62568" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OH"    charge="-0.6541" />
+      <Atom  name="H3T"  type="HO"    charge="0.4376"  />
+      <VirtualSite type="localCoords" siteName="LP1" atomName1="N1" atomName2="C2" atomName3="C6" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C5" atomName3="C8" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H5T" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N9" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="N6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N6" atomName2="H61" />
+      <Bond atomName1="N6" atomName2="H62" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="H2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="O3'" atomName2="H3T" />
+      <Bond atomName1="LP1" atomName2="C2" />
+      <Bond atomName1="LP1" atomName2="C6" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+    </Residue>
+    <Residue name="C">
+      <Atom  name="H1"   type="H"     charge="0.0934"    frz_exp="2.60000"   dyn_exp="0.00000"   frz_chg="0.09340"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N1"   type="N*"    charge="-0.0484"   frz_exp="3.34307"   dyn_exp="3.76322"   frz_chg="0.15460"   pauli_exp="1.74595"   pauli_radii="6.28623" />
+      <Atom  name="C6"   type="CM"    charge="0.0053"    frz_exp="2.16093"   dyn_exp="2.63852"   frz_chg="-0.12220"  pauli_exp="1.12440"   pauli_radii="5.77594" />
+      <Atom  name="H6"   type="H4"    charge="0.1958"    frz_exp="3.00674"   dyn_exp="2.23015"   frz_chg="0.17830"   pauli_exp="1.58769"   pauli_radii="3.81773" />
+      <Atom  name="C5"   type="CM"    charge="-0.5215"   frz_exp="2.20686"   dyn_exp="2.30595"   frz_chg="-0.51350"  pauli_exp="1.12440"   pauli_radii="5.85270" />
+      <Atom  name="H5"   type="HA"    charge="0.1928"    frz_exp="2.93586"   dyn_exp="1.34377"   frz_chg="0.21620"   pauli_exp="1.58769"   pauli_radii="3.82829" />
+      <Atom  name="C4"   type="CA"    charge="0.8185"    frz_exp="2.31723"   dyn_exp="2.14131"   frz_chg="0.69200"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N4"   type="N2"    charge="-0.953"    frz_exp="2.10229"   dyn_exp="2.61027"   frz_chg="-0.97980"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H41"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H42"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.7584"   frz_exp="2.31748"   dyn_exp="1.30334"   frz_chg="-0.25300"  pauli_exp="1.74595"   pauli_radii="6.14278" />
+      <Atom  name="LP3"  type="LP"    charge="-0.0000"   frz_exp="2.58670"   dyn_exp="1.65329"   frz_chg="-0.20870"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="C"     charge="0.7538"    frz_exp="2.10176"   dyn_exp="2.02903"   frz_chg="0.30660"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.6252"   frz_exp="2.60181"   dyn_exp="1.30006"   frz_chg="-0.14610"  pauli_exp="1.91738"   pauli_radii="5.58543" />
+      <Atom  name="LP2A" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H1" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="N4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N4" atomName2="H41" />
+      <Bond atomName1="N4" atomName2="H42" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+    </Residue>
+    <Residue name="CM">
+      <Atom  name="H11"  type="HC"    charge="0.1800"    frz_exp="3.03101"   dyn_exp="2.68252"   frz_chg="0.18000"   pauli_exp="1.58769"   pauli_radii="4.31242" />
+      <Atom  name="H12"  type="HC"    charge="0.1800"    frz_exp="3.03101"   dyn_exp="2.68252"   frz_chg="0.18000"   pauli_exp="1.58769"   pauli_radii="4.31242" />
+      <Atom  name="H13"  type="HC"    charge="0.1800"    frz_exp="3.03101"   dyn_exp="2.68252"   frz_chg="0.18000"   pauli_exp="1.58769"   pauli_radii="4.31242" />
+      <Atom  name="C1"   type="CT"    charge="-0.4464"   frz_exp="2.12649"   dyn_exp="2.94617"   frz_chg="-0.44640"  pauli_exp="1.12440"   pauli_radii="6.20116" />
+      <Atom  name="N1"   type="N*"    charge="-0.0484"   frz_exp="3.34307"   dyn_exp="3.76322"   frz_chg="0.15460"   pauli_exp="1.74595"   pauli_radii="6.28623" />
+      <Atom  name="C6"   type="CM"    charge="0.0053"    frz_exp="2.16093"   dyn_exp="2.63852"   frz_chg="-0.12220"  pauli_exp="1.12440"   pauli_radii="5.77594" />
+      <Atom  name="H6"   type="H4"    charge="0.1958"    frz_exp="3.00674"   dyn_exp="2.23015"   frz_chg="0.17830"   pauli_exp="1.58769"   pauli_radii="3.81773" />
+      <Atom  name="C5"   type="CM"    charge="-0.5215"   frz_exp="2.20686"   dyn_exp="2.30595"   frz_chg="-0.51350"  pauli_exp="1.12440"   pauli_radii="5.85270" />
+      <Atom  name="H5"   type="HA"    charge="0.1928"    frz_exp="2.93586"   dyn_exp="1.34377"   frz_chg="0.21620"   pauli_exp="1.58769"   pauli_radii="3.82829" />
+      <Atom  name="C4"   type="CA"    charge="0.8185"    frz_exp="2.31723"   dyn_exp="2.14131"   frz_chg="0.69200"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N4"   type="N2"    charge="-0.953"    frz_exp="2.10229"   dyn_exp="2.61027"   frz_chg="-0.97980"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H41"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H42"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.7584"   frz_exp="2.31748"   dyn_exp="1.30334"   frz_chg="-0.25300"  pauli_exp="1.74595"   pauli_radii="6.14278" />
+      <Atom  name="LP3"  type="LP"    charge="-0.0000"   frz_exp="2.58670"   dyn_exp="1.65329"   frz_chg="-0.20870"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="C"     charge="0.7538"    frz_exp="2.10176"   dyn_exp="2.02903"   frz_chg="0.30660"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.6252"   frz_exp="2.60181"   dyn_exp="1.30006"   frz_chg="-0.14610"  pauli_exp="1.91738"   pauli_radii="5.58543" />
+      <Atom  name="LP2A" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="C1" atomName2="H11" />
+      <Bond atomName1="C1" atomName2="H12" />
+      <Bond atomName1="C1" atomName2="H13" />
+      <Bond atomName1="C1" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="N4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N4" atomName2="H41" />
+      <Bond atomName1="N4" atomName2="H42" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+    </Residue>
+    <Residue name="RC">
+      <Atom  name="P"    type="P"     charge="1.1662"  />
+      <Atom  name="O1P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O2P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O5'"  type="OS"    charge="-0.4989" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0066"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2029"  />
+      <Atom  name="N1"   type="N*"    charge="-0.0484"   frz_exp="3.34307"   dyn_exp="3.76322"   frz_chg="0.15460"   pauli_exp="1.74595"   pauli_radii="6.28623" />
+      <Atom  name="C6"   type="CM"    charge="0.0053"    frz_exp="2.16093"   dyn_exp="2.63852"   frz_chg="-0.12220"  pauli_exp="1.12440"   pauli_radii="5.77594" />
+      <Atom  name="H6"   type="H4"    charge="0.1958"    frz_exp="3.00674"   dyn_exp="2.23015"   frz_chg="0.17830"   pauli_exp="1.58769"   pauli_radii="3.81773" />
+      <Atom  name="C5"   type="CM"    charge="-0.5215"   frz_exp="2.20686"   dyn_exp="2.30595"   frz_chg="-0.51350"  pauli_exp="1.12440"   pauli_radii="5.85270" />
+      <Atom  name="H5"   type="HA"    charge="0.1928"    frz_exp="2.93586"   dyn_exp="1.34377"   frz_chg="0.21620"   pauli_exp="1.58769"   pauli_radii="3.82829" />
+      <Atom  name="C4"   type="CA"    charge="0.8185"    frz_exp="2.31723"   dyn_exp="2.14131"   frz_chg="0.69200"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N4"   type="N2"    charge="-0.953"    frz_exp="2.10229"   dyn_exp="2.61027"   frz_chg="-0.97980"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H41"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H42"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.7584"   frz_exp="2.31748"   dyn_exp="1.30334"   frz_chg="-0.25300"  pauli_exp="1.74595"   pauli_radii="6.14278" />
+      <Atom  name="LP3"  type="LP"    charge="-0.0000"   frz_exp="2.58670"   dyn_exp="1.65329"   frz_chg="-0.20870"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="C"     charge="0.7538"    frz_exp="2.10176"   dyn_exp="2.02903"   frz_chg="0.30660"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.6252"   frz_exp="2.60181"   dyn_exp="1.30006"   frz_chg="-0.14610"  pauli_exp="1.91738"   pauli_radii="5.58543" />
+      <Atom  name="LP2A" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OS"    charge="-0.5246" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="P" atomName2="O1P" />
+      <Bond atomName1="P" atomName2="O2P" />
+      <Bond atomName1="P" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N1" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="N4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N4" atomName2="H41" />
+      <Bond atomName1="N4" atomName2="H42" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP2A" atomName2="C2" />
+      <Bond atomName1="LP2B" atomName2="C2" />
+      <ExternalBond atomName="P" />
+      <ExternalBond atomName="O3'" />
+    </Residue>
+    <Residue name="RC3">
+      <Atom  name="P"    type="P"     charge="1.1662"  />
+      <Atom  name="O1P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O2P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O5'"  type="OS"    charge="-0.4989" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0066"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2029"  />
+      <Atom  name="N1"   type="N*"    charge="-0.0484"   frz_exp="3.34307"   dyn_exp="3.76322"   frz_chg="0.15460"   pauli_exp="1.74595"   pauli_radii="6.28623" />
+      <Atom  name="C6"   type="CM"    charge="0.0053"    frz_exp="2.16093"   dyn_exp="2.63852"   frz_chg="-0.12220"  pauli_exp="1.12440"   pauli_radii="5.77594" />
+      <Atom  name="H6"   type="H4"    charge="0.1958"    frz_exp="3.00674"   dyn_exp="2.23015"   frz_chg="0.17830"   pauli_exp="1.58769"   pauli_radii="3.81773" />
+      <Atom  name="C5"   type="CM"    charge="-0.5215"   frz_exp="2.20686"   dyn_exp="2.30595"   frz_chg="-0.51350"  pauli_exp="1.12440"   pauli_radii="5.85270" />
+      <Atom  name="H5"   type="HA"    charge="0.1928"    frz_exp="2.93586"   dyn_exp="1.34377"   frz_chg="0.21620"   pauli_exp="1.58769"   pauli_radii="3.82829" />
+      <Atom  name="C4"   type="CA"    charge="0.8185"    frz_exp="2.31723"   dyn_exp="2.14131"   frz_chg="0.69200"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N4"   type="N2"    charge="-0.953"    frz_exp="2.10229"   dyn_exp="2.61027"   frz_chg="-0.97980"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H41"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H42"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.7584"   frz_exp="2.31748"   dyn_exp="1.30334"   frz_chg="-0.25300"  pauli_exp="1.74595"   pauli_radii="6.14278" />
+      <Atom  name="LP3"  type="LP"    charge="-0.0000"   frz_exp="2.58670"   dyn_exp="1.65329"   frz_chg="-0.20870"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="C"     charge="0.7538"    frz_exp="2.10176"   dyn_exp="2.02903"   frz_chg="0.30660"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.6252"   frz_exp="2.60181"   dyn_exp="1.30006"   frz_chg="-0.14610"  pauli_exp="1.91738"   pauli_radii="5.58543" />
+      <Atom  name="LP2A" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OH"    charge="-0.6541" />
+      <Atom  name="H3T"  type="HO"    charge="0.4376"  />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="P" atomName2="O1P" />
+      <Bond atomName1="P" atomName2="O2P" />
+      <Bond atomName1="P" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N1" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="N4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N4" atomName2="H41" />
+      <Bond atomName1="N4" atomName2="H42" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="O3'" atomName2="H3T" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP2A" atomName2="C2" />
+      <Bond atomName1="LP2B" atomName2="C2" />
+      <ExternalBond atomName="P" />
+    </Residue>
+    <Residue name="RC5">
+      <Atom  name="H5T"  type="HO"    charge="0.4295"  />
+      <Atom  name="O5'"  type="OH"    charge="-0.6223" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0066"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2029"  />
+      <Atom  name="N1"   type="N*"    charge="-0.0484"   frz_exp="3.34307"   dyn_exp="3.76322"   frz_chg="0.15460"   pauli_exp="1.74595"   pauli_radii="6.28623" />
+      <Atom  name="C6"   type="CM"    charge="0.0053"    frz_exp="2.16093"   dyn_exp="2.63852"   frz_chg="-0.12220"  pauli_exp="1.12440"   pauli_radii="5.77594" />
+      <Atom  name="H6"   type="H4"    charge="0.1958"    frz_exp="3.00674"   dyn_exp="2.23015"   frz_chg="0.17830"   pauli_exp="1.58769"   pauli_radii="3.81773" />
+      <Atom  name="C5"   type="CM"    charge="-0.5215"   frz_exp="2.20686"   dyn_exp="2.30595"   frz_chg="-0.51350"  pauli_exp="1.12440"   pauli_radii="5.85270" />
+      <Atom  name="H5"   type="HA"    charge="0.1928"    frz_exp="2.93586"   dyn_exp="1.34377"   frz_chg="0.21620"   pauli_exp="1.58769"   pauli_radii="3.82829" />
+      <Atom  name="C4"   type="CA"    charge="0.8185"    frz_exp="2.31723"   dyn_exp="2.14131"   frz_chg="0.69200"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N4"   type="N2"    charge="-0.953"    frz_exp="2.10229"   dyn_exp="2.61027"   frz_chg="-0.97980"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H41"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H42"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.7584"   frz_exp="2.31748"   dyn_exp="1.30334"   frz_chg="-0.25300"  pauli_exp="1.74595"   pauli_radii="6.14278" />
+      <Atom  name="LP3"  type="LP"    charge="-0.0000"   frz_exp="2.58670"   dyn_exp="1.65329"   frz_chg="-0.20870"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="C"     charge="0.7538"    frz_exp="2.10176"   dyn_exp="2.02903"   frz_chg="0.30660"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.6252"   frz_exp="2.60181"   dyn_exp="1.30006"   frz_chg="-0.14610"  pauli_exp="1.91738"   pauli_radii="5.58543" />
+      <Atom  name="LP2A" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OS"    charge="-0.5246" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H5T" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N1" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="N4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N4" atomName2="H41" />
+      <Bond atomName1="N4" atomName2="H42" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP2A" atomName2="C2" />
+      <Bond atomName1="LP2B" atomName2="C2" />
+      <ExternalBond atomName="O3'" />
+    </Residue>
+    <Residue name="RCN">
+      <Atom  name="H5T"  type="HO"    charge="0.4295"  />
+      <Atom  name="O5'"  type="OH"    charge="-0.6223" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0066"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2029"  />
+      <Atom  name="N1"   type="N*"    charge="-0.0484"   frz_exp="3.34307"   dyn_exp="3.76322"   frz_chg="0.15460"   pauli_exp="1.74595"   pauli_radii="6.28623" />
+      <Atom  name="C6"   type="CM"    charge="0.0053"    frz_exp="2.16093"   dyn_exp="2.63852"   frz_chg="-0.12220"  pauli_exp="1.12440"   pauli_radii="5.77594" />
+      <Atom  name="H6"   type="H4"    charge="0.1958"    frz_exp="3.00674"   dyn_exp="2.23015"   frz_chg="0.17830"   pauli_exp="1.58769"   pauli_radii="3.81773" />
+      <Atom  name="C5"   type="CM"    charge="-0.5215"   frz_exp="2.20686"   dyn_exp="2.30595"   frz_chg="-0.51350"  pauli_exp="1.12440"   pauli_radii="5.85270" />
+      <Atom  name="H5"   type="HA"    charge="0.1928"    frz_exp="2.93586"   dyn_exp="1.34377"   frz_chg="0.21620"   pauli_exp="1.58769"   pauli_radii="3.82829" />
+      <Atom  name="C4"   type="CA"    charge="0.8185"    frz_exp="2.31723"   dyn_exp="2.14131"   frz_chg="0.69200"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="N4"   type="N2"    charge="-0.953"    frz_exp="2.10229"   dyn_exp="2.61027"   frz_chg="-0.97980"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H41"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H42"  type="H"     charge="0.4234"    frz_exp="2.73791"   dyn_exp="3.55316"   frz_chg="0.42700"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.7584"   frz_exp="2.31748"   dyn_exp="1.30334"   frz_chg="-0.25300"  pauli_exp="1.74595"   pauli_radii="6.14278" />
+      <Atom  name="LP3"  type="LP"    charge="-0.0000"   frz_exp="2.58670"   dyn_exp="1.65329"   frz_chg="-0.20870"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C2"   type="C"     charge="0.7538"    frz_exp="2.10176"   dyn_exp="2.02903"   frz_chg="0.30660"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.6252"   frz_exp="2.60181"   dyn_exp="1.30006"   frz_chg="-0.14610"  pauli_exp="1.91738"   pauli_radii="5.58543" />
+      <Atom  name="LP2A" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="-0.0000"   frz_exp="2.59237"   dyn_exp="4.99964"   frz_chg="-0.13590"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OH"    charge="-0.6541" />
+      <Atom  name="H3T"  type="HO"    charge="0.4376"  />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H5T" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N1" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="N4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N4" atomName2="H41" />
+      <Bond atomName1="N4" atomName2="H42" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="O3'" atomName2="H3T" />
+      <!-- <Bond atomName1="LP3" atomName2="C2"/>
+      <Bond atomName1="LP3" atomName2="C4"/>
+      <Bond atomName1="LP2A" atomName2="C2"/>
+      <Bond atomName1="LP2B" atomName2="C2"/> -->
+    </Residue>
+    <Residue name="G">
+      <Atom  name="H9"   type="H"     charge="0.1037"    frz_exp="2.60000"   dyn_exp="0.00000"   frz_chg="0.10370"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N9"   type="N*"    charge="0.0492"    frz_exp="3.04901"   dyn_exp="1.81383"   frz_chg="0.20170"   pauli_exp="1.74595"   pauli_radii="5.86886" />
+      <Atom  name="C8"   type="CK"    charge="0.1374"    frz_exp="2.07969"   dyn_exp="2.24725"   frz_chg="-0.32550"  pauli_exp="1.12440"   pauli_radii="5.54576" />
+      <Atom  name="H8"   type="H5"    charge="0.164"     frz_exp="3.03417"   dyn_exp="1.60391"   frz_chg="0.23160"   pauli_exp="1.58769"   pauli_radii="3.78174" />
+      <Atom  name="N7"   type="NB"    charge="-0.5709"   frz_exp="2.33847"   dyn_exp="4.69689"   frz_chg="0.18570"   pauli_exp="1.74595"   pauli_radii="6.17629" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.82541"   dyn_exp="1.89998"   frz_chg="-0.34090"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.1744"    frz_exp="3.07813"   dyn_exp="2.12822"   frz_chg="0.05830"   pauli_exp="1.12440"   pauli_radii="5.62623" />
+      <Atom  name="C6"   type="C"     charge="0.477"     frz_exp="2.00413"   dyn_exp="2.92273"   frz_chg="0.23100"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O6"   type="O"     charge="-0.5597"   frz_exp="2.59881"   dyn_exp="4.99460"   frz_chg="-0.15150"  pauli_exp="1.91738"   pauli_radii="5.63212" />
+      <Atom  name="LP6A" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP6B" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N1"   type="NA"    charge="-0.4787"   frz_exp="2.86807"   dyn_exp="2.13844"   frz_chg="-0.27840"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H1"   type="H"     charge="0.3424"    frz_exp="2.82253"   dyn_exp="4.98675"   frz_chg="0.32280"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="CA"    charge="0.7657"    frz_exp="1.86268"   dyn_exp="1.30429"   frz_chg="0.22070"   pauli_exp="1.12440"   pauli_radii="5.48815" />
+      <Atom  name="N2"   type="N2"    charge="-0.9672"   frz_exp="2.72438"   dyn_exp="3.82210"   frz_chg="-0.64730"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H21"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H22"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.6323"   frz_exp="3.22123"   dyn_exp="1.82260"   frz_chg="-0.00060"  pauli_exp="1.74595"   pauli_radii="5.95472" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="3.17781"   dyn_exp="4.58295"   frz_chg="-0.24260"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.1222"    frz_exp="2.19618"   dyn_exp="1.30113"   frz_chg="-0.00440"  pauli_exp="1.12440"   pauli_radii="5.54150" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6A" atomName1="O6" atomName2="C6" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6B" atomName1="O6" atomName2="C6" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C8" atomName3="C5" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H9" atomName2="N9" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="O6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="H1" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="N2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N2" atomName2="H21" />
+      <Bond atomName1="N2" atomName2="H22" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP6A" atomName2="C6" />
+      <Bond atomName1="LP6B" atomName2="C6" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+    </Residue>
+        <Residue name="GM">
+      <Atom  name="H91"  type="HC"    charge="0.0864"    frz_exp="2.56945"   dyn_exp="3.44686"   frz_chg="0.08640"   pauli_exp="1.58769"   pauli_radii="3.78625" />
+      <Atom  name="H92"  type="HC"    charge="0.0864"    frz_exp="2.56945"   dyn_exp="3.44686"   frz_chg="0.08640"   pauli_exp="1.58769"   pauli_radii="3.78625" />
+      <Atom  name="H93"  type="HC"    charge="0.0864"    frz_exp="2.56945"   dyn_exp="3.44686"   frz_chg="0.08640"   pauli_exp="1.58769"   pauli_radii="3.78625" />
+      <Atom  name="C9"   type="CT"    charge="-0.1555"   frz_exp="2.42212"   dyn_exp="2.80360"   frz_chg="-0.15550"  pauli_exp="1.12440"   pauli_radii="5.52855" />
+      <Atom  name="N9"   type="N*"    charge="0.0492"    frz_exp="3.04901"   dyn_exp="1.81383"   frz_chg="0.20170"   pauli_exp="1.74595"   pauli_radii="5.86886" />
+      <Atom  name="C8"   type="CK"    charge="0.1374"    frz_exp="2.07969"   dyn_exp="2.24725"   frz_chg="-0.32550"  pauli_exp="1.12440"   pauli_radii="5.54576" />
+      <Atom  name="H8"   type="H5"    charge="0.164"     frz_exp="3.03417"   dyn_exp="1.60391"   frz_chg="0.23160"   pauli_exp="1.58769"   pauli_radii="3.78174" />
+      <Atom  name="N7"   type="NB"    charge="-0.5709"   frz_exp="2.33847"   dyn_exp="4.69689"   frz_chg="0.18570"   pauli_exp="1.74595"   pauli_radii="6.17629" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.82541"   dyn_exp="1.89998"   frz_chg="-0.34090"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.1744"    frz_exp="3.07813"   dyn_exp="2.12822"   frz_chg="0.05830"   pauli_exp="1.12440"   pauli_radii="5.62623" />
+      <Atom  name="C6"   type="C"     charge="0.477"     frz_exp="2.00413"   dyn_exp="2.92273"   frz_chg="0.23100"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O6"   type="O"     charge="-0.5597"   frz_exp="2.59881"   dyn_exp="4.99460"   frz_chg="-0.15150"  pauli_exp="1.91738"   pauli_radii="5.63212" />
+      <Atom  name="LP6A" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP6B" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N1"   type="NA"    charge="-0.4787"   frz_exp="2.86807"   dyn_exp="2.13844"   frz_chg="-0.27840"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H1"   type="H"     charge="0.3424"    frz_exp="2.82253"   dyn_exp="4.98675"   frz_chg="0.32280"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="CA"    charge="0.7657"    frz_exp="1.86268"   dyn_exp="1.30429"   frz_chg="0.22070"   pauli_exp="1.12440"   pauli_radii="5.48815" />
+      <Atom  name="N2"   type="N2"    charge="-0.9672"   frz_exp="2.72438"   dyn_exp="3.82210"   frz_chg="-0.64730"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H21"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H22"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.6323"   frz_exp="3.22123"   dyn_exp="1.82260"   frz_chg="-0.00060"  pauli_exp="1.74595"   pauli_radii="5.95472" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="3.17781"   dyn_exp="4.58295"   frz_chg="-0.24260"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.1222"    frz_exp="2.19618"   dyn_exp="1.30113"   frz_chg="-0.00440"  pauli_exp="1.12440"   pauli_radii="5.54150" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6A" atomName1="O6" atomName2="C6" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6B" atomName1="O6" atomName2="C6" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C8" atomName3="C5" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="C9" atomName2="H91" />
+      <Bond atomName1="C9" atomName2="H92" />
+      <Bond atomName1="C9" atomName2="H93" />
+      <Bond atomName1="C9" atomName2="N9" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="O6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="H1" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="N2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N2" atomName2="H21" />
+      <Bond atomName1="N2" atomName2="H22" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP6A" atomName2="C6" />
+      <Bond atomName1="LP6B" atomName2="C6" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+    </Residue>
+    <Residue name="RG">
+      <Atom  name="P"    type="P"     charge="1.1662"  />
+      <Atom  name="O1P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O2P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O5'"  type="OS"    charge="-0.4989" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0191"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2006"  />
+      <Atom  name="N9"   type="N*"    charge="0.0492"    frz_exp="3.04901"   dyn_exp="1.81383"   frz_chg="0.20170"   pauli_exp="1.74595"   pauli_radii="5.86886" />
+      <Atom  name="C8"   type="CK"    charge="0.1374"    frz_exp="2.07969"   dyn_exp="2.24725"   frz_chg="-0.32550"  pauli_exp="1.12440"   pauli_radii="5.54576" />
+      <Atom  name="H8"   type="H5"    charge="0.164"     frz_exp="3.03417"   dyn_exp="1.60391"   frz_chg="0.23160"   pauli_exp="1.58769"   pauli_radii="3.78174" />
+      <Atom  name="N7"   type="NB"    charge="-0.5709"   frz_exp="2.33847"   dyn_exp="4.69689"   frz_chg="0.18570"   pauli_exp="1.74595"   pauli_radii="6.17629" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.82541"   dyn_exp="1.89998"   frz_chg="-0.34090"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.1744"    frz_exp="3.07813"   dyn_exp="2.12822"   frz_chg="0.05830"   pauli_exp="1.12440"   pauli_radii="5.62623" />
+      <Atom  name="C6"   type="C"     charge="0.477"     frz_exp="2.00413"   dyn_exp="2.92273"   frz_chg="0.23100"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O6"   type="O"     charge="-0.5597"   frz_exp="2.59881"   dyn_exp="4.99460"   frz_chg="-0.15150"  pauli_exp="1.91738"   pauli_radii="5.63212" />
+      <Atom  name="LP6A" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP6B" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N1"   type="NA"    charge="-0.4787"   frz_exp="2.86807"   dyn_exp="2.13844"   frz_chg="-0.27840"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H1"   type="H"     charge="0.3424"    frz_exp="2.82253"   dyn_exp="4.98675"   frz_chg="0.32280"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="CA"    charge="0.7657"    frz_exp="1.86268"   dyn_exp="1.30429"   frz_chg="0.22070"   pauli_exp="1.12440"   pauli_radii="5.48815" />
+      <Atom  name="N2"   type="N2"    charge="-0.9672"   frz_exp="2.72438"   dyn_exp="3.82210"   frz_chg="-0.64730"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H21"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H22"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.6323"   frz_exp="3.22123"   dyn_exp="1.82260"   frz_chg="-0.00060"  pauli_exp="1.74595"   pauli_radii="5.95472" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="3.17781"   dyn_exp="4.58295"   frz_chg="-0.24260"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.1222"    frz_exp="2.19618"   dyn_exp="1.30113"   frz_chg="-0.00440"  pauli_exp="1.12440"   pauli_radii="5.54150" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OS"    charge="-0.5246" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6A" atomName1="O6" atomName2="C6" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6B" atomName1="O6" atomName2="C6" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C8" atomName3="C5" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="P" atomName2="O1P" />
+      <Bond atomName1="P" atomName2="O2P" />
+      <Bond atomName1="P" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N9" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="O6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="H1" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="N2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N2" atomName2="H21" />
+      <Bond atomName1="N2" atomName2="H22" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP6A" atomName2="C6" />
+      <Bond atomName1="LP6B" atomName2="C6" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+      <ExternalBond atomName="P" />
+      <ExternalBond atomName="O3'" />
+    </Residue>
+    <Residue name="RG3">
+      <Atom  name="P"    type="P"     charge="1.1662"  />
+      <Atom  name="O1P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O2P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O5'"  type="OS"    charge="-0.4989" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0191"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2006"  />
+      <Atom  name="N9"   type="N*"    charge="0.0492"    frz_exp="3.04901"   dyn_exp="1.81383"   frz_chg="0.20170"   pauli_exp="1.74595"   pauli_radii="5.86886" />
+      <Atom  name="C8"   type="CK"    charge="0.1374"    frz_exp="2.07969"   dyn_exp="2.24725"   frz_chg="-0.32550"  pauli_exp="1.12440"   pauli_radii="5.54576" />
+      <Atom  name="H8"   type="H5"    charge="0.164"     frz_exp="3.03417"   dyn_exp="1.60391"   frz_chg="0.23160"   pauli_exp="1.58769"   pauli_radii="3.78174" />
+      <Atom  name="N7"   type="NB"    charge="-0.5709"   frz_exp="2.33847"   dyn_exp="4.69689"   frz_chg="0.18570"   pauli_exp="1.74595"   pauli_radii="6.17629" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.82541"   dyn_exp="1.89998"   frz_chg="-0.34090"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.1744"    frz_exp="3.07813"   dyn_exp="2.12822"   frz_chg="0.05830"   pauli_exp="1.12440"   pauli_radii="5.62623" />
+      <Atom  name="C6"   type="C"     charge="0.477"     frz_exp="2.00413"   dyn_exp="2.92273"   frz_chg="0.23100"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O6"   type="O"     charge="-0.5597"   frz_exp="2.59881"   dyn_exp="4.99460"   frz_chg="-0.15150"  pauli_exp="1.91738"   pauli_radii="5.63212" />
+      <Atom  name="LP6A" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP6B" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N1"   type="NA"    charge="-0.4787"   frz_exp="2.86807"   dyn_exp="2.13844"   frz_chg="-0.27840"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H1"   type="H"     charge="0.3424"    frz_exp="2.82253"   dyn_exp="4.98675"   frz_chg="0.32280"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="CA"    charge="0.7657"    frz_exp="1.86268"   dyn_exp="1.30429"   frz_chg="0.22070"   pauli_exp="1.12440"   pauli_radii="5.48815" />
+      <Atom  name="N2"   type="N2"    charge="-0.9672"   frz_exp="2.72438"   dyn_exp="3.82210"   frz_chg="-0.64730"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H21"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H22"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.6323"   frz_exp="3.22123"   dyn_exp="1.82260"   frz_chg="-0.00060"  pauli_exp="1.74595"   pauli_radii="5.95472" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="3.17781"   dyn_exp="4.58295"   frz_chg="-0.24260"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.1222"    frz_exp="2.19618"   dyn_exp="1.30113"   frz_chg="-0.00440"  pauli_exp="1.12440"   pauli_radii="5.54150" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OH"    charge="-0.6541" />
+      <Atom  name="H3T"  type="HO"    charge="0.4376"  />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6A" atomName1="O6" atomName2="C6" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6B" atomName1="O6" atomName2="C6" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C8" atomName3="C5" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="P" atomName2="O1P" />
+      <Bond atomName1="P" atomName2="O2P" />
+      <Bond atomName1="P" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N9" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="O6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="H1" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="N2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N2" atomName2="H21" />
+      <Bond atomName1="N2" atomName2="H22" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="O3'" atomName2="H3T" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP6A" atomName2="C6" />
+      <Bond atomName1="LP6B" atomName2="C6" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+      <ExternalBond atomName="P" />
+    </Residue>
+    <Residue name="RG5">
+      <Atom  name="H5T"  type="HO"    charge="0.4295"  />
+      <Atom  name="O5'"  type="OH"    charge="-0.6223" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0191"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2006"  />
+      <Atom  name="N9"   type="N*"    charge="0.0492"    frz_exp="3.04901"   dyn_exp="1.81383"   frz_chg="0.20170"   pauli_exp="1.74595"   pauli_radii="5.86886" />
+      <Atom  name="C8"   type="CK"    charge="0.1374"    frz_exp="2.07969"   dyn_exp="2.24725"   frz_chg="-0.32550"  pauli_exp="1.12440"   pauli_radii="5.54576" />
+      <Atom  name="H8"   type="H5"    charge="0.164"     frz_exp="3.03417"   dyn_exp="1.60391"   frz_chg="0.23160"   pauli_exp="1.58769"   pauli_radii="3.78174" />
+      <Atom  name="N7"   type="NB"    charge="-0.5709"   frz_exp="2.33847"   dyn_exp="4.69689"   frz_chg="0.18570"   pauli_exp="1.74595"   pauli_radii="6.17629" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.82541"   dyn_exp="1.89998"   frz_chg="-0.34090"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.1744"    frz_exp="3.07813"   dyn_exp="2.12822"   frz_chg="0.05830"   pauli_exp="1.12440"   pauli_radii="5.62623" />
+      <Atom  name="C6"   type="C"     charge="0.477"     frz_exp="2.00413"   dyn_exp="2.92273"   frz_chg="0.23100"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O6"   type="O"     charge="-0.5597"   frz_exp="2.59881"   dyn_exp="4.99460"   frz_chg="-0.15150"  pauli_exp="1.91738"   pauli_radii="5.63212" />
+      <Atom  name="LP6A" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP6B" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N1"   type="NA"    charge="-0.4787"   frz_exp="2.86807"   dyn_exp="2.13844"   frz_chg="-0.27840"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H1"   type="H"     charge="0.3424"    frz_exp="2.82253"   dyn_exp="4.98675"   frz_chg="0.32280"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="CA"    charge="0.7657"    frz_exp="1.86268"   dyn_exp="1.30429"   frz_chg="0.22070"   pauli_exp="1.12440"   pauli_radii="5.48815" />
+      <Atom  name="N2"   type="N2"    charge="-0.9672"   frz_exp="2.72438"   dyn_exp="3.82210"   frz_chg="-0.64730"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H21"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H22"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.6323"   frz_exp="3.22123"   dyn_exp="1.82260"   frz_chg="-0.00060"  pauli_exp="1.74595"   pauli_radii="5.95472" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="3.17781"   dyn_exp="4.58295"   frz_chg="-0.24260"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.1222"    frz_exp="2.19618"   dyn_exp="1.30113"   frz_chg="-0.00440"  pauli_exp="1.12440"   pauli_radii="5.54150" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OS"    charge="-0.5246" />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6A" atomName1="O6" atomName2="C6" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6B" atomName1="O6" atomName2="C6" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C8" atomName3="C5" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H5T" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N9" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="O6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="H1" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="N2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N2" atomName2="H21" />
+      <Bond atomName1="N2" atomName2="H22" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="LP3" atomName2="C2" />
+      <Bond atomName1="LP3" atomName2="C4" />
+      <Bond atomName1="LP6A" atomName2="C6" />
+      <Bond atomName1="LP6B" atomName2="C6" />
+      <Bond atomName1="LP7" atomName2="C5" />
+      <Bond atomName1="LP7" atomName2="C8" />
+      <ExternalBond atomName="O3'" />
+    </Residue>
+    <Residue name="RGN">
+      <Atom  name="H5T"  type="HO"    charge="0.4295"  />
+      <Atom  name="O5'"  type="OH"    charge="-0.6223" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0191"  />
+      <Atom  name="H1'"  type="H2"    charge="0.2006"  />
+      <Atom  name="N9"   type="N*"    charge="0.0492"    frz_exp="3.04901"   dyn_exp="1.81383"   frz_chg="0.20170"   pauli_exp="1.74595"   pauli_radii="5.86886" />
+      <Atom  name="C8"   type="CK"    charge="0.1374"    frz_exp="2.07969"   dyn_exp="2.24725"   frz_chg="-0.32550"  pauli_exp="1.12440"   pauli_radii="5.54576" />
+      <Atom  name="H8"   type="H5"    charge="0.164"     frz_exp="3.03417"   dyn_exp="1.60391"   frz_chg="0.23160"   pauli_exp="1.58769"   pauli_radii="3.78174" />
+      <Atom  name="N7"   type="NB"    charge="-0.5709"   frz_exp="2.33847"   dyn_exp="4.69689"   frz_chg="0.18570"   pauli_exp="1.74595"   pauli_radii="6.17629" />
+      <Atom  name="LP7"  type="LP"    charge="0.0000"    frz_exp="2.82541"   dyn_exp="1.89998"   frz_chg="-0.34090"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C5"   type="CB"    charge="0.1744"    frz_exp="3.07813"   dyn_exp="2.12822"   frz_chg="0.05830"   pauli_exp="1.12440"   pauli_radii="5.62623" />
+      <Atom  name="C6"   type="C"     charge="0.477"     frz_exp="2.00413"   dyn_exp="2.92273"   frz_chg="0.23100"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O6"   type="O"     charge="-0.5597"   frz_exp="2.59881"   dyn_exp="4.99460"   frz_chg="-0.15150"  pauli_exp="1.91738"   pauli_radii="5.63212" />
+      <Atom  name="LP6A" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP6B" type="LP"    charge="0.0000"    frz_exp="2.85642"   dyn_exp="2.10248"   frz_chg="-0.11930"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N1"   type="NA"    charge="-0.4787"   frz_exp="2.86807"   dyn_exp="2.13844"   frz_chg="-0.27840"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H1"   type="H"     charge="0.3424"    frz_exp="2.82253"   dyn_exp="4.98675"   frz_chg="0.32280"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="CA"    charge="0.7657"    frz_exp="1.86268"   dyn_exp="1.30429"   frz_chg="0.22070"   pauli_exp="1.12440"   pauli_radii="5.48815" />
+      <Atom  name="N2"   type="N2"    charge="-0.9672"   frz_exp="2.72438"   dyn_exp="3.82210"   frz_chg="-0.64730"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H21"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="H22"  type="H"     charge="0.4364"    frz_exp="2.46110"   dyn_exp="2.55893"   frz_chg="0.33710"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N3"   type="NC"    charge="-0.6323"   frz_exp="3.22123"   dyn_exp="1.82260"   frz_chg="-0.00060"  pauli_exp="1.74595"   pauli_radii="5.95472" />
+      <Atom  name="LP3"  type="LP"    charge="0.0000"    frz_exp="3.17781"   dyn_exp="4.58295"   frz_chg="-0.24260"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C4"   type="CB"    charge="0.1222"    frz_exp="2.19618"   dyn_exp="1.30113"   frz_chg="-0.00440"  pauli_exp="1.12440"   pauli_radii="5.54150" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OH"    charge="-0.6541" />
+      <Atom  name="H3T"  type="HO"    charge="0.4376"  />
+      <VirtualSite type="localCoords" siteName="LP3" atomName1="N3" atomName2="C2" atomName3="C4" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6A" atomName1="O6" atomName2="C6" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP6B" atomName1="O6" atomName2="C6" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP7" atomName1="N7" atomName2="C8" atomName3="C5" p1="-0.05" p2="0.0" p3="0.0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="0.5" wx3="0.5" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H5T" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N9" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N9" atomName2="C8" />
+      <Bond atomName1="N9" atomName2="C4" />
+      <Bond atomName1="C8" atomName2="H8" />
+      <Bond atomName1="C8" atomName2="N7" />
+      <Bond atomName1="N7" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="C6" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C6" atomName2="O6" />
+      <Bond atomName1="C6" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="H1" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="N2" />
+      <Bond atomName1="C2" atomName2="N3" />
+      <Bond atomName1="N2" atomName2="H21" />
+      <Bond atomName1="N2" atomName2="H22" />
+      <Bond atomName1="N3" atomName2="C4" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="O3'" atomName2="H3T" />
+      <!-- <Bond atomName1="LP3" atomName2="C2"/>
+      <Bond atomName1="LP3" atomName2="C4"/>
+      <Bond atomName1="LP6A" atomName2="C6"/>
+      <Bond atomName1="LP6B" atomName2="C6"/>
+      <Bond atomName1="LP7" atomName2="C5"/>
+      <Bond atomName1="LP7" atomName2="C8"/> -->
+    </Residue>
+    <Residue name="U">
+      <Atom  name="H1"   type="H"     charge="0.1339"    frz_exp="2.60000"   dyn_exp="0.00000"   frz_chg="0.13390"   pauli_exp="1.58769"   pauli_radii="3.64717" />
+      <Atom  name="N1"   type="N*"    charge="0.0418"    frz_exp="3.48028"   dyn_exp="1.65280"   frz_chg="0.11170"   pauli_exp="1.74595"   pauli_radii="6.44413" />
+      <Atom  name="C6"   type="CM"    charge="-0.1126"   frz_exp="2.02028"   dyn_exp="2.27943"   frz_chg="-0.27590"  pauli_exp="1.12440"   pauli_radii="6.00247" />
+      <Atom  name="H6"   type="H4"    charge="0.2188"    frz_exp="3.87274"   dyn_exp="1.30543"   frz_chg="0.21490"   pauli_exp="1.58769"   pauli_radii="3.84479" />
+      <Atom  name="C5"   type="CM"    charge="-0.3635"   frz_exp="2.56046"   dyn_exp="1.99295"   frz_chg="-0.23210"  pauli_exp="1.12440"   pauli_radii="5.98822" />
+      <Atom  name="H5"   type="HA"    charge="0.1811"    frz_exp="2.64750"   dyn_exp="1.30074"   frz_chg="0.17190"   pauli_exp="1.58769"   pauli_radii="3.84007" />
+      <Atom  name="C4"   type="C"     charge="0.5952"    frz_exp="2.02431"   dyn_exp="1.30092"   frz_chg="0.45010"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O4"   type="O"     charge="-0.5761"   frz_exp="2.83788"   dyn_exp="4.98876"   frz_chg="-0.39770"  pauli_exp="1.26346"   pauli_radii="5.66785" />
+      <Atom  name="LP4A" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP4B" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N3"   type="NA"    charge="-0.3549"   frz_exp="3.80292"   dyn_exp="2.03761"   frz_chg="-0.32030"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H3"   type="H"     charge="0.3154"    frz_exp="2.19589"   dyn_exp="2.70491"   frz_chg="0.29880"   pauli_exp="2.10965"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="C"     charge="0.4687"    frz_exp="2.04514"   dyn_exp="3.96232"   frz_chg="0.41180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.5477"   frz_exp="2.57442"   dyn_exp="4.99587"   frz_chg="-0.39950"  pauli_exp="1.91738"   pauli_radii="5.59773" />
+      <Atom  name="LP2A" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4A" atomName1="O4" atomName2="C4" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4B" atomName1="O4" atomName2="C4" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H1" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="O4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="H3" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="LP2A" atomName2="C2" />
+      <Bond atomName1="LP2B" atomName2="C2" />
+      <Bond atomName1="LP4A" atomName2="C4" />
+      <Bond atomName1="LP4B" atomName2="C4" />
+    </Residue>
+    <Residue name="UM">
+      <Atom  name="H11"  type="HC"    charge="0.0865"    frz_exp="2.68454"   dyn_exp="1.31015"   frz_chg="0.08650"   pauli_exp="1.58769"   pauli_radii="3.90719" />
+      <Atom  name="H12"  type="HC"    charge="0.0865"    frz_exp="2.68454"   dyn_exp="1.31015"   frz_chg="0.08650"   pauli_exp="1.58769"   pauli_radii="3.90719" />
+      <Atom  name="H13"  type="HC"    charge="0.0865"    frz_exp="2.68454"   dyn_exp="1.31015"   frz_chg="0.08650"   pauli_exp="1.58769"   pauli_radii="3.90719" />
+      <Atom  name="C1"   type="CT"    charge="-0.1258"   frz_exp="2.75450"   dyn_exp="2.80543"   frz_chg="-0.12580"  pauli_exp="1.12440"   pauli_radii="5.63324" />
+      <Atom  name="N1"   type="N*"    charge="0.0418"    frz_exp="3.48028"   dyn_exp="1.65280"   frz_chg="0.11170"   pauli_exp="1.74595"   pauli_radii="6.44413" />
+      <Atom  name="C6"   type="CM"    charge="-0.1126"   frz_exp="2.02028"   dyn_exp="2.27943"   frz_chg="-0.27590"  pauli_exp="1.12440"   pauli_radii="6.00247" />
+      <Atom  name="H6"   type="H4"    charge="0.2188"    frz_exp="3.87274"   dyn_exp="1.30543"   frz_chg="0.21490"   pauli_exp="1.58769"   pauli_radii="3.84479" />
+      <Atom  name="C5"   type="CM"    charge="-0.3635"   frz_exp="2.56046"   dyn_exp="1.99295"   frz_chg="-0.23210"  pauli_exp="1.12440"   pauli_radii="5.98822" />
+      <Atom  name="H5"   type="HA"    charge="0.1811"    frz_exp="2.64750"   dyn_exp="1.30074"   frz_chg="0.17190"   pauli_exp="1.58769"   pauli_radii="3.84007" />
+      <Atom  name="C4"   type="C"     charge="0.5952"    frz_exp="2.02431"   dyn_exp="1.30092"   frz_chg="0.45010"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O4"   type="O"     charge="-0.5761"   frz_exp="2.83788"   dyn_exp="4.98876"   frz_chg="-0.39770"  pauli_exp="1.26346"   pauli_radii="5.66785" />
+      <Atom  name="LP4A" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP4B" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N3"   type="NA"    charge="-0.3549"   frz_exp="3.80292"   dyn_exp="2.03761"   frz_chg="-0.32030"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H3"   type="H"     charge="0.3154"    frz_exp="2.19589"   dyn_exp="2.70491"   frz_chg="0.29880"   pauli_exp="2.10965"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="C"     charge="0.4687"    frz_exp="2.04514"   dyn_exp="3.96232"   frz_chg="0.41180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.5477"   frz_exp="2.57442"   dyn_exp="4.99587"   frz_chg="-0.39950"  pauli_exp="1.91738"   pauli_radii="5.59773" />
+      <Atom  name="LP2A" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4A" atomName1="O4" atomName2="C4" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4B" atomName1="O4" atomName2="C4" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="C1" atomName2="H11" />
+      <Bond atomName1="C1" atomName2="H12" />
+      <Bond atomName1="C1" atomName2="H13" />
+      <Bond atomName1="C1" atomName2="N1" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="O4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="H3" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="LP2A" atomName2="C2" />
+      <Bond atomName1="LP2B" atomName2="C2" />
+      <Bond atomName1="LP4A" atomName2="C4" />
+      <Bond atomName1="LP4B" atomName2="C4" />
+    </Residue>
+    <Residue name="RU">
+      <Atom  name="P"    type="P"     charge="1.1662"  />
+      <Atom  name="O1P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O2P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O5'"  type="OS"    charge="-0.4989" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0674"  />
+      <Atom  name="H1'"  type="H2"    charge="0.1824"  />
+      <Atom  name="N1"   type="N*"    charge="0.0418"    frz_exp="3.48028"   dyn_exp="1.65280"   frz_chg="0.11170"   pauli_exp="1.74595"   pauli_radii="6.44413" />
+      <Atom  name="C6"   type="CM"    charge="-0.1126"   frz_exp="2.02028"   dyn_exp="2.27943"   frz_chg="-0.27590"  pauli_exp="1.12440"   pauli_radii="6.00247" />
+      <Atom  name="H6"   type="H4"    charge="0.2188"    frz_exp="3.87274"   dyn_exp="1.30543"   frz_chg="0.21490"   pauli_exp="1.58769"   pauli_radii="3.84479" />
+      <Atom  name="C5"   type="CM"    charge="-0.3635"   frz_exp="2.56046"   dyn_exp="1.99295"   frz_chg="-0.23210"  pauli_exp="1.12440"   pauli_radii="5.98822" />
+      <Atom  name="H5"   type="HA"    charge="0.1811"    frz_exp="2.64750"   dyn_exp="1.30074"   frz_chg="0.17190"   pauli_exp="1.58769"   pauli_radii="3.84007" />
+      <Atom  name="C4"   type="C"     charge="0.5952"    frz_exp="2.02431"   dyn_exp="1.30092"   frz_chg="0.45010"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O4"   type="O"     charge="-0.5761"   frz_exp="2.83788"   dyn_exp="4.98876"   frz_chg="-0.39770"  pauli_exp="1.26346"   pauli_radii="5.66785" />
+      <Atom  name="LP4A" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP4B" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N3"   type="NA"    charge="-0.3549"   frz_exp="3.80292"   dyn_exp="2.03761"   frz_chg="-0.32030"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H3"   type="H"     charge="0.3154"    frz_exp="2.19589"   dyn_exp="2.70491"   frz_chg="0.29880"   pauli_exp="2.10965"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="C"     charge="0.4687"    frz_exp="2.04514"   dyn_exp="3.96232"   frz_chg="0.41180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.5477"   frz_exp="2.57442"   dyn_exp="4.99587"   frz_chg="-0.39950"  pauli_exp="1.91738"   pauli_radii="5.59773" />
+      <Atom  name="LP2A" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OS"    charge="-0.5246" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4A" atomName1="O4" atomName2="C4" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4B" atomName1="O4" atomName2="C4" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="P" atomName2="O1P" />
+      <Bond atomName1="P" atomName2="O2P" />
+      <Bond atomName1="P" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N1" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="O4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="H3" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="LP2A" atomName2="C2" />
+      <Bond atomName1="LP2B" atomName2="C2" />
+      <Bond atomName1="LP4A" atomName2="C4" />
+      <Bond atomName1="LP4B" atomName2="C4" />
+      <ExternalBond atomName="P" />
+      <ExternalBond atomName="O3'" />
+    </Residue>
+    <Residue name="RU3">
+      <Atom  name="P"    type="P"     charge="1.1662"  />
+      <Atom  name="O1P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O2P"  type="O2"    charge="-0.776"  />
+      <Atom  name="O5'"  type="OS"    charge="-0.4989" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0674"  />
+      <Atom  name="H1'"  type="H2"    charge="0.1824"  />
+      <Atom  name="N1"   type="N*"    charge="0.0418"    frz_exp="3.48028"   dyn_exp="1.65280"   frz_chg="0.11170"   pauli_exp="1.74595"   pauli_radii="6.44413" />
+      <Atom  name="C6"   type="CM"    charge="-0.1126"   frz_exp="2.02028"   dyn_exp="2.27943"   frz_chg="-0.27590"  pauli_exp="1.12440"   pauli_radii="6.00247" />
+      <Atom  name="H6"   type="H4"    charge="0.2188"    frz_exp="3.87274"   dyn_exp="1.30543"   frz_chg="0.21490"   pauli_exp="1.58769"   pauli_radii="3.84479" />
+      <Atom  name="C5"   type="CM"    charge="-0.3635"   frz_exp="2.56046"   dyn_exp="1.99295"   frz_chg="-0.23210"  pauli_exp="1.12440"   pauli_radii="5.98822" />
+      <Atom  name="H5"   type="HA"    charge="0.1811"    frz_exp="2.64750"   dyn_exp="1.30074"   frz_chg="0.17190"   pauli_exp="1.58769"   pauli_radii="3.84007" />
+      <Atom  name="C4"   type="C"     charge="0.5952"    frz_exp="2.02431"   dyn_exp="1.30092"   frz_chg="0.45010"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O4"   type="O"     charge="-0.5761"   frz_exp="2.83788"   dyn_exp="4.98876"   frz_chg="-0.39770"  pauli_exp="1.26346"   pauli_radii="5.66785" />
+      <Atom  name="LP4A" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP4B" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N3"   type="NA"    charge="-0.3549"   frz_exp="3.80292"   dyn_exp="2.03761"   frz_chg="-0.32030"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H3"   type="H"     charge="0.3154"    frz_exp="2.19589"   dyn_exp="2.70491"   frz_chg="0.29880"   pauli_exp="2.10965"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="C"     charge="0.4687"    frz_exp="2.04514"   dyn_exp="3.96232"   frz_chg="0.41180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.5477"   frz_exp="2.57442"   dyn_exp="4.99587"   frz_chg="-0.39950"  pauli_exp="1.91738"   pauli_radii="5.59773" />
+      <Atom  name="LP2A" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OH"    charge="-0.6541" />
+      <Atom  name="H3T"  type="HO"    charge="0.4376"  />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4A" atomName1="O4" atomName2="C4" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4B" atomName1="O4" atomName2="C4" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="P" atomName2="O1P" />
+      <Bond atomName1="P" atomName2="O2P" />
+      <Bond atomName1="P" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N1" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="O4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="H3" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="O3'" atomName2="H3T" />
+      <Bond atomName1="LP2A" atomName2="C2" />
+      <Bond atomName1="LP2B" atomName2="C2" />
+      <Bond atomName1="LP4A" atomName2="C4" />
+      <Bond atomName1="LP4B" atomName2="C4" />
+      <ExternalBond atomName="P" />
+    </Residue>
+    <Residue name="RU5">
+      <Atom  name="H5T"  type="HO"    charge="0.4295"  />
+      <Atom  name="O5'"  type="OH"    charge="-0.6223" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0674"  />
+      <Atom  name="H1'"  type="H2"    charge="0.1824"  />
+      <Atom  name="N1"   type="N*"    charge="0.0418"    frz_exp="3.48028"   dyn_exp="1.65280"   frz_chg="0.11170"   pauli_exp="1.74595"   pauli_radii="6.44413" />
+      <Atom  name="C6"   type="CM"    charge="-0.1126"   frz_exp="2.02028"   dyn_exp="2.27943"   frz_chg="-0.27590"  pauli_exp="1.12440"   pauli_radii="6.00247" />
+      <Atom  name="H6"   type="H4"    charge="0.2188"    frz_exp="3.87274"   dyn_exp="1.30543"   frz_chg="0.21490"   pauli_exp="1.58769"   pauli_radii="3.84479" />
+      <Atom  name="C5"   type="CM"    charge="-0.3635"   frz_exp="2.56046"   dyn_exp="1.99295"   frz_chg="-0.23210"  pauli_exp="1.12440"   pauli_radii="5.98822" />
+      <Atom  name="H5"   type="HA"    charge="0.1811"    frz_exp="2.64750"   dyn_exp="1.30074"   frz_chg="0.17190"   pauli_exp="1.58769"   pauli_radii="3.84007" />
+      <Atom  name="C4"   type="C"     charge="0.5952"    frz_exp="2.02431"   dyn_exp="1.30092"   frz_chg="0.45010"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O4"   type="O"     charge="-0.5761"   frz_exp="2.83788"   dyn_exp="4.98876"   frz_chg="-0.39770"  pauli_exp="1.26346"   pauli_radii="5.66785" />
+      <Atom  name="LP4A" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP4B" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N3"   type="NA"    charge="-0.3549"   frz_exp="3.80292"   dyn_exp="2.03761"   frz_chg="-0.32030"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H3"   type="H"     charge="0.3154"    frz_exp="2.19589"   dyn_exp="2.70491"   frz_chg="0.29880"   pauli_exp="2.10965"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="C"     charge="0.4687"    frz_exp="2.04514"   dyn_exp="3.96232"   frz_chg="0.41180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.5477"   frz_exp="2.57442"   dyn_exp="4.99587"   frz_chg="-0.39950"  pauli_exp="1.91738"   pauli_radii="5.59773" />
+      <Atom  name="LP2A" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OS"    charge="-0.5246" />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4A" atomName1="O4" atomName2="C4" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4B" atomName1="O4" atomName2="C4" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H5T" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N1" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="O4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="H3" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="LP2A" atomName2="C2" />
+      <Bond atomName1="LP2B" atomName2="C2" />
+      <Bond atomName1="LP4A" atomName2="C4" />
+      <Bond atomName1="LP4B" atomName2="C4" />
+      <ExternalBond atomName="O3'" />
+    </Residue>
+    <Residue name="RUN">
+      <Atom  name="H5T"  type="HO"    charge="0.4295"  />
+      <Atom  name="O5'"  type="OH"    charge="-0.6223" />
+      <Atom  name="C5'"  type="CT"    charge="0.0558"  />
+      <Atom  name="H5'1" type="H1"    charge="0.0679"  />
+      <Atom  name="H5'2" type="H1"    charge="0.0679"  />
+      <Atom  name="C4'"  type="CT"    charge="0.1065"  />
+      <Atom  name="H4'"  type="H1"    charge="0.1174"  />
+      <Atom  name="O4'"  type="OSS"   charge="-0.3548" />
+      <Atom  name="C1'"  type="CT"    charge="0.0674"  />
+      <Atom  name="H1'"  type="H2"    charge="0.1824"  />
+      <Atom  name="N1"   type="N*"    charge="0.0418"    frz_exp="3.48028"   dyn_exp="1.65280"   frz_chg="0.11170"   pauli_exp="1.74595"   pauli_radii="6.44413" />
+      <Atom  name="C6"   type="CM"    charge="-0.1126"   frz_exp="2.02028"   dyn_exp="2.27943"   frz_chg="-0.27590"  pauli_exp="1.12440"   pauli_radii="6.00247" />
+      <Atom  name="H6"   type="H4"    charge="0.2188"    frz_exp="3.87274"   dyn_exp="1.30543"   frz_chg="0.21490"   pauli_exp="1.58769"   pauli_radii="3.84479" />
+      <Atom  name="C5"   type="CM"    charge="-0.3635"   frz_exp="2.56046"   dyn_exp="1.99295"   frz_chg="-0.23210"  pauli_exp="1.12440"   pauli_radii="5.98822" />
+      <Atom  name="H5"   type="HA"    charge="0.1811"    frz_exp="2.64750"   dyn_exp="1.30074"   frz_chg="0.17190"   pauli_exp="1.58769"   pauli_radii="3.84007" />
+      <Atom  name="C4"   type="C"     charge="0.5952"    frz_exp="2.02431"   dyn_exp="1.30092"   frz_chg="0.45010"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O4"   type="O"     charge="-0.5761"   frz_exp="2.83788"   dyn_exp="4.98876"   frz_chg="-0.39770"  pauli_exp="1.26346"   pauli_radii="5.66785" />
+      <Atom  name="LP4A" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP4B" type="LP"    charge="0.0000"    frz_exp="3.99226"   dyn_exp="2.14601"   frz_chg="-0.04020"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="N3"   type="NA"    charge="-0.3549"   frz_exp="3.80292"   dyn_exp="2.03761"   frz_chg="-0.32030"  pauli_exp="1.74595"   pauli_radii="5.80788" />
+      <Atom  name="H3"   type="H"     charge="0.3154"    frz_exp="2.19589"   dyn_exp="2.70491"   frz_chg="0.29880"   pauli_exp="2.10965"   pauli_radii="3.64717" />
+      <Atom  name="C2"   type="C"     charge="0.4687"    frz_exp="2.04514"   dyn_exp="3.96232"   frz_chg="0.41180"   pauli_exp="1.12440"   pauli_radii="5.48776" />
+      <Atom  name="O2"   type="O"     charge="-0.5477"   frz_exp="2.57442"   dyn_exp="4.99587"   frz_chg="-0.39950"  pauli_exp="1.91738"   pauli_radii="5.59773" />
+      <Atom  name="LP2A" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="LP2B" type="LP"    charge="0.0000"    frz_exp="3.90758"   dyn_exp="2.31451"   frz_chg="-0.04350"  pauli_exp="1.00000"   pauli_radii="0.00000" />
+      <Atom  name="C3'"  type="CT"    charge="0.2022"  />
+      <Atom  name="H3'"  type="H1"    charge="0.0615"  />
+      <Atom  name="C2'"  type="CT"    charge="0.067"   />
+      <Atom  name="H2'1" type="H1"    charge="0.0972"  />
+      <Atom  name="O2'"  type="OH"    charge="-0.6139" />
+      <Atom  name="HO'2" type="HO"    charge="0.4186"  />
+      <Atom  name="O3'"  type="OH"    charge="-0.6541" />
+      <Atom  name="H3T"  type="HO"    charge="0.4376"  />
+      <VirtualSite type="localCoords" siteName="LP2A" atomName1="O2" atomName2="C2" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP2B" atomName1="O2" atomName2="C2" atomName3="N1" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4A" atomName1="O4" atomName2="C4" atomName3="C5" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <VirtualSite type="localCoords" siteName="LP4B" atomName1="O4" atomName2="C4" atomName3="N3" p1="-0.02903514778554699" p2="0.04070577591781596" p3="0" wo1="1" wo2="0" wo3="0" wx1="-1.0" wx2="1.0" wx3="0.0" wy1="0" wy2="-1" wy3="1" />
+      <Bond atomName1="H5T" atomName2="O5'" />
+      <Bond atomName1="O5'" atomName2="C5'" />
+      <Bond atomName1="C5'" atomName2="H5'1" />
+      <Bond atomName1="C5'" atomName2="H5'2" />
+      <Bond atomName1="C5'" atomName2="C4'" />
+      <Bond atomName1="C4'" atomName2="H4'" />
+      <Bond atomName1="C4'" atomName2="O4'" />
+      <Bond atomName1="C4'" atomName2="C3'" />
+      <Bond atomName1="O4'" atomName2="C1'" />
+      <Bond atomName1="C1'" atomName2="H1'" />
+      <Bond atomName1="C1'" atomName2="N1" />
+      <Bond atomName1="C1'" atomName2="C2'" />
+      <Bond atomName1="N1" atomName2="C6" />
+      <Bond atomName1="N1" atomName2="C2" />
+      <Bond atomName1="C6" atomName2="H6" />
+      <Bond atomName1="C6" atomName2="C5" />
+      <Bond atomName1="C5" atomName2="H5" />
+      <Bond atomName1="C5" atomName2="C4" />
+      <Bond atomName1="C4" atomName2="O4" />
+      <Bond atomName1="C4" atomName2="N3" />
+      <Bond atomName1="N3" atomName2="H3" />
+      <Bond atomName1="N3" atomName2="C2" />
+      <Bond atomName1="C2" atomName2="O2" />
+      <Bond atomName1="C3'" atomName2="H3'" />
+      <Bond atomName1="C3'" atomName2="C2'" />
+      <Bond atomName1="C3'" atomName2="O3'" />
+      <Bond atomName1="C2'" atomName2="H2'1" />
+      <Bond atomName1="C2'" atomName2="O2'" />
+      <Bond atomName1="O2'" atomName2="HO'2" />
+      <Bond atomName1="O3'" atomName2="H3T" />
+      <Bond atomName1="LP2A" atomName2="C2" />
+      <Bond atomName1="LP2B" atomName2="C2" />
+      <Bond atomName1="LP4A" atomName2="C4" />
+      <Bond atomName1="LP4B" atomName2="C4" />
+    </Residue>
+  </Residues>
+</ForceField>

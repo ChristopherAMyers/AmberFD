@@ -95,6 +95,25 @@ void DeltaR::getDeltaR(const vec_d &coords, int i, int j, Periodicity p)
     //printf(" IN getDeltaR: %.10f  %.10f  %.10f  %.10f \n", p.inv_box_size[2], dR[0], dR[1], dR[2]);
 }
 
+void DeltaR::getDeltaR(const Vec3 &ri, const Vec3 &rj, Periodicity p)
+{
+    dR = ri - rj;
+    dR[2] -= p.box_size[2]*ceil(dR[2]*p.inv_box_size[2] - 0.5);
+    dR[1] -= p.box_size[1]*ceil(dR[1]*p.inv_box_size[1] - 0.5);
+    dR[0] -= p.box_size[0]*ceil(dR[0]*p.inv_box_size[0] - 0.5);
+    r2 = dR.dot(dR);
+    r = sqrt(r2);
+    r_inv = 1/r;
+}
+
+void DeltaR::getDeltaR(const Vec3 &ri, const Vec3 &rj)
+{
+    dR = ri - rj;
+    r2 = dR.dot(dR);
+    r = sqrt(r2);
+    r_inv = 1/r;
+}
+
 void DeltaR::get_pointer(double *deltaR)
 {
     //double deltaR[Nonbonded::RMaxIdx];

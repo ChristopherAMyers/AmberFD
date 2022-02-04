@@ -21,6 +21,12 @@ AmberFD::~AmberFD()
 
 int AmberFD::add_particle(int index, ParticleInfo parameters)
 {
+    //  TODO: throw error instead
+    if (parameters.dyn_exp <= 0)
+    {   
+        //printf("WARNING: dyn_exp %d is invalid \n", index);
+        parameters.dyn_exp= 100;
+    }
     nuclei.push_back(parameters.nuclei);
     frz_exp.push_back(parameters.frz_exp);
     frz_chg.push_back(parameters.frz_chg);
@@ -57,7 +63,7 @@ Energies AmberFD::calc_one_pair(const vec_d &positions, int i, int j)
         dR.getDeltaR(positions, (int)i*3, (int)j*3);
 
     //  dispersion and pauli energies
-    dispersionPauli->calc_one_pair(dR, i, j, pair_energies);
+    dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies);
 
     //  fluctuating density and alectrostatics
     flucDens->calc_one_electro(dR, i, j, true, true, pair_energies);
@@ -119,7 +125,7 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
                 dR.getDeltaR(positions, (int)i*3, (int)j*3);
 
             //  dispersion and pauli energies
-            dispersionPauli->calc_one_pair(dR, i, j, pair_energies);
+            dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies);
             total_energies.pauli += pair_energies.pauli;
             total_energies.disp += pair_energies.disp;
             total_energies.pauli_wall += pair_energies.pauli_wall;
@@ -345,7 +351,6 @@ void AmberFD::load_from_file(std::string file_loc)
                     ParticleInfo particle(stoi(tokens[1]), stod(tokens[2]), stod(tokens[3]), stod(tokens[4]), stod(tokens[5]), stod(tokens[6]));
 
                     add_particle(stoi(tokens[7]), particle);
-                    //printf("ADDING ATOM %d\n", n_sites);
                 }
                 else if (key.compare("FLUC_FORCE") == 0)
                     created_fluc = stoi(tokens[1]);

@@ -36,6 +36,7 @@ FlucDens::FlucDens(const int num_sites,
     param_data["dyn_exp"] =    &dynamic_exp;
     param_data["nuclei"] =     &nuclei;
 
+
     //  density distance cutoff info
     dens_cutoff_power_law = dens_cutoff_a*log(dens_cutoff_pct_error) + dens_cutoff_b;
 
@@ -686,6 +687,7 @@ void FlucDens::solve_minimization()
         //  the polarization energy is simply 0.5 * delta_rho^T * pot_vec
         //total_pol_energy = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &delta_rho_pot_vec[0], 1);
         total_energies.pol = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
+
     }
     //  extended version, used for debugging parts of polarization energy and forces
     else
@@ -704,6 +706,11 @@ void FlucDens::solve_minimization()
         double term2 = cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
 
         total_energies.pol = term1 + term2;
+
+        // for(int i = 0; i < n_sites; i++)
+        // {
+        //     printf("%d  %.10f  %.10f  %.10f  %.10f \n", i, delta_rho[i], y_vec[i], term1, term2);
+        // }
     }
 
     for(int k = 0; k < n_sites; k++)

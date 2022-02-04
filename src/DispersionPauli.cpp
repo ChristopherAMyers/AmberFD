@@ -60,6 +60,11 @@ DispersionPauli::DispersionPauli(const int num_sites, const int* nuclei_in, cons
     secondary_exp = 8.0/ANG2BOHR;
     set_all_secondary_radii();
     use_secondary_radii = true;
+
+
+    use_two_site_repulsion = false;
+    two_site_indicies_set = false;
+
 }
 
 DispersionPauli::~DispersionPauli(){}
@@ -230,7 +235,7 @@ double DispersionPauli::calc_energy(const vec_d &positions)
             else
                 deltaR.getDeltaR(positions, (int)i*3, (int)j*3);
 
-            calc_one_pair(deltaR, i, j, energies);
+            calc_one_pair(positions, deltaR, i, j, energies);
             total_pauli_energy += energies.pauli;
             total_pauli_energy += energies.pauli_wall;
             total_disp_energy += energies.disp;
@@ -255,11 +260,11 @@ Energies DispersionPauli::calc_one_pair(const vec_d &pos, int i, int j)
         deltaR.getDeltaR(pos, (int)i*3, (int)j*3, periodicity);
     else
         deltaR.getDeltaR(pos, (int)i*3, (int)j*3);
-    calc_one_pair(deltaR, i, j, energies);
+    calc_one_pair(pos, deltaR, i, j, energies);
     return energies;
 }
 
-double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& energies)
+double DispersionPauli::calc_one_pair(const vec_d &pos, DeltaR &deltaR, int i, int j, Energies& energies)
 {
     energies.disp = 0.0;
     energies.pauli = 0.0;
@@ -309,6 +314,108 @@ double DispersionPauli::calc_one_pair(DeltaR &deltaR, int i, int j, Energies& en
         }
     }
     return energies.disp + energies.pauli + energies.pauli_wall;
+}
+
+Vec3 DispersionPauli::get_perp_vector(const vec_d &pos, int i, int j, int k)
+{
+    Vec3 r1(pos[i*3], pos[i*3+1], pos[i*3+2]);
+    Vec3 r2(pos[j*3], pos[j*3+1], pos[j*3+2]);
+    Vec3 r3(pos[k*3], pos[k*3+1], pos[k*3+2]);
+
+    Vec3 dx = r2 - r1;
+    Vec3 dy = r3 - r1;
+    Vec3 dz = dx.cross(dy);
+    dz *= 1.0/sqrt(dz.dot(dz));
+    return dz;
+}
+
+void DispersionPauli::calc_two_site_repulsion(const vec_d &pos, DeltaR &deltaR, int i, int j, Energies& energies)
+{
+    double coeff = pauli_coeff[i]*pauli_coeff[j];
+    double exponent = 0.5*(pauli_exponents[i] + pauli_exponents[j]);
+    DeltaR dR;
+
+    vector<Vec3> sites_i, sites_j;
+    Vec3 r1(pos[i*3], pos[i*3+1], pos[i*3+2]);
+    Vec3 r2(pos[j*3], pos[j*3+1], pos[j*3+2]);
+
+    if (two_site_indicies[i].first != -1)
+    {
+        int idx_2 = two_site_indicies[i].first;
+        int idx_3 = two_site_indicies[i].second;
+        Vec3 dz = get_perp_vector(pos, i, idx_2, idx_3);
+        Vec3 r1_p = r1 + two_site_dist*dz;
+        Vec3 r1_m = r1 - two_site_dist*dz;
+        sites_i.push_back(r1_m);
+        sites_i.push_back(r1_p);
+    }
+    else
+        sites_i.push_back(r1);
+
+    if (two_site_indicies[j].first != -1)
+    {
+        int idx_2 = two_site_indicies[j].first;
+        int idx_3 = two_site_indicies[j].second;
+        Vec3 dz = get_perp_vector(pos, j, idx_2, idx_3);
+        Vec3 r2_p = r2 + two_site_dist*dz;
+        Vec3 r2_m = r2 - two_site_dist*dz;
+        sites_i.push_back(r2_p);
+        sites_i.push_back(r2_m);
+    }
+    else
+        sites_i.push_back(r2);
+    
+    coeff /= ((double)sites_i.size()*(double)sites_j.size());
+    for (auto &ri: sites_i)
+    {
+        for (auto &rj: sites_j)
+        {
+            if (periodicity.is_periodic)
+                dR.getDeltaR(ri, rj, periodicity);
+            else
+                dR.getDeltaR(ri, rj);
+            energies.pauli += coeff*exp(-exponent*dR.r);
+        }   
+    }
+
+
+}
+
+void DispersionPauli::set_use_two_site_repulsion(bool on_off)
+{
+    use_two_site_repulsion = false;
+}
+
+void DispersionPauli::create_repulsion_sites(double vertical_dist, const std::vector<std::pair<int, int>> &bonds)
+{
+    two_site_dist = vertical_dist;
+    two_site_indicies.resize(n_sites, std::pair(-1, -1));
+    std::vector<vec_i> bonded_to;
+    bonded_to.resize(n_sites);
+    for(auto &pair: bonds)
+    {
+        bonded_to[pair.first].push_back(pair.second);
+        bonded_to[pair.second].push_back(pair.first);
+    }
+
+    for(int i = 0; i < n_sites; i++)
+    {
+        //  exclude hydrogens
+        if (nuclei[i] > 2)
+        {
+            vec_i bonds = bonded_to[i];
+            
+            //  only atoms with one or two bonds can have out-of-plane pauli sites
+            if (bonds.size() == 2)
+                two_site_indicies[i] = std::pair(bonds[0], bonds[1]);
+            else if (bonds.size() == 1)
+            {
+                int site_1 = bonds[0];
+                int site_2 = bonded_to[site_1][0];
+                two_site_indicies[i] = std::pair(site_1, site_2);
+            }
+        }
+    }
 }
 
 void DispersionPauli::create_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)
