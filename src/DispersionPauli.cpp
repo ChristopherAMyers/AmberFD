@@ -290,15 +290,20 @@ double DispersionPauli::calc_one_pair(const vec_d &pos, DeltaR &deltaR, int i, i
         Nonbonded::add_Vec3_to_vector(forces[i], -dE_dR*dR_dPos);
         Nonbonded::add_Vec3_to_vector(forces[j],  dE_dR*dR_dPos);
 
-        //  Pauli energy
-        double coeff = pauli_coeff[i]*pauli_coeff[j];
-        double exponent = 0.5*(pauli_exponents[i] + pauli_exponents[j]);
-        energies.pauli = coeff*exp(-exponent*deltaR.r);
+        if (use_two_site_repulsion)
+            calc_two_site_repulsion(pos, deltaR, i, j, energies);
+        else
+        {
+            //  Pauli energy
+            double coeff = pauli_coeff[i]*pauli_coeff[j];
+            double exponent = 0.5*(pauli_exponents[i] + pauli_exponents[j]);
+            energies.pauli = coeff*exp(-exponent*deltaR.r);
 
-        //  Pauli forces
-        dE_dR = -energies.pauli*exponent;
-        Nonbonded::add_Vec3_to_vector(forces[i], -dE_dR*dR_dPos);
-        Nonbonded::add_Vec3_to_vector(forces[j],  dE_dR*dR_dPos);
+            //  Pauli forces
+            dE_dR = -energies.pauli*exponent;
+            Nonbonded::add_Vec3_to_vector(forces[i], -dE_dR*dR_dPos);
+            Nonbonded::add_Vec3_to_vector(forces[j],  dE_dR*dR_dPos);
+        }
 
         if (use_secondary_radii)
         {
@@ -318,6 +323,7 @@ double DispersionPauli::calc_one_pair(const vec_d &pos, DeltaR &deltaR, int i, i
 
 Vec3 DispersionPauli::get_perp_vector(const vec_d &pos, int i, int j, int k)
 {
+    // return vector normal to the plane formed by three sites
     Vec3 r1(pos[i*3], pos[i*3+1], pos[i*3+2]);
     Vec3 r2(pos[j*3], pos[j*3+1], pos[j*3+2]);
     Vec3 r3(pos[k*3], pos[k*3+1], pos[k*3+2]);
@@ -326,6 +332,9 @@ Vec3 DispersionPauli::get_perp_vector(const vec_d &pos, int i, int j, int k)
     Vec3 dy = r3 - r1;
     Vec3 dz = dx.cross(dy);
     dz *= 1.0/sqrt(dz.dot(dz));
+    // double normZ = sqrt(dz.dot(dz));
+    // double invNorm = (normZ > 0.0 ? 1.0/normZ : 0.0);
+    // dz *= invNorm;
     return dz;
 }
 
@@ -338,12 +347,13 @@ void DispersionPauli::calc_two_site_repulsion(const vec_d &pos, DeltaR &deltaR, 
     vector<Vec3> sites_i, sites_j;
     Vec3 r1(pos[i*3], pos[i*3+1], pos[i*3+2]);
     Vec3 r2(pos[j*3], pos[j*3+1], pos[j*3+2]);
+    Vec3 dz;
 
     if (two_site_indicies[i].first != -1)
     {
         int idx_2 = two_site_indicies[i].first;
         int idx_3 = two_site_indicies[i].second;
-        Vec3 dz = get_perp_vector(pos, i, idx_2, idx_3);
+        dz = get_perp_vector(pos, i, idx_2, idx_3);
         Vec3 r1_p = r1 + two_site_dist*dz;
         Vec3 r1_m = r1 - two_site_dist*dz;
         sites_i.push_back(r1_m);
@@ -356,16 +366,18 @@ void DispersionPauli::calc_two_site_repulsion(const vec_d &pos, DeltaR &deltaR, 
     {
         int idx_2 = two_site_indicies[j].first;
         int idx_3 = two_site_indicies[j].second;
-        Vec3 dz = get_perp_vector(pos, j, idx_2, idx_3);
+        dz = get_perp_vector(pos, j, idx_2, idx_3);
         Vec3 r2_p = r2 + two_site_dist*dz;
         Vec3 r2_m = r2 - two_site_dist*dz;
-        sites_i.push_back(r2_p);
-        sites_i.push_back(r2_m);
+        sites_j.push_back(r2_p);
+        sites_j.push_back(r2_m);
     }
     else
-        sites_i.push_back(r2);
+        sites_j.push_back(r2);
     
     coeff /= ((double)sites_i.size()*(double)sites_j.size());
+    
+    // printf("NUM SITES: %d  %d \n", (int)sites_i.size(), (int)sites_j.size());
     for (auto &ri: sites_i)
     {
         for (auto &rj: sites_j)
@@ -375,15 +387,23 @@ void DispersionPauli::calc_two_site_repulsion(const vec_d &pos, DeltaR &deltaR, 
             else
                 dR.getDeltaR(ri, rj);
             energies.pauli += coeff*exp(-exponent*dR.r);
+            // printf("    DR:  %.5f \n", dR.r);
+            // cout << "    " << ri << endl;
+            // cout << "    " << rj << endl;
+            // cout << "    " << dz << endl;
         }   
     }
-
-
+    // printf("IN PAULI: %d  %d  %.5f \n", i, j, energies.pauli);
 }
 
 void DispersionPauli::set_use_two_site_repulsion(bool on_off)
 {
-    use_two_site_repulsion = false;
+    use_two_site_repulsion = on_off;
+}
+
+void DispersionPauli::set_two_site_distance(double distance)
+{
+    two_site_dist = distance;
 }
 
 void DispersionPauli::create_repulsion_sites(double vertical_dist, const std::vector<std::pair<int, int>> &bonds)
@@ -412,6 +432,8 @@ void DispersionPauli::create_repulsion_sites(double vertical_dist, const std::ve
             {
                 int site_1 = bonds[0];
                 int site_2 = bonded_to[site_1][0];
+                if (site_2 == i)
+                    site_2 = bonded_to[site_1][1];
                 two_site_indicies[i] = std::pair(site_1, site_2);
             }
         }

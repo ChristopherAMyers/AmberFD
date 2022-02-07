@@ -60,6 +60,7 @@ class DispersionPauli {
 
         //  pseudo-spheroid repulsion
         void set_use_two_site_repulsion(bool on_off);
+        void set_two_site_distance(double vertical_dist);
         void create_repulsion_sites(double vertical_dist, const std::vector<std::pair<int, int> > &bonds);
         
     private:

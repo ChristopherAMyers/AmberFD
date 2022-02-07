@@ -405,13 +405,13 @@ class Context(mm.Context):
         fd_forces = np.array(self._FD_solver.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
 
         # print("TOTAL ENERGY: ", total_E*HARTREE_TO_KJ_MOL)
-        print("FRZ ENERGY:   ", self._current_energies.frz*HARTREE_TO_KJ_MOL)
-        print("POL ENERGY:   ", (self._current_energies.pol + self._current_energies.vct)*HARTREE_TO_KJ_MOL)
-        print("VCT ENERGY:   ", self._current_energies.vct*HARTREE_TO_KJ_MOL)
-        print("DISP ENERGY:  ", self._current_energies.disp*HARTREE_TO_KJ_MOL)
-        print("PAULI ENERGY: ", self._current_energies.pauli*HARTREE_TO_KJ_MOL)
-        print("WALL ENERGY:  ", self._current_energies.pauli_wall*HARTREE_TO_KJ_MOL)
-        print()
+        # print("FRZ ENERGY:   ", self._current_energies.frz*HARTREE_TO_KJ_MOL)
+        # print("POL ENERGY:   ", (self._current_energies.pol + self._current_energies.vct)*HARTREE_TO_KJ_MOL)
+        # print("VCT ENERGY:   ", self._current_energies.vct*HARTREE_TO_KJ_MOL)
+        # print("DISP ENERGY:  ", self._current_energies.disp*HARTREE_TO_KJ_MOL)
+        # print("PAULI ENERGY: ", self._current_energies.pauli*HARTREE_TO_KJ_MOL)
+        # print("WALL ENERGY:  ", self._current_energies.pauli_wall*HARTREE_TO_KJ_MOL)
+        # print()
 
         # total_E = self._dispPauliForce.calc_energy(pos_bohr.flatten())
         # total_E = self._dispPauliForce.get_pauli_energy()
@@ -548,7 +548,7 @@ class AmberFDSimulation(Simulation):
         else:
             self.integrator = integrator
         ## The index of the current time step
-        # self.currentStep = 0
+        self.currentStep = 0
         ## A list of reporters to invoke during the simulation
         self.reporters = []
 
@@ -605,7 +605,8 @@ class Minimizer(object):
             if atom.element is None:
                 self._zero_force_index_list.append(atom.index)
                 continue
-            mass = atom.element.mass
+            #mass = atom.element.mass
+            mass = self._system.getParticleMass(atom.index)
             mass = mass/mass.unit
             if mass == 0:
                 self._zero_force_index_list.append(atom.index)
