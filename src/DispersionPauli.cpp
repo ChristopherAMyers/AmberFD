@@ -409,7 +409,7 @@ void DispersionPauli::set_two_site_distance(double distance)
 void DispersionPauli::create_repulsion_sites(double vertical_dist, const std::vector<std::pair<int, int>> &bonds)
 {
     two_site_dist = vertical_dist;
-    two_site_indicies.resize(n_sites, std::pair(-1, -1));
+    two_site_indicies.resize(n_sites, std::pair<int, int>(-1, -1));
     std::vector<vec_i> bonded_to;
     bonded_to.resize(n_sites);
     for(auto &pair: bonds)
@@ -427,14 +427,14 @@ void DispersionPauli::create_repulsion_sites(double vertical_dist, const std::ve
             
             //  only atoms with one or two bonds can have out-of-plane pauli sites
             if (bonds.size() == 2)
-                two_site_indicies[i] = std::pair(bonds[0], bonds[1]);
+                two_site_indicies[i] = std::pair<int, int>(bonds[0], bonds[1]);
             else if (bonds.size() == 1)
             {
                 int site_1 = bonds[0];
                 int site_2 = bonded_to[site_1][0];
                 if (site_2 == i)
                     site_2 = bonded_to[site_1][1];
-                two_site_indicies[i] = std::pair(site_1, site_2);
+                two_site_indicies[i] = std::pair<int, int>(site_1, site_2);
             }
         }
     }

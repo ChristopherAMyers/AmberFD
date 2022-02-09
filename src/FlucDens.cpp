@@ -38,7 +38,7 @@ FlucDens::FlucDens(const int num_sites,
 
 
     //  density distance cutoff info
-    dens_cutoff_power_law = dens_cutoff_a*log(dens_cutoff_pct_error) + dens_cutoff_b;
+    SR_cutoff_power_law = SR_cutoff_a*log(SR_cutoff_pct_error) + SR_cutoff_b;
 
     //  for dynamic densities
     J_mat.resize(n_sites*n_sites, 0.0);
@@ -74,6 +74,10 @@ FlucDens::FlucDens(const int num_sites,
 
     //  initialize energies
     initialize_calculation();
+
+    //  cutoff info;
+    use_cutoff = false;
+    cutoff_distance = 0;
 }
 
 FlucDens::~FlucDens()
@@ -248,6 +252,26 @@ int FlucDens::get_num_constraints()
     return constraints.size();
 }
 
+void FlucDens::set_cutoff_distance(double distance_in_nm)
+{
+    cutoff_distance = distance_in_nm*10*ANG2BOHR;
+}
+
+double FlucDens::get_cutoff_distance()
+{
+    return cutoff_distance/(10*ANG2BOHR);
+}
+
+void FlucDens::set_use_cutoff(bool useCutoff)
+{
+    use_cutoff = useCutoff;
+}
+
+bool FlucDens::get_use_cutoff()
+{
+    return use_cutoff;
+}
+
 std::vector<vec_d> FlucDens::get_forces()
 {
     std::vector<vec_d> rtn(n_sites, vec_d(3, 0.0));
@@ -353,6 +377,14 @@ void FlucDens::initialize_calculation()
     fill(frozen_forces.begin(), frozen_forces.end(), Vec3(0, 0, 0));
     fill(total_forces.begin(), total_forces.end(), Vec3(0, 0, 0));
     total_energies.reset();
+
+    if ((int)cutoff_distance == 0 && periodicity.is_periodic)
+    {
+        double min_dist = std::min(periodicity.box_size[0], periodicity.box_size[1]);
+        min_dist = std::min(min_dist, periodicity.box_size[2]);
+        cutoff_distance = 0.5*0.99999*min_dist;
+    }
+
 }
 
 double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_pol)
@@ -433,7 +465,8 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
     
     double frozen_energy = 0.0;
     double E_ee = 0.0, E_eZ1 = 0.0, E_eZ2 = 0.0, E_ZZ = 0.0;
-    
+
+    bool within_cutoff = !use_cutoff || deltaR.r < cutoff_distance;
 
     const double b_frz = frozen_exp[j];
     const double b_del = dynamic_exp[j];
@@ -458,7 +491,7 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
         const double exp_br_frz = exp(-b_frz*r);
         const double exp_br_del = exp(-b_del*r);
 
-        if (calc_pol)
+        if (calc_pol and within_cutoff)
         {
             //  delta_rho - delta_rho
             Vec3 dR = deltaR.dR*inv_r;
@@ -470,7 +503,10 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
             dJ_dPos[idx_ji] = -ee_ddR * dR;
 
             //  delta_rho - frozen_rho
-            if (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) == exclusions_del_frz[i].end())
+            if (
+                (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) == exclusions_del_frz[i].end())
+                && within_cutoff
+            )
             {
                 double del_frz_ee_ddR, frz_del_ee_ddR, del_a_nuc_b_ddR, del_b_nuc_a_ddR;
                 const double del_frz_ee  = elec_elec_energy(inv_r, a_del, b_frz, exp_ar_del, exp_br_frz, del_frz_ee_ddR);
@@ -502,7 +538,7 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
             }
         }
         //  frozen_rho - frozen_rho
-        if (calc_frz)
+        if (calc_frz && within_cutoff)
         if (std::find(exclusions_frz_frz[i].begin(), exclusions_frz_frz[i].end(), j) == exclusions_frz_frz[i].end())
         {
             double frz_frz_ee_ddR, frz_a_nuc_b_ddR, frz_b_nuc_a_ddR;
@@ -525,8 +561,20 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
             frozen_forces[j] -= force_i;
 
             frozen_energy =  (E_ee + E_eZ1) + (E_ZZ + E_eZ2);
+
+            if (i == 119 || j == 119)
+            {
+                // if (deltaR.r > cutoff_distance)
+                // {
+                //     double norm = sqrt(force_i.dot(force_i))*49614.77640958472;
+                //     int idx_out = j;
+                //     if (j == 119) idx_out = i;
+                //     printf("IDX_119  %d  %10.5f  %10.5f\n", idx_out, norm, deltaR.r/ANG2BOHR);
+                // }
+            }
         }
     }
+
     energies.elec_elec = E_ee;
     energies.elec_nuc = E_eZ1 + E_eZ2;
     energies.nuc_nuc = E_ZZ;

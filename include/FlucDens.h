@@ -104,6 +104,12 @@ class FlucDens {
         void set_use_PBC(const bool is_periodic, const double x, const double y, const double z);
         bool get_use_PBC();
 
+        //  cutoff info
+        void set_cutoff_distance(double distance_in_nm);
+        double get_cutoff_distance();
+        void set_use_cutoff(bool use_cutoff_IN);
+        bool get_use_cutoff();
+
     private:
         
         vec_d fluc_pop;
@@ -131,11 +137,6 @@ class FlucDens {
 
         bool use_long_range_approx(double r, double a, double b);
         void create_del_exclusions_from_fragment(const std::vector<int> frag_idx);
-        
-        
-        double dens_cutoff_pct_error = 0.02;
-        double dens_cutoff_power_law;
-        const double dens_cutoff_a = -1.1724, dens_cutoff_b=14.692;
 
         vec_d J_mat;
         vec_d pot_vec;
@@ -153,6 +154,13 @@ class FlucDens {
         
         FlucDensEnergies total_energies;
         Periodicity periodicity;
+
+        double cutoff_distance;
+        bool use_cutoff;
+        bool use_SR_cutoff;
+        double SR_cutoff_pct_error = 0.10;
+        double SR_cutoff_power_law;
+        const double SR_cutoff_a = -1.1724, SR_cutoff_b=14.692;
 };
 
 

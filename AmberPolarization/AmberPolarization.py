@@ -333,29 +333,33 @@ class MoleculeImporter():
         self.topology = modeller.getTopology()
         self.forcefield = forcefield
 
-        if solvate:
-            if 'boxSize' in solvate_kwargs:
-                boxSize = solvate_kwargs['boxSize']
+        #   set box size if it wasn't already
+        if self.topology.getPeriodicBoxVectors() is None:
+            if solvate:
+                if 'boxSize' in solvate_kwargs:
+                    boxSize = solvate_kwargs['boxSize']
+                    if uu.is_quantity(boxSize):
+                        boxSize = boxSize.value_in_unit(uu.nanometer)
+                    #box = Vec3(boxSize[0], boxSize[1], boxSize[2])
+                    vectors = (Vec3(boxSize[0], 0, 0), Vec3(0, boxSize[1], 0), Vec3(0, 0, boxSize[2]))
+                    self.topology.setPeriodicBoxVectors(vectors)
+                if 'boxVectors' in solvate_kwargs:
+                    boxVectors = solvate_kwargs['boxVectors']
+                    if uu.is_quantity(boxVectors[0]):
+                        boxVectors = (boxVectors[0].value_in_unit(uu.nanometer), boxVectors[1].value_in_unit(uu.nanometer), boxVectors[2].value_in_unit(uu.nanometer))
+                    #box = Vec3(boxVectors[0][0], boxVectors[1][1], boxVectors[2][2])
+                    vectors = boxVectors
+                    self.topology.setPeriodicBoxVectors(vectors)
+            elif topology.getPeriodicBoxVectors() is not None:
+                self.topology.setPeriodicBoxVectors(topology.getPeriodicBoxVectors())
+            else:
+                min_pos = np.min(positions, axis=0)
+                max_pos = np.max(positions, axis=0)
+                boxSize = max_pos - min_pos
                 if uu.is_quantity(boxSize):
                     boxSize = boxSize.value_in_unit(uu.nanometer)
-                #box = Vec3(boxSize[0], boxSize[1], boxSize[2])
                 vectors = (Vec3(boxSize[0], 0, 0), Vec3(0, boxSize[1], 0), Vec3(0, 0, boxSize[2]))
                 self.topology.setPeriodicBoxVectors(vectors)
-            if 'boxVectors' in solvate_kwargs:
-                boxVectors = solvate_kwargs['boxVectors']
-                if uu.is_quantity(boxVectors[0]):
-                    boxVectors = (boxVectors[0].value_in_unit(uu.nanometer), boxVectors[1].value_in_unit(uu.nanometer), boxVectors[2].value_in_unit(uu.nanometer))
-                #box = Vec3(boxVectors[0][0], boxVectors[1][1], boxVectors[2][2])
-                vectors = boxVectors
-                self.topology.setPeriodicBoxVectors(vectors)
-        else:
-            min_pos = np.min(positions, axis=0)
-            max_pos = np.max(positions, axis=0)
-            boxSize = max_pos - min_pos
-            if uu.is_quantity(boxSize):
-                boxSize = boxSize.value_in_unit(uu.nanometer)
-            vectors = (Vec3(boxSize[0], 0, 0), Vec3(0, boxSize[1], 0), Vec3(0, 0, boxSize[2]))
-            self.topology.setPeriodicBoxVectors(vectors)
 
 
 
@@ -375,6 +379,7 @@ class Context(mm.Context):
         self._system = args[0]
         self.integrator = args[1]
         self._FD_solver = self._system._amberFDData['force']
+        self._FD_forces = None
         self._external_force = self._system._amberFDData['ext_force']
         self._omm_index_to_FD = dict(self._FD_solver.get_index_mapping())
         self._omm_indicies = list(self._omm_index_to_FD.keys())
@@ -389,16 +394,20 @@ class Context(mm.Context):
         self._dont_update = False
         self._currentStep = 0
 
+    def _get_fd_pos(self):
+        state = self.getState(getPositions=True)
+        all_pos = state.getPositions(True)
+        pos_bohr = (all_pos[self._omm_indicies])/uu.bohr
+
+        return pos_bohr.flatten()
+
     def _update_force(self):
         #return
         if self._dont_update: return
         state = self.getState(getPositions=True)
         all_pos = state.getPositions(True)
         pos_bohr = (all_pos[self._omm_indicies])/uu.bohr
-        pos_nm = pos_bohr * uu.bohr.conversion_factor_to(uu.nanometer)
-        #pos_bohr = np.array([all_pos[x]/uu.bohr for x in self._omm_index_to_FD])
-        #pos_nm = np.array([all_pos[x]/uu.nanometers for x in self._omm_index_to_FD])
-        
+        pos_nm = pos_bohr * uu.bohr.conversion_factor_to(uu.nanometer)        
         self._current_energies = self._FD_solver.calc_energy_forces(pos_bohr.flatten())
 
         total_E = self._current_energies.total()
@@ -458,17 +467,16 @@ class Context(mm.Context):
             fd_offset = np.mean(fd_forces * pos_nm)*3
             fd_energy = total_E*HARTREE_TO_KJ_MOL
             self._current_forces = fd_forces
-
-            # print("FD ENERGY: ", fd_energy/HARTREE_TO_KJ_MOL)
-            # np.savetxt('positions_2.txt', pos_bohr)
             
             #   update external force and global parameters
             for (omm_particle, index), force in zip(self._omm_index_to_FD.items(), fd_forces):
-                self._external_force.setParticleParameters(index, omm_particle, force)
                 #print(index, omm_particle, force)
+                self._external_force.setParticleParameters(index, omm_particle, force)
+                
             self.setParameter('fd_offset', fd_offset)
             self.setParameter('fd_energy', fd_energy)
             self._external_force.updateParametersInContext(self)
+            self._FD_forces = fd_forces
         
     def getState(self, getPositions=False, getVelocities=False,
                  getForces=False, getEnergy=False, getParameters=False,
@@ -527,6 +535,7 @@ class AmberFDSimulation(Simulation):
                 if state is not None:
                     raise NotImplementedError("States are not yet implimented in AmberFD")
             else:
+                print("INFO: Using Standard OpenMM System")
                 super().__init__(topology, system, integrator, platform=platform, platformProperties=platformProperties, state=state)
                 return
         else:
@@ -548,7 +557,8 @@ class AmberFDSimulation(Simulation):
         else:
             self.integrator = integrator
         ## The index of the current time step
-        self.currentStep = 0
+        if hasattr(self, 'currentStep'):
+            self.currentStep = 0
         ## A list of reporters to invoke during the simulation
         self.reporters = []
 
@@ -578,17 +588,17 @@ class AmberFDSimulation(Simulation):
             self.context._update_force()
             self._integrator_step_old(1)
 
-    def minimizeEnergy(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, PDBOutFile=None, output_interval=1):
+    def minimizeEnergy(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, PDBOutFile=None, output_interval=1, excludeResidueNames=None):
         if isinstance(PDBOutFile, str):
-            minimizer = Minimizer(self.context, out_pdb=PDBOutFile, topology=self.topology)
+            minimizer = Minimizer(self.context, self.topology, out_pdb=PDBOutFile, excludeResidueNames=excludeResidueNames)
         else:
-            minimizer = Minimizer(self.context, topology=self.topology)
+            minimizer = Minimizer(self.context, self.topology, excludeResidueNames=excludeResidueNames)
 
         minimizer.minimize(tolerance, maxIterations, output_interval=output_interval)
 
 
 class Minimizer(object):
-    def __init__(self, context, out_pdb=None, topology=None):
+    def __init__(self, context, topology, out_pdb=None, excludeResidueNames=None):
         #raise NotImplementedError("Still working on BFGS Minimizer")
         self._out_file = None
         self._topology = topology
@@ -642,6 +652,28 @@ class Minimizer(object):
         self._other_to_report = None
         self._print_interval = 1
 
+        #   residues to exclude from output
+        self._exclude_residues = None
+        if excludeResidueNames is not None:
+            if isinstance(excludeResidueNames, str):
+                self._exclude_residues = tuple([excludeResidueNames])
+            else:
+                self._exclude_residues = tuple(excludeResidueNames)
+        self._keep_atom_idx = []
+        self._excluded_top = None
+
+    def _create_excluded_top(self, orig_top, positions):
+        modeller = Modeller(orig_top, positions)
+        res_to_delete = []
+        for res in orig_top.residues():
+            if res.name in self._exclude_residues:
+                res_to_delete.append(res)
+            else:
+                for atom in res.atoms():
+                    self._keep_atom_idx.append(atom.index)
+        modeller.delete(res_to_delete)
+        return modeller.topology
+
 
     def _callback(self, pos, inc_step_count=True, override=False):
         if (self._step_num % self._print_interval == 0) or override:
@@ -660,7 +692,21 @@ class Minimizer(object):
                 print(output_line)
             
             if self._out_file is not None:
-                PDBFile.writeModel(self._topology, self._current_all_pos.reshape(-1,3)*uu.nanometer, file=self._out_file, modelIndex=self._step_num)
+
+                all_pos = self._current_all_pos.reshape(-1,3)*uu.nanometer
+                if self._exclude_residues is not None:
+                    if self._excluded_top is None:
+                        self._excluded_top = self._create_excluded_top(self._topology, all_pos)
+                    out_pos = all_pos[self._keep_atom_idx]
+                    out_top = self._excluded_top
+                else:
+                    out_pos = all_pos
+                    out_top = self._topology
+
+                PDBFile.writeModel(out_top, out_pos, file=self._out_file, modelIndex=self._step_num)
+                if hasattr(self._out_file, 'flush') and callable(self._out_file.flush):
+                    self._out_file.flush()
+
         if inc_step_count:
             self._step_num += 1
 
@@ -682,6 +728,7 @@ class Minimizer(object):
         print(" Number of Degrees of Freedom:       %d" % (len(self._keep_idx)*3))
         print(" Initial max. force: {:15.3f} kJ/mol".format(np.max(force_norms)))
         print(" Initial energy:     {:15.3f} kJ/mol/nm".format(init_energy))
+
 
         # Repeatedly minimize, steadily increasing the strength of the springs until all constraints are satisfied.
 
