@@ -36,10 +36,6 @@ FlucDens::FlucDens(const int num_sites,
     param_data["dyn_exp"] =    &dynamic_exp;
     param_data["nuclei"] =     &nuclei;
 
-
-    //  density distance cutoff info
-    SR_cutoff_power_law = SR_cutoff_a*log(SR_cutoff_pct_error) + SR_cutoff_b;
-
     //  for dynamic densities
     J_mat.resize(n_sites*n_sites, 0.0);
     // dJ_dx.resize(n_sites*n_sites, 0.0);
@@ -78,6 +74,7 @@ FlucDens::FlucDens(const int num_sites,
     //  cutoff info;
     use_cutoff = false;
     cutoff_distance = 0;
+    SR_cutoff_coeff = SR_cutoff_a*log(SR_cutoff_pct_error) + SR_cutoff_b;
 }
 
 FlucDens::~FlucDens()
@@ -312,7 +309,7 @@ double FlucDens::calc_overlap(const vec_d &coords)
 
             if (std::find(exclusions_frz_frz[i].begin(), exclusions_frz_frz[i].end(), j) == exclusions_frz_frz[i].end())
             {
-                if (use_long_range_approx(r, a, b))
+                if (use_SR_approx(r, a, b))
                 {            }
                 else if (true)
                 {
@@ -481,10 +478,71 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
     const int idx_ij = i*n_sites + j;
     const int idx_ji = j*n_sites + i;
 
-    if (use_long_range_approx(r, a_frz, b_frz)
-    && use_long_range_approx(r, a_del, b_del) )
-    {            }
-    else if (true)
+    if (use_SR_approx(r, a_frz, b_frz)
+    && use_SR_approx(r, a_del, b_del) )
+    {            
+        Vec3 dR = deltaR.dR*inv_r;
+        double dE_dR = -inv_r*inv_r;
+
+        if (calc_pol and within_cutoff)
+        {
+            //  delta_rho - delta_rho
+            J_mat[idx_ij] = inv_r;
+            J_mat[idx_ji] = inv_r;
+            dJ_dPos[idx_ij] =  dE_dR * dR;
+            dJ_dPos[idx_ji] = -dE_dR * dR;
+
+            //  delta_rho - frozen_rho
+            if (
+                    (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) == exclusions_del_frz[i].end())
+                    && within_cutoff
+                )
+            {
+                pot_vec[i] -= frozen_chg[j]*inv_r;
+                pot_vec[j] -= frozen_chg[i]*inv_r;
+
+                double dP_dR_ij = -frozen_chg[j]*dE_dR;
+                double dP_dR_ji = -frozen_chg[i]*dE_dR;
+                dPot_dPos[idx_ij] = dP_dR_ij*dR;
+                dPot_dPos[idx_ji] = -dP_dR_ji*dR;
+                dPot_dPos_trans[idx_ji] = dP_dR_ij*dR;
+                dPot_dPos_trans[idx_ij] = -dP_dR_ji*dR;
+
+                //  polarization dampening
+                double dampening = exp(-damp_exponent*r) + pol_wall_coeff*exp(-pol_wall_exponent*r);
+                damp_sum[i] += dampening;
+                damp_sum[j] += dampening;
+                double dDamp_dR = -damp_exponent*damp_coeff*dampening - pol_wall_exponent*pol_wall_coeff*exp(-pol_wall_exponent*r);
+                dDamp_dPos[idx_ij] =  dDamp_dR*dR;
+                dDamp_dPos[idx_ji] = -dDamp_dR*dR;
+            }
+        }
+
+        //  frozen_rho - frozen_rho
+        if (calc_frz && within_cutoff)
+        if (std::find(exclusions_frz_frz[i].begin(), exclusions_frz_frz[i].end(), j) == exclusions_frz_frz[i].end())
+        {
+            E_ZZ = nuclei[i]*nuclei[j]*inv_r;
+            E_ee = frozen_pop[i]*frozen_pop[j]*inv_r;
+            E_eZ1 = -frozen_pop[i]*nuclei[j]*inv_r;
+            E_eZ2 = -frozen_pop[j]*nuclei[i]*inv_r;
+
+            Vec3 dR_norm = deltaR.dR*inv_r;
+            Vec3 d_ee_dR = frozen_pop[i]*frozen_pop[j]*dE_dR*dR_norm;
+            Vec3 d_eZ_dR1 = -frozen_pop[i]*nuclei[j]*dE_dR*dR_norm;
+            Vec3 d_eZ_dR2 = -frozen_pop[j]*nuclei[i]*dE_dR*dR_norm;
+            Vec3 d_ZZ_dR =  nuclei[i]*nuclei[j]*dE_dR*dR_norm;
+
+            Vec3 force_i = -(d_ee_dR + d_eZ_dR1 + d_eZ_dR2 + d_ZZ_dR);
+            frozen_forces[i] += force_i;
+            frozen_forces[j] -= force_i;
+
+            frozen_energy =  (E_ee + E_eZ1) + (E_ZZ + E_eZ2);
+        }
+
+        // skip dampening
+    }
+    else
     {
         const double exp_ar_del = exp(-a_del*r);
         const double exp_ar_frz = exp(-a_frz*r);
@@ -516,18 +574,6 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 
                 pot_vec[i] += frozen_pop[j]*del_frz_ee + nuclei[j]*del_a_nuc_b;
                 pot_vec[j] += frozen_pop[i]*frz_del_ee + nuclei[i]*del_b_nuc_a;
-
-                double r_12 = pow(deltaR.r2, 6);
-                //double dampening = exp(-damp_exponent*r) + pol_wall_coeff/r_12;
-                double dampening = exp(-damp_exponent*r) + pol_wall_coeff*exp(-pol_wall_exponent*r);
-                damp_sum[i] += dampening;
-                damp_sum[j] += dampening;
-
-                // double dDamp_dR = -damp_exponent*damp_coeff*dampening - 12*pol_wall_coeff/r_12*deltaR.r_inv;
-                double dDamp_dR = -damp_exponent*damp_coeff*dampening - pol_wall_exponent*pol_wall_coeff*exp(-pol_wall_exponent*r);
-                dDamp_dPos[idx_ij] =  dDamp_dR*dR;
-                dDamp_dPos[idx_ji] = -dDamp_dR*dR;
-
                 
                 double dP_dR_ij = frozen_pop[j]*del_frz_ee_ddR + nuclei[j]*del_a_nuc_b_ddR;
                 double dP_dR_ji = frozen_pop[i]*frz_del_ee_ddR + nuclei[i]*del_b_nuc_a_ddR;
@@ -535,6 +581,14 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 dPot_dPos[idx_ji] = -dP_dR_ji*dR;
                 dPot_dPos_trans[idx_ji] = dP_dR_ij*dR;
                 dPot_dPos_trans[idx_ij] = -dP_dR_ji*dR;
+
+                //  polarization dampening
+                double dampening = exp(-damp_exponent*r) + pol_wall_coeff*exp(-pol_wall_exponent*r);
+                damp_sum[i] += dampening;
+                damp_sum[j] += dampening;
+                double dDamp_dR = -damp_exponent*damp_coeff*dampening - pol_wall_exponent*pol_wall_coeff*exp(-pol_wall_exponent*r);
+                dDamp_dPos[idx_ij] =  dDamp_dR*dR;
+                dDamp_dPos[idx_ji] = -dDamp_dR*dR;
             }
         }
         //  frozen_rho - frozen_rho
@@ -561,17 +615,6 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
             frozen_forces[j] -= force_i;
 
             frozen_energy =  (E_ee + E_eZ1) + (E_ZZ + E_eZ2);
-
-            if (i == 119 || j == 119)
-            {
-                // if (deltaR.r > cutoff_distance)
-                // {
-                //     double norm = sqrt(force_i.dot(force_i))*49614.77640958472;
-                //     int idx_out = j;
-                //     if (j == 119) idx_out = i;
-                //     printf("IDX_119  %d  %10.5f  %10.5f\n", idx_out, norm, deltaR.r/ANG2BOHR);
-                // }
-            }
         }
     }
 
@@ -778,9 +821,12 @@ void FlucDens::solve_minimization()
     total_energies.vct = ct_coeff*total_energies.pol;
 }
 
-bool FlucDens::use_long_range_approx(double r, double a, double b)
+bool FlucDens::use_SR_approx(double r, double a, double b)
 {
-    return false;
+    double alpha = std::max(a, b);
+    double max_dist = SR_cutoff_coeff/alpha;
+    return (r > max_dist);
+    //return false;
 }
 
 std::vector<std::string> FlucDens::get_param_names()

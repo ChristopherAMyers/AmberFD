@@ -257,6 +257,16 @@ class MoleculeImporter():
         self.positions = None
         self.forcefield = None
 
+
+        if isinstance(structure_files, str):
+            structure_files = tuple([structure_files])
+        elif isinstance(structure_files, list):
+            structure_files = tuple(structure_files)
+        if isinstance(ff_files, str):
+            ff_files = tuple([ff_files])
+        elif isinstance(ff_files, list):
+            ff_files = tuple(ff_files)
+
         #   add additional bond deffinitions
         #   first create a blank topology to force openmm.app.Topology
         #   to load their standard bonds
@@ -276,15 +286,6 @@ class MoleculeImporter():
                     if isfile(f):
                         Topology.loadBondDefinitions(f)
                         break
-
-        if isinstance(structure_files, str):
-            structure_files = tuple([structure_files])
-        elif isinstance(structure_files, list):
-            structure_files = tuple(structure_files)
-        if isinstance(ff_files, str):
-            ff_files = tuple([ff_files])
-        elif isinstance(ff_files, list):
-            ff_files = tuple(ff_files)
 
         #   import force fields
         forcefield = ff.ForceField(*ff_files)
@@ -335,21 +336,20 @@ class MoleculeImporter():
 
         #   set box size if it wasn't already
         if self.topology.getPeriodicBoxVectors() is None:
-            if solvate:
-                if 'boxSize' in solvate_kwargs:
-                    boxSize = solvate_kwargs['boxSize']
-                    if uu.is_quantity(boxSize):
-                        boxSize = boxSize.value_in_unit(uu.nanometer)
-                    #box = Vec3(boxSize[0], boxSize[1], boxSize[2])
-                    vectors = (Vec3(boxSize[0], 0, 0), Vec3(0, boxSize[1], 0), Vec3(0, 0, boxSize[2]))
-                    self.topology.setPeriodicBoxVectors(vectors)
-                if 'boxVectors' in solvate_kwargs:
-                    boxVectors = solvate_kwargs['boxVectors']
-                    if uu.is_quantity(boxVectors[0]):
-                        boxVectors = (boxVectors[0].value_in_unit(uu.nanometer), boxVectors[1].value_in_unit(uu.nanometer), boxVectors[2].value_in_unit(uu.nanometer))
-                    #box = Vec3(boxVectors[0][0], boxVectors[1][1], boxVectors[2][2])
-                    vectors = boxVectors
-                    self.topology.setPeriodicBoxVectors(vectors)
+            if 'boxSize' in solvate_kwargs:
+                boxSize = solvate_kwargs['boxSize']
+                if uu.is_quantity(boxSize):
+                    boxSize = boxSize.value_in_unit(uu.nanometer)
+                #box = Vec3(boxSize[0], boxSize[1], boxSize[2])
+                vectors = (Vec3(boxSize[0], 0, 0), Vec3(0, boxSize[1], 0), Vec3(0, 0, boxSize[2]))
+                self.topology.setPeriodicBoxVectors(vectors)
+            elif 'boxVectors' in solvate_kwargs:
+                boxVectors = solvate_kwargs['boxVectors']
+                if uu.is_quantity(boxVectors[0]):
+                    boxVectors = (boxVectors[0].value_in_unit(uu.nanometer), boxVectors[1].value_in_unit(uu.nanometer), boxVectors[2].value_in_unit(uu.nanometer))
+                #box = Vec3(boxVectors[0][0], boxVectors[1][1], boxVectors[2][2])
+                vectors = boxVectors
+                self.topology.setPeriodicBoxVectors(vectors)
             elif topology.getPeriodicBoxVectors() is not None:
                 self.topology.setPeriodicBoxVectors(topology.getPeriodicBoxVectors())
             else:

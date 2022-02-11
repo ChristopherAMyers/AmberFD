@@ -107,7 +107,7 @@ class FlucDens {
         //  cutoff info
         void set_cutoff_distance(double distance_in_nm);
         double get_cutoff_distance();
-        void set_use_cutoff(bool use_cutoff_IN);
+        void set_use_cutoff(bool useCutoff);
         bool get_use_cutoff();
 
     private:
@@ -135,7 +135,7 @@ class FlucDens {
         bool remove_core;
         
 
-        bool use_long_range_approx(double r, double a, double b);
+        bool use_SR_approx(double r, double a, double b);
         void create_del_exclusions_from_fragment(const std::vector<int> frag_idx);
 
         vec_d J_mat;
@@ -159,8 +159,8 @@ class FlucDens {
         bool use_cutoff;
         bool use_SR_cutoff;
         double SR_cutoff_pct_error = 0.10;
-        double SR_cutoff_power_law;
         const double SR_cutoff_a = -1.1724, SR_cutoff_b=14.692;
+        double SR_cutoff_coeff;
 };
 
 
