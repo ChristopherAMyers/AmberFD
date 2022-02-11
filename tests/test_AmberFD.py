@@ -41,6 +41,7 @@ if __name__ == "__main__":
     
 
     amber = AmberFD(len(coords))
+
     for n, nuc in enumerate(nuclei):
         particle = ParticleInfo(nuc)
         particle.dyn_exp = exp_dyn[n]
@@ -58,6 +59,7 @@ if __name__ == "__main__":
 
     #   create electrostatics force
     fluc = amber.create_fluc_dens_force()
+    fluc.set_use_SR_cutoff(False)
     fluc.create_frz_exclusions_from_bonds(bonds, 3)
     fluc.add_fragment(np.arange(0, n_atoms))
     fluc.add_fragment(np.arange(n_atoms, n_atoms*2))

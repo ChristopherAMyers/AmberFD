@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
         i++;
     }
 
-
     printf("There are %d sites\n", (int)nuclei.size());
 
     FlucDens fluc(atoms.size(), &frz_chg[0], &nuclei[0], &frz_exp[0], &dyn_exp[0]);
@@ -91,6 +90,7 @@ int main(int argc, char *argv[])
     fluc.create_frz_exclusions_from_bonds(bonds, 3);
     fluc.add_fragment(frag1_idx);
     fluc.add_fragment(frag2_idx);
+    fluc.set_use_SR_cutoff(false);
 
     //fluc.print_params("frozen_exp parameters", "frozen_exp");
     //fluc.print_params("dynamic_exp parameters", "dynamic_exp");

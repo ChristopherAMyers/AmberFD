@@ -45,6 +45,7 @@ if __name__ == "__main__":
     for i in range(1):
         #   total system
         fluc = FlucDens(frz_chg, nuclei, exp_frz, exp_dyn)
+        fluc.set_use_SR_cutoff(False)
         fluc.create_frz_exclusions_from_bonds(bonds, 3)
         fluc.add_fragment(VectorI(range(n_atoms)))
         fluc.add_fragment(VectorI(range(n_atoms, n_atoms*2)))
@@ -56,6 +57,8 @@ if __name__ == "__main__":
         #   individual fragments
         fluc_1 = FlucDens(frz_chg[:n_atoms], nuclei[:n_atoms], exp_frz[:n_atoms], exp_dyn[:n_atoms])
         fluc_2 = FlucDens(frz_chg[n_atoms:], nuclei[n_atoms:], exp_frz[n_atoms:], exp_dyn[n_atoms:])
+        fluc_1.set_use_SR_cutoff(False)
+        fluc_2.set_use_SR_cutoff(False)
         bonds_1 = get_bonds(coords[:n_atoms], elms[:n_atoms])
         bonds_2 = get_bonds(coords[n_atoms:], elms[n_atoms:])
         fluc_1.create_frz_exclusions_from_bonds(bonds_1, 3)

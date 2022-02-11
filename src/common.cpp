@@ -125,35 +125,53 @@ void DeltaR::get_pointer(double *deltaR)
     deltaR[Nonbonded::RInvIdx] = r_inv;
 }
 
-Energies::Energies()
-{
-    zero();
-}
 
-void Energies::add(Energies &eng)
-{
-    pauli      += eng.pauli;
-    disp       += eng.disp;
-    frz        += eng.frz;
-    pol        += eng.pol;
-    vct        += eng.vct;
-    elec_elec  += eng.elec_elec;
-    elec_nuc   += eng.elec_nuc;
-    nuc_nuc    += eng.nuc_nuc;
-    pauli_wall += eng.pauli_wall;
-}
 
-void Energies::zero()
-{
-    pauli = disp = frz = pol = vct = pauli_wall = 0.0;
-    elec_elec = elec_nuc = nuc_nuc = 0.0;
-}
 
-double Energies::total()
-{
-     return pauli + disp + frz + pol + vct + pauli_wall;
-}
+// Energies Energies::operator+(const Energies &eng)
+// {
+//     Energies eng_new;
+//     eng_new.add(*this);
+//     eng_new.add(eng);
+//     return eng_new;
+// }
 
+// Energies& Energies::operator+=(const Energies &eng)
+// {
+//     add(eng);
+//     return *this;
+// }
+
+// Energies Energies::operator-(const Energies &eng)
+// {
+//     Energies eng_new;
+//     eng_new.add(*this);
+//     eng_new.add(eng);
+//     return eng_new;
+// }
+
+// Energies Energies::operator-=(const Energies &eng)
+// {
+//     add(eng);
+// }
+
+// Energies Energies::operator*=(double rhs)
+// {
+//     pauli      *= rhs;
+//     disp       *= rhs;
+//     frz        *= rhs;
+//     pol        *= rhs;
+//     vct        *= rhs;
+//     elec_elec  *= rhs;
+//     elec_nuc   *= rhs;
+//     nuc_nuc    *= rhs;
+//     pauli_wall *= rhs;
+// }
+
+// Energies Energies::operator/=(double rhs)
+// {
+//     *this /= rhs;
+// }
 
 void Periodicity::set(bool is_periodic_in, const double x, const double y, const double z)
 {

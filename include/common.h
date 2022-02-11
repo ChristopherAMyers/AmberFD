@@ -4,6 +4,7 @@
 #include <map>
 #include <utility>
 #include "Vec3.h"
+#include "Energies.h"
 
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
@@ -62,16 +63,7 @@ class DeltaR{
         void get_pointer(double *deltaR);
 };
 
-class Energies{
-    public:
-        double pauli, disp, frz, pol, vct;
-        double elec_elec, elec_nuc, nuc_nuc;
-        double pauli_wall;
-        Energies();
-        double total();
-        void zero();
-        void add(Energies &eng);
-};
+
 
 
 

@@ -109,6 +109,9 @@ class FlucDens {
         double get_cutoff_distance();
         void set_use_cutoff(bool useCutoff);
         bool get_use_cutoff();
+        void set_use_SR_cutoff(bool);
+        bool get_use_SR_cutoff();
+
 
     private:
         

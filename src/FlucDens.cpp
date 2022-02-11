@@ -73,6 +73,7 @@ FlucDens::FlucDens(const int num_sites,
 
     //  cutoff info;
     use_cutoff = false;
+    use_SR_cutoff = true;
     cutoff_distance = 0;
     SR_cutoff_coeff = SR_cutoff_a*log(SR_cutoff_pct_error) + SR_cutoff_b;
 }
@@ -267,6 +268,16 @@ void FlucDens::set_use_cutoff(bool useCutoff)
 bool FlucDens::get_use_cutoff()
 {
     return use_cutoff;
+}
+
+void FlucDens::set_use_SR_cutoff(bool yes_no)
+{
+    use_SR_cutoff = yes_no;
+}
+
+bool FlucDens::get_use_SR_cutoff()
+{
+    return use_SR_cutoff;
 }
 
 std::vector<vec_d> FlucDens::get_forces()
@@ -823,10 +834,11 @@ void FlucDens::solve_minimization()
 
 bool FlucDens::use_SR_approx(double r, double a, double b)
 {
+    if (!use_SR_cutoff)
+        return false;
     double alpha = std::max(a, b);
     double max_dist = SR_cutoff_coeff/alpha;
     return (r > max_dist);
-    //return false;
 }
 
 std::vector<std::string> FlucDens::get_param_names()
