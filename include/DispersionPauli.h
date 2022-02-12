@@ -44,8 +44,8 @@ class DispersionPauli {
 
         void initialize();
         double calc_energy(const vec_d &coords);
-        double calc_one_pair(const vec_d &pos, DeltaR &deltaR, int i, int j, Energies& energies);
-        Energies calc_one_pair(const vec_d &pos, int i, int j);
+        double calc_one_pair(const vec_d &pos, DeltaR &deltaR, int i, int j, Energies& energies, std::vector<Vec3> &forces);
+        Energies calc_one_pair(const vec_d &pos, int i, int j, std::vector<Vec3> &forces);
 
         void create_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, int bond_cutoff);
         void create_exclusions_from_fragment(const vec_i frag_idx);
@@ -80,8 +80,8 @@ class DispersionPauli {
         double total_disp_energy;
         double total_pauli_energy;
 
-        //std::vector<Vec3> forces;
-        std::vector<vec_d> forces;
+        std::vector<Vec3> self_forces;
+        //std::vector<vec_d> self_forces;
         void add_force(vec_d &force, const Vec3 &dR);
 
         void set_all_vdw_radii();

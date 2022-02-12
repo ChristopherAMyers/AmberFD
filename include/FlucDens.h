@@ -42,10 +42,10 @@ class FlucDens {
 
         double calc_overlap(const vec_d &coords);
         double calc_energy(const vec_d &coords, bool calc_frz=true, bool calc_pol=true);
-        void calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies);
+        void calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies, std::vector<Vec3> &forces);
         Energies calc_one_frozen(const vec_d &coords, int i, int j);
         void initialize_calculation();
-        void solve_minimization();
+        void solve_minimization(std::vector<Vec3> &forces);
         //void set_dampening(double coeff, double exponent);
         void set_dampening(double coeff, double exponent, double pol_wall=1.2);
 

@@ -81,7 +81,7 @@ class AmberFD{
         //void zero_energies();
         Energies total_energies;
         double E_total;
-        std::vector<vec_d> forces;
+        std::vector<Vec3> forces;
         Periodicity periodicity;
 
 

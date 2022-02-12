@@ -33,7 +33,7 @@ int AmberFD::add_particle(int index, ParticleInfo parameters)
     dyn_exp.push_back(parameters.dyn_exp);
     pauli_exp.push_back(parameters.pauli_exp);
     pauli_radii.push_back(parameters.pauli_radii);
-    forces.push_back(vec_d(3, 0.0));
+    forces.push_back(Vec3(0, 0, 0));
     n_sites += 1;
 
     omm_to_index[index] = n_sites - 1;
@@ -50,7 +50,14 @@ void AmberFD::add_fragment(const vec_i frag_idx)
 
 std::vector<vec_d> AmberFD::get_forces()
 {
-    return forces;
+    std::vector<vec_d> rtn(n_sites, vec_d(3, 0.0));
+    for(size_t i = 0; i < forces.size(); i++)
+    {
+        rtn[i][0] = forces[i][0];
+        rtn[i][1] = forces[i][1];
+        rtn[i][2] = forces[i][2];
+    }
+    return rtn;
 }
 
 Energies AmberFD::calc_one_pair(const vec_d &positions, int i, int j)
@@ -63,10 +70,10 @@ Energies AmberFD::calc_one_pair(const vec_d &positions, int i, int j)
         dR.getDeltaR(positions, (int)i*3, (int)j*3);
 
     //  dispersion and pauli energies
-    dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies);
+    dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies, forces);
 
     //  fluctuating density and alectrostatics
-    flucDens->calc_one_electro(dR, i, j, true, true, pair_energies);
+    flucDens->calc_one_electro(dR, i, j, true, true, pair_energies, forces);
 
     return pair_energies;
 }
@@ -109,6 +116,7 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
     total_energies.zero();
     Energies pair_energies;
     DeltaR dR;
+    fill(forces.begin(), forces.end(), Vec3(0, 0, 0));
 
     //  initialize solvers
     flucDens->initialize_calculation();
@@ -125,27 +133,28 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
                 dR.getDeltaR(positions, (int)i*3, (int)j*3);
 
             //  dispersion and pauli energies
-            dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies);
+            dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies, forces);
 
             //  fluctuating density and alectrostatics
-            flucDens->calc_one_electro(dR, i, j, true, true, pair_energies);
+            flucDens->calc_one_electro(dR, i, j, true, true, pair_energies, forces);
 
             total_energies += pair_energies;
         }
     }
     //  minimize fluc-dens energy
-    flucDens->solve_minimization();
+    flucDens->solve_minimization(forces);
     total_energies.pol = flucDens->get_polarization_energy();
     total_energies.vct = flucDens->get_ct_energy();
 
     //  copy over forces from the solvers
-    std::vector<vec_d> fluc_forces = flucDens->get_forces();
-    std::vector<vec_d> disp_forces = dispersionPauli->get_forces();
-    for(size_t i = 0; i < forces.size(); i++)
-    {
-        for(int j = 0; j < 3; j++)
-            forces[i][j] = fluc_forces[i][j] + disp_forces[i][j];
-    }
+    //std::vector<vec_d> fluc_forces = flucDens->get_forces();
+    // std::vector<vec_d> disp_forces = dispersionPauli->get_forces();
+    // for(size_t i = 0; i < forces.size(); i++)
+    // {
+    //     for(int j = 0; j < 3; j++)
+    //         //forces[i][j] = fluc_forces[i][j] + disp_forces[i][j];
+    //         forces[i][j] += disp_forces[i][j];
+    // }
 
     return total_energies;
 }

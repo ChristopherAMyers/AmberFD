@@ -416,7 +416,7 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
             else
                 deltaR.getDeltaR(positions, (int)i*3, (int)j*3);
             
-            calc_one_electro(deltaR, i, j, calc_pol, calc_frz, energies);
+            calc_one_electro(deltaR, i, j, calc_pol, calc_frz, energies, total_forces);
             total_energies.frz += energies.frz;
             total_energies.nuc_nuc += energies.nuc_nuc;
             total_energies.elec_elec += energies.elec_elec;
@@ -425,17 +425,17 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
     }
     if (calc_pol)
     {
-        solve_minimization();
+        solve_minimization(total_forces);
     }
-    else
-    {
-        for(size_t i = 0; i < total_forces.size(); i++)
-        {
-            total_forces[i][0] = frozen_forces[i][0];
-            total_forces[i][1] = frozen_forces[i][1];
-            total_forces[i][2] = frozen_forces[i][2];
-        }
-    }
+    // else
+    // {
+    //     for(size_t i = 0; i < total_forces.size(); i++)
+    //     {
+    //         total_forces[i][0] = frozen_forces[i][0];
+    //         total_forces[i][1] = frozen_forces[i][1];
+    //         total_forces[i][2] = frozen_forces[i][2];
+    //     }
+    // }
 
     return total_energies.total();
 }
@@ -448,7 +448,7 @@ Energies FlucDens::calc_one_frozen(const vec_d &positions, int i, int j)
         deltaR.getDeltaR(positions, (int)i*3, (int)j*3, periodicity);
     else
         deltaR.getDeltaR(positions, (int)i*3, (int)j*3);
-    calc_one_electro(deltaR, i, j, false, true, eng_out);
+    calc_one_electro(deltaR, i, j, false, true, eng_out, total_forces);
     return eng_out;
 }
 
@@ -467,7 +467,7 @@ bool FlucDens::get_use_PBC()
     return periodicity.is_periodic;
 }
 
-void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies)
+void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies, std::vector<Vec3> &forces)
 {
     /*  calculate a single electrostatic interaction between a pair of atoms */
     
@@ -505,7 +505,7 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
 
             //  delta_rho - frozen_rho
             if (
-                    (std::find(exclusions_del_frz[i].begin(), exclusions_del_frz[i].end(), j) == exclusions_del_frz[i].end())
+                    (exclusions_del_frz[i].find(j) == exclusions_del_frz[i].end())
                     && within_cutoff
                 )
             {
@@ -545,8 +545,10 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
             Vec3 d_ZZ_dR =  nuclei[i]*nuclei[j]*dE_dR*dR_norm;
 
             Vec3 force_i = -(d_ee_dR + d_eZ_dR1 + d_eZ_dR2 + d_ZZ_dR);
-            frozen_forces[i] += force_i;
-            frozen_forces[j] -= force_i;
+            // frozen_forces[i] += force_i;
+            // frozen_forces[j] -= force_i;
+            forces[i] += force_i;
+            forces[j] -= force_i;
 
             frozen_energy =  (E_ee + E_eZ1) + (E_ZZ + E_eZ2);
         }
@@ -622,8 +624,11 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
             Vec3 d_ZZ_dR = -nuclei[i]*nuclei[j]*inv_r*inv_r*dR_norm;
 
             Vec3 force_i = -(d_ee_dR + d_eZ_dR1 + d_eZ_dR2 + d_ZZ_dR);
-            frozen_forces[i] += force_i;
-            frozen_forces[j] -= force_i;
+            // frozen_forces[i] += force_i;
+            // frozen_forces[j] -= force_i;
+
+            forces[i] += force_i;
+            forces[j] -= force_i;
 
             frozen_energy =  (E_ee + E_eZ1) + (E_ZZ + E_eZ2);
         }
@@ -742,7 +747,7 @@ void FlucDens::assign_constraints()
     }
 }
 
-void FlucDens::solve_minimization()
+void FlucDens::solve_minimization(std::vector<Vec3> &forces)
 {
     assign_constraints();
     int n_constr = (int)constraints.size();
@@ -817,16 +822,15 @@ void FlucDens::solve_minimization()
 
     for(int k = 0; k < n_sites; k++)
     {
-        total_forces[k] = Vec3(0, 0, 0);
+        //total_forces[k] = Vec3(0, 0, 0);
         for(int j = 0; j < n_sites; j++)
         {
             int kj_idx = k*n_sites + j;
-            total_forces[k] -= delta_rho[k]*dJ_dPos[kj_idx]*delta_rho[j];
-            total_forces[k] -= (delta_rho[k]*dPot_dPos[kj_idx] - delta_rho[j]*dPot_dPos_trans[kj_idx]);
-            total_forces[k] -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dPos[kj_idx];
+            forces[k] -= delta_rho[k]*dJ_dPos[kj_idx]*delta_rho[j]*(1+ct_coeff);
+            forces[k] -= (delta_rho[k]*dPot_dPos[kj_idx] - delta_rho[j]*dPot_dPos_trans[kj_idx])*(1+ct_coeff);
+            forces[k] -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dPos[kj_idx]*(1+ct_coeff);
         }
-        total_forces[k] += frozen_forces[k] + total_forces[k]*ct_coeff;
-        //printf(" %.8f  %.8f  %.8f \n", dJ_dx[i*n_sites + i], dJ_dy[i*n_sites + i], dJ_dz[i*n_sites + i]);
+        //total_forces[k] += frozen_forces[k] + total_forces[k]*ct_coeff;
     }
 
     total_energies.vct = ct_coeff*total_energies.pol;

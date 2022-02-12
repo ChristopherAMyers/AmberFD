@@ -70,12 +70,15 @@ if __name__ == "__main__":
         fluc.set_dampening(1.5467, 1.4364)
 
         #   calculate forces and energies
-        disp.calc_energy(coords.flatten())
-        fluc.calc_energy(coords.flatten())
         energies = amber.calc_energy_forces(coords.flatten())
-        fluc_forces = np.array(fluc.get_forces())*2625.5009*ANG2BOHR
-        disp_forces = np.array(disp.get_forces())*2625.5009*ANG2BOHR
         forces = np.array(amber.get_forces())*2625.5009*ANG2BOHR
+
+        fluc.calc_energy(coords.flatten())
+        fluc_forces = np.array(fluc.get_forces())*2625.5009*ANG2BOHR
+        
+        disp.calc_energy(coords.flatten())
+        disp_forces = np.array(disp.get_forces())*2625.5009*ANG2BOHR
+        
         # np.savetxt('data/u_u_fluc_forces_%d.txt' % data_set, fluc_forces)
         # np.savetxt('data/u_u_disp_forces_%d.txt' % data_set, disp_forces)
         # np.savetxt('data/u_u_total_forces_%d.txt' % data_set, forces)
