@@ -17,6 +17,8 @@ typedef std::vector<float> vec_f;
 typedef std::vector<int> vec_i;
 typedef std::map<int, double> map_id;
 
+
+
 class Nonbonded{
 
     public:
@@ -36,6 +38,8 @@ class Nonbonded{
         static double dot3(const double*u, const double* v);
 
         static std::vector<std::set<int> > calc_exclusions_from_bonds(const std::vector<std::pair<int, int> > bonds, const int bond_cutoff, const int n_sites);
+        static int num_threads;
+        static bool use_threads;
 };
 
 class Periodicity{

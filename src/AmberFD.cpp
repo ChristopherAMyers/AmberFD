@@ -14,7 +14,7 @@ AmberFD::AmberFD(const int n_particles)
     pauli_radii.reserve(n_particles);
     pauli_exp.reserve(n_particles);
     n_sites = 0;
-    forces.reserve(n_particles);
+    self_forces.reserve(n_particles);
 }
 AmberFD::~AmberFD()
 {}
@@ -33,7 +33,7 @@ int AmberFD::add_particle(int index, ParticleInfo parameters)
     dyn_exp.push_back(parameters.dyn_exp);
     pauli_exp.push_back(parameters.pauli_exp);
     pauli_radii.push_back(parameters.pauli_radii);
-    forces.push_back(Vec3(0, 0, 0));
+    self_forces.push_back(Vec3(0, 0, 0));
     n_sites += 1;
 
     omm_to_index[index] = n_sites - 1;
@@ -51,11 +51,11 @@ void AmberFD::add_fragment(const vec_i frag_idx)
 std::vector<vec_d> AmberFD::get_forces()
 {
     std::vector<vec_d> rtn(n_sites, vec_d(3, 0.0));
-    for(size_t i = 0; i < forces.size(); i++)
+    for(size_t i = 0; i < self_forces.size(); i++)
     {
-        rtn[i][0] = forces[i][0];
-        rtn[i][1] = forces[i][1];
-        rtn[i][2] = forces[i][2];
+        rtn[i][0] = self_forces[i][0];
+        rtn[i][1] = self_forces[i][1];
+        rtn[i][2] = self_forces[i][2];
     }
     return rtn;
 }
@@ -70,10 +70,10 @@ Energies AmberFD::calc_one_pair(const vec_d &positions, int i, int j)
         dR.getDeltaR(positions, (int)i*3, (int)j*3);
 
     //  dispersion and pauli energies
-    dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies, forces);
+    dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies, self_forces);
 
     //  fluctuating density and alectrostatics
-    flucDens->calc_one_electro(dR, i, j, true, true, pair_energies, forces);
+    flucDens->calc_one_electro(dR, i, j, true, true, pair_energies, self_forces);
 
     return pair_energies;
 }
@@ -96,13 +96,11 @@ void AmberFD::set_use_PBC(const bool is_periodic)
 }
 void AmberFD::set_use_PBC(const bool is_periodic, const double x, const double y, const double z)
 {
-    //printf(" SETTING PBC 1: %d \n", is_periodic);
     periodicity.set(is_periodic, x, y, z);
     if (flucDens != nullptr)
         flucDens->set_use_PBC(is_periodic, x, y, z);
     if (dispersionPauli != nullptr)
         dispersionPauli->set_use_PBC(is_periodic, x, y, z);
-    //printf(" SETTING PBC 2: %d \n", periodicity.is_periodic);
 }
 
 bool AmberFD::get_use_PBC()
@@ -110,15 +108,113 @@ bool AmberFD::get_use_PBC()
     return periodicity.is_periodic;
 }
 
+void AmberFD::set_threads(int n_threads)
+{
+    if (n_threads <= 1)
+    {
+        Nonbonded::use_threads = false;
+        Nonbonded::num_threads = 1;
+    }
+    else
+    {
+        Nonbonded::use_threads = true;
+        Nonbonded::num_threads = n_threads;
+    }
+    omp_set_num_threads(Nonbonded::num_threads);
+}
+
+void AmberFD::initialize()
+{
+    if (self_forces.size() != n_sites)
+        self_forces.resize(n_sites);
+    if (thread_forces.size() != Nonbonded::num_threads)
+    {
+        thread_forces.resize(Nonbonded::num_threads);
+        thread_energies.resize(Nonbonded::num_threads);
+        for (int i = 0; i < Nonbonded::num_threads; i++)
+            thread_forces[i].resize(n_sites);
+    }
+
+    fill(self_forces.begin(), self_forces.end(), Vec3(0, 0, 0));
+    if (Nonbonded::use_threads)
+        for(int i = 0; i < Nonbonded::num_threads; i ++)
+            fill(thread_forces[i].begin(), thread_forces[i].end(), Vec3(0, 0, 0));
+}
+
+Energies AmberFD::calc_threaded_energy(const vec_d &positions)
+{
+    using std::cout;
+    using std::endl;
+    //  initialize solvers
+    initialize();
+    flucDens->initialize_calculation();
+    dispersionPauli->initialize();
+    total_energies.zero();
+    
+    #pragma omp parallel
+    {
+        
+        int thread_num = omp_get_thread_num();
+        // cout << "In thread " << thread_num << endl;
+        std::vector<Vec3> *forces = &(thread_forces[thread_num]);
+        thread_energies[thread_num].zero();
+        
+        Energies pair_energies;
+        size_t i, j;
+        DeltaR dR;
+
+        #pragma omp for
+        for (i = 0; i < n_sites; i++)
+        {
+
+            for (j = i+1; j < n_sites; j++)
+            {
+
+                //  distances data
+                if (periodicity.is_periodic)
+                    dR.getDeltaR(positions, (int)i*3, (int)j*3, periodicity);
+                else
+                    dR.getDeltaR(positions, (int)i*3, (int)j*3);
+
+                //  fluctuating density and alectrostatics
+                dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies, *forces);
+
+                //  dispersion and pauli energies
+                flucDens->calc_one_electro(dR, i, j, true, true, pair_energies, *forces, thread_num);
+
+                thread_energies[thread_num] += pair_energies;
+            }
+        }        
+    }
+
+    for(int i = 0; i < Nonbonded::num_threads; i++)
+    {
+        for(int j = 0; j < n_sites; j++)
+            self_forces[j] += thread_forces[i][j];
+        total_energies += thread_energies[i];
+    }
+
+    //  minimize fluc-dens energy
+    flucDens->solve_minimization(self_forces);
+    total_energies.pol = flucDens->get_polarization_energy();
+    total_energies.vct = flucDens->get_ct_energy();
+
+    return total_energies;
+}
+
 Energies AmberFD::calc_energy_forces(const vec_d &positions)
 {
+    if (Nonbonded::use_threads)
+        return calc_threaded_energy(positions);
+
     size_t i, j;
     total_energies.zero();
     Energies pair_energies;
     DeltaR dR;
-    fill(forces.begin(), forces.end(), Vec3(0, 0, 0));
+    
 
     //  initialize solvers
+    initialize();
     flucDens->initialize_calculation();
     dispersionPauli->initialize();
     
@@ -132,29 +228,19 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
             else
                 dR.getDeltaR(positions, (int)i*3, (int)j*3);
 
-            //  dispersion and pauli energies
-            dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies, forces);
-
             //  fluctuating density and alectrostatics
-            flucDens->calc_one_electro(dR, i, j, true, true, pair_energies, forces);
+            flucDens->calc_one_electro(dR, i, j, true, true, pair_energies, self_forces);
+
+            //  dispersion and pauli energies
+            dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies, self_forces);
 
             total_energies += pair_energies;
         }
     }
     //  minimize fluc-dens energy
-    flucDens->solve_minimization(forces);
+    flucDens->solve_minimization(self_forces);
     total_energies.pol = flucDens->get_polarization_energy();
     total_energies.vct = flucDens->get_ct_energy();
-
-    //  copy over forces from the solvers
-    //std::vector<vec_d> fluc_forces = flucDens->get_forces();
-    // std::vector<vec_d> disp_forces = dispersionPauli->get_forces();
-    // for(size_t i = 0; i < forces.size(); i++)
-    // {
-    //     for(int j = 0; j < 3; j++)
-    //         //forces[i][j] = fluc_forces[i][j] + disp_forces[i][j];
-    //         forces[i][j] += disp_forces[i][j];
-    // }
 
     return total_energies;
 }
@@ -314,7 +400,7 @@ void AmberFD::load_from_file(std::string file_loc)
     pauli_radii.clear();
     pauli_exp.clear();
     n_sites = 0;
-    forces.clear();
+    self_forces.clear();
 
     std::vector<std::set<int>> frz_frz_exclusions, del_frz_exclusions, disp_exclusions;
     std::vector<std::vector<int>> fragment_info;

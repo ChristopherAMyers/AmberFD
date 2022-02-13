@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 find_package(Python3 COMPONENTS Interpreter Development NumPy)
 find_package(SWIG REQUIRED)
-#find_package(OpenMP REQUIRED)
+find_package(OpenMP REQUIRED)
 include(${SWIG_USE_FILE})
 set(CMAKE_SWIG_FLAGS -py3)
 
@@ -54,6 +54,7 @@ endforeach()
 
 add_compile_options(-fPIC -O2 -pg)
 if (OPENMP_FOUND)
+    add_compile_options(-fPIC -O2 -pg -fopenmp)
     message("Setting OpenMP Flags")
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")

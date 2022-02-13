@@ -38,15 +38,12 @@ FlucDens::FlucDens(const int num_sites,
 
     //  for dynamic densities
     J_mat.resize(n_sites*n_sites, 0.0);
-    // dJ_dx.resize(n_sites*n_sites, 0.0);
-    // dJ_dy.resize(n_sites*n_sites, 0.0);
-    // dJ_dz.resize(n_sites*n_sites, 0.0);
     dJ_dPos.resize(n_sites*n_sites, Vec3(0, 0, 0));
     dPot_dPos.resize(n_sites*n_sites, Vec3(0, 0, 0));
     dPot_dPos_trans.resize(n_sites*n_sites, Vec3(0, 0, 0));
     dDamp_dPos.resize(n_sites*n_sites, Vec3(0, 0, 0));
-
     pot_vec.resize(n_sites, 0.0);
+    potential_mat.resize(n_sites*n_sites, 0.0);
     for (int i = 0; i < n_sites; i++)
         J_mat[i*n_sites + i] = dynamic_exp[i]*5/16;
 
@@ -62,7 +59,9 @@ FlucDens::FlucDens(const int num_sites,
     use_frag_constraints = true;
     damp_exponent = 1.0;
     damp_coeff = 0.0;
-    damp_sum.resize(n_sites, 0.0);
+    thread_dampening.resize(Nonbonded::num_threads);
+    for (int i = 0; i < Nonbonded::num_threads; i++)
+        thread_dampening[i].resize(n_sites, 0.0);
     pol_wall_coeff = pow(2.3, 12)*0.0;
     pol_wall_exponent = 20;
     ct_coeff = 0.0;
@@ -376,8 +375,9 @@ double FlucDens::frz_frz_overlap(const double inv_r, const double a, const doubl
 void FlucDens::initialize_calculation()
 { 
     using std::fill;
-    fill(damp_sum.begin(), damp_sum.end(), 0.0);
+    //fill(damp_sum.begin(), damp_sum.end(), 0.0);
     fill(pot_vec.begin(), pot_vec.end(), 0.0);
+    fill(J_mat.begin(), J_mat.end(), 0.0);
     fill(dJ_dPos.begin(), dJ_dPos.end(), Vec3(0, 0, 0));
     fill(dPot_dPos.begin(), dPot_dPos.end(), Vec3(0, 0, 0));
     fill(dPot_dPos_trans.begin(), dPot_dPos_trans.end(), Vec3(0, 0, 0));
@@ -392,6 +392,15 @@ void FlucDens::initialize_calculation()
         min_dist = std::min(min_dist, periodicity.box_size[2]);
         cutoff_distance = 0.5*0.99999*min_dist;
     }
+    if (Nonbonded::num_threads != (int)thread_dampening.size())
+    {
+        thread_dampening.resize(Nonbonded::num_threads);
+        for (int i = 0; i < Nonbonded::num_threads; i++)
+            thread_dampening[i].resize(n_sites);
+    }
+    for (int i = 0; i < Nonbonded::num_threads; i++)
+        fill(thread_dampening[i].begin(), thread_dampening[i].end(), 0.0);
+    
 
 }
 
@@ -467,7 +476,7 @@ bool FlucDens::get_use_PBC()
     return periodicity.is_periodic;
 }
 
-void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies, std::vector<Vec3> &forces)
+void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies, std::vector<Vec3> &forces, int thread_num)
 {
     /*  calculate a single electrostatic interaction between a pair of atoms */
     
@@ -509,20 +518,24 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                     && within_cutoff
                 )
             {
-                pot_vec[i] -= frozen_chg[j]*inv_r;
-                pot_vec[j] -= frozen_chg[i]*inv_r;
+                // pot_vec[i] -= frozen_chg[j]*inv_r;
+                // pot_vec[j] -= frozen_chg[i]*inv_r;
+                potential_mat[idx_ij] = -frozen_chg[j]*inv_r;
+                potential_mat[idx_ji] = -frozen_chg[i]*inv_r;
 
                 double dP_dR_ij = -frozen_chg[j]*dE_dR;
                 double dP_dR_ji = -frozen_chg[i]*dE_dR;
-                dPot_dPos[idx_ij] = dP_dR_ij*dR;
+                dPot_dPos[idx_ij] =  dP_dR_ij*dR;
                 dPot_dPos[idx_ji] = -dP_dR_ji*dR;
-                dPot_dPos_trans[idx_ji] = dP_dR_ij*dR;
+                dPot_dPos_trans[idx_ji] =  dP_dR_ij*dR;
                 dPot_dPos_trans[idx_ij] = -dP_dR_ji*dR;
 
                 //  polarization dampening
                 double dampening = exp(-damp_exponent*r) + pol_wall_coeff*exp(-pol_wall_exponent*r);
-                damp_sum[i] += dampening;
-                damp_sum[j] += dampening;
+                // damp_sum[i] += dampening;
+                // damp_sum[j] += dampening;
+                thread_dampening[thread_num][i] += dampening;
+                thread_dampening[thread_num][j] += dampening;
                 double dDamp_dR = -damp_exponent*damp_coeff*dampening - pol_wall_exponent*pol_wall_coeff*exp(-pol_wall_exponent*r);
                 dDamp_dPos[idx_ij] =  dDamp_dR*dR;
                 dDamp_dPos[idx_ji] = -dDamp_dR*dR;
@@ -585,8 +598,11 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 const double del_a_nuc_b = elec_nuclei_energy(inv_r, a_del, exp_ar_del, del_a_nuc_b_ddR);
                 const double del_b_nuc_a = elec_nuclei_energy(inv_r, b_del, exp_br_del, del_b_nuc_a_ddR);
                 
-                pot_vec[i] += frozen_pop[j]*del_frz_ee + nuclei[j]*del_a_nuc_b;
-                pot_vec[j] += frozen_pop[i]*frz_del_ee + nuclei[i]*del_b_nuc_a;
+                // pot_vec[i] += frozen_pop[j]*del_frz_ee + nuclei[j]*del_a_nuc_b;
+                // pot_vec[j] += frozen_pop[i]*frz_del_ee + nuclei[i]*del_b_nuc_a;
+                potential_mat[idx_ij] = frozen_pop[j]*del_frz_ee + nuclei[j]*del_a_nuc_b;
+                potential_mat[idx_ji] = frozen_pop[i]*frz_del_ee + nuclei[i]*del_b_nuc_a;
+
                 
                 double dP_dR_ij = frozen_pop[j]*del_frz_ee_ddR + nuclei[j]*del_a_nuc_b_ddR;
                 double dP_dR_ji = frozen_pop[i]*frz_del_ee_ddR + nuclei[i]*del_b_nuc_a_ddR;
@@ -597,8 +613,10 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
 
                 //  polarization dampening
                 double dampening = exp(-damp_exponent*r) + pol_wall_coeff*exp(-pol_wall_exponent*r);
-                damp_sum[i] += dampening;
-                damp_sum[j] += dampening;
+                // damp_sum[i] += dampening;
+                // damp_sum[j] += dampening;
+                thread_dampening[thread_num][i] += dampening;
+                thread_dampening[thread_num][j] += dampening;
                 double dDamp_dR = -damp_exponent*damp_coeff*dampening - pol_wall_exponent*pol_wall_coeff*exp(-pol_wall_exponent*r);
                 dDamp_dPos[idx_ij] =  dDamp_dR*dR;
                 dDamp_dPos[idx_ji] = -dDamp_dR*dR;
@@ -756,13 +774,33 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
     vec_d A_mat(dim*dim, 0.0);
     vec_d B_vec(dim, 0);
 
-    //  copy over dampening
+    //   //  copy over dampening
+    // for (int i = 0; i < n_sites; i++)
+    //     J_mat[i*n_sites + i] = dynamic_exp[i]*5/16 + damp_sum[i]*damp_coeff;
+    
     for (int i = 0; i < n_sites; i++)
-        J_mat[i*n_sites + i] = dynamic_exp[i]*5/16 + damp_sum[i]*damp_coeff;
+        J_mat[i*n_sites + i] = dynamic_exp[i]*5/16;
+
+    
+    //  copy over dampening
+    for (int i = 0; i < Nonbonded::num_threads; i++)
+        for (int j = 0; j < n_sites; j++)
+        {
+            J_mat[j*n_sites + j] += thread_dampening[i][j]*damp_coeff;
+        }
     
     //  copy over potential vector
-    vec_d neg_pot = pot_vec;
-    cblas_dscal(n_sites, -1, &neg_pot[0], 1);   //negate potential (right hand side of matrix equation)
+    vec_d neg_pot(n_sites, 0.0);
+    for (int i = 0; i < n_sites; i++)
+    {
+        for(int j = 0; j < n_sites; j++)
+        {
+            neg_pot[i] -= potential_mat[i*n_sites + j];
+        }
+        pot_vec[i] = -neg_pot[i];
+    }
+    //vec_d neg_pot = pot_vec;
+    //cblas_dscal(n_sites, -1, &neg_pot[0], 1);   //negate potential (right hand side of matrix equation)
     std::copy(neg_pot.begin(), neg_pot.end(), B_vec.begin());
 
     //  copy over Coulomb matrix
@@ -784,6 +822,7 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
     
     //  solve matrix equation A_mat * x = B_vec for x
     int ipiv[dim];
+    openblas_set_num_threads(1);
     info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim, 1, &A_mat[0], dim, ipiv, &B_vec[0], dim);
     delta_rho.assign(B_vec.begin(), B_vec.begin() + n_sites);
 
@@ -792,7 +831,6 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
     {
         //  Since all constraints are linear in delta_rho and result in sums equal to zero,
         //  the polarization energy is simply 0.5 * delta_rho^T * pot_vec
-        //total_pol_energy = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &delta_rho_pot_vec[0], 1);
         total_energies.pol = 0.5*cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
 
     }
@@ -820,6 +858,7 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
         // }
     }
 
+    #pragma omp parallel for
     for(int k = 0; k < n_sites; k++)
     {
         //total_forces[k] = Vec3(0, 0, 0);

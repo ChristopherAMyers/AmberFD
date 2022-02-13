@@ -42,7 +42,7 @@ class FlucDens {
 
         double calc_overlap(const vec_d &coords);
         double calc_energy(const vec_d &coords, bool calc_frz=true, bool calc_pol=true);
-        void calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies, std::vector<Vec3> &forces);
+        void calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies, std::vector<Vec3> &forces, int thread_num=0);
         Energies calc_one_frozen(const vec_d &coords, int i, int j);
         void initialize_calculation();
         void solve_minimization(std::vector<Vec3> &forces);
@@ -122,7 +122,8 @@ class FlucDens {
         vec_d frozen_exp;
         vec_d dynamic_exp;
         vec_d delta_rho;
-        vec_d damp_sum;
+        //vec_d damp_sum;
+
         double damp_exponent;
         double damp_coeff;
         double pol_wall_coeff;
@@ -143,11 +144,14 @@ class FlucDens {
 
         vec_d J_mat;
         vec_d pot_vec;
+        vec_d potential_mat;
+
         std::vector<Vec3> dJ_dPos;
         std::vector<Vec3> dDamp_dPos;
         std::vector<Vec3> dPot_dPos, dPot_dPos_trans;
         std::vector<Vec3> frozen_forces;
         std::vector<Vec3> total_forces;
+        std::vector<vec_d> thread_dampening;
 
         void assign_constraints();
         std::out_of_range out_of_bounds_eror(const char *msg, const int idx1);

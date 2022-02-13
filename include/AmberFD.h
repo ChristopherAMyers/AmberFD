@@ -11,6 +11,7 @@
 #include <memory>
 #include <fstream>
 #include <cstdio>
+#include <omp.h>
 
 #include "common.h"
 #include "FlucDens.h"
@@ -64,6 +65,8 @@ class AmberFD{
         void dump_to_file(std::string file_loc);
         void load_from_file(std::string file_loc);
 
+        void set_threads(int n_threads);
+
     private:
         vec_i nuclei;
         vec_d frz_chg;
@@ -74,6 +77,7 @@ class AmberFD{
         std::map<int, int> omm_to_index;
         std::map<int, int> index_to_omm;
         int n_sites;
+        void initialize();
 
         std::shared_ptr<FlucDens> flucDens;
         std::shared_ptr<DispersionPauli> dispersionPauli;
@@ -81,8 +85,13 @@ class AmberFD{
         //void zero_energies();
         Energies total_energies;
         double E_total;
-        std::vector<Vec3> forces;
+        std::vector<Vec3> self_forces;
         Periodicity periodicity;
+
+        //  multithreading
+        Energies calc_threaded_energy(const vec_d &positions);
+        std::vector<std::vector<Vec3>> thread_forces;
+        std::vector<Energies> thread_energies;
 
 
 };

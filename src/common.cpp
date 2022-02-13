@@ -1,5 +1,8 @@
 #include "common.h"
 
+int Nonbonded::num_threads = 1;
+bool Nonbonded::use_threads = false;
+
 void Nonbonded::add_Vec3_to_vector(std::vector<double> &vec, const Vec3 &vec3)
 {
     vec[0] += vec3[0];
