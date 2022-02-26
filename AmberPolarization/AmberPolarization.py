@@ -1,5 +1,6 @@
 from copy import deepcopy, copy
 import enum
+import os
 from statistics import harmonic_mean
 from openmm.app import forcefield as ff, Simulation, Element, GromacsTopFile, GromacsGroFile, PDBFile, Modeller
 from openmm.openmm import CustomExternalForce, Vec3, NonbondedForce, Context as CT
@@ -12,6 +13,7 @@ import openmm as mm
 from openmm.app.simulation import string_types
 from scipy.optimize import minimize, OptimizeResult
 import time
+import warnings
 
 try:
     sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
@@ -39,7 +41,6 @@ class AmberFDGenerator(object):
         self.ct_coeff = 0.0
 
         self.residues = {}
-        self._ignore = False
         
     def registerDispersion(self, element):
         for param in ['s6', 'a1', 'a2']:
@@ -137,7 +138,6 @@ class AmberFDGenerator(object):
         #   if no atoms were found to have parameters, then don't use the custom force
         if not atom_indices:
             print("Ignoring AmberFD")
-            self._ignore = True
             sys._amberFDData = {'ext_force': None, 'force': None, 'data': None}
             return
 
@@ -229,7 +229,7 @@ class AmberFDGenerator(object):
 
     def postprocessSystem(self, sys, data, args):
         #   exclude base-base interactions already accounted for in AmberFD
-        if self._ignore: return
+        if sys._amberFDData['force'] is None: return
         for force in sys.getForces():
             if isinstance(force, NonbondedForce):
                 index_mapping = self.force.get_index_mapping()
@@ -237,6 +237,7 @@ class AmberFDGenerator(object):
                     for idx_2 in index_mapping:
                         force.addException(idx_1, idx_2, 0.0, 1.0, 0.0, replace=True)
                 break
+
 
 
 ff.parsers['AmberFDForce'] = AmberFDGenerator.parseElement
@@ -340,14 +341,12 @@ class MoleculeImporter():
                 boxSize = solvate_kwargs['boxSize']
                 if uu.is_quantity(boxSize):
                     boxSize = boxSize.value_in_unit(uu.nanometer)
-                #box = Vec3(boxSize[0], boxSize[1], boxSize[2])
                 vectors = (Vec3(boxSize[0], 0, 0), Vec3(0, boxSize[1], 0), Vec3(0, 0, boxSize[2]))
                 self.topology.setPeriodicBoxVectors(vectors)
             elif 'boxVectors' in solvate_kwargs:
                 boxVectors = solvate_kwargs['boxVectors']
                 if uu.is_quantity(boxVectors[0]):
                     boxVectors = (boxVectors[0].value_in_unit(uu.nanometer), boxVectors[1].value_in_unit(uu.nanometer), boxVectors[2].value_in_unit(uu.nanometer))
-                #box = Vec3(boxVectors[0][0], boxVectors[1][1], boxVectors[2][2])
                 vectors = boxVectors
                 self.topology.setPeriodicBoxVectors(vectors)
             elif topology.getPeriodicBoxVectors() is not None:
@@ -359,9 +358,7 @@ class MoleculeImporter():
                 if uu.is_quantity(boxSize):
                     boxSize = boxSize.value_in_unit(uu.nanometer)
                 vectors = (Vec3(boxSize[0], 0, 0), Vec3(0, boxSize[1], 0), Vec3(0, 0, boxSize[2]))
-                self.topology.setPeriodicBoxVectors(vectors)
-
-
+                self.topology.setPeriodicBoxVectors(vectors)       
 
 class Context(mm.Context):
     '''Construct a new Context in which to run a simulation. ONLY THE CPU PLATFORM IS CURRENTLY SUPPORTED
@@ -394,6 +391,9 @@ class Context(mm.Context):
         self._dont_update = False
         self._currentStep = 0
 
+        self._self_pos = None
+        self._wall_time = 0
+
     def _get_fd_pos(self):
         state = self.getState(getPositions=True)
         all_pos = state.getPositions(True)
@@ -402,7 +402,15 @@ class Context(mm.Context):
         return pos_bohr.flatten()
 
     def _update_force(self):
-        #return
+        # start_time = time.time()
+        # if self._self_pos is None:
+        #     self._self_pos = self._get_fd_pos()
+        # self._current_energies = self._FD_solver.calc_energy_forces(self._self_pos)
+        # end_time = time.time()
+        # self._wall_time += (end_time - start_time)
+        # return
+        
+
         if self._dont_update: return
         state = self.getState(getPositions=True)
         all_pos = state.getPositions(True)
@@ -421,14 +429,6 @@ class Context(mm.Context):
         # print("PAULI ENERGY: ", self._current_energies.pauli*HARTREE_TO_KJ_MOL)
         # print("WALL ENERGY:  ", self._current_energies.pauli_wall*HARTREE_TO_KJ_MOL)
         # print()
-
-        # total_E = self._dispPauliForce.calc_energy(pos_bohr.flatten())
-        # total_E = self._dispPauliForce.get_pauli_energy()
-        # total_E = self._dispPauliForce.get_disp_energy()
-        # fd_forces = np.array(self._dispPauliForce.get_forces()).reshape((self._n_sites, 3))*49614.77640958472
-
-        # total_E = self._flucDensForce.calc_energy(pos_bohr.flatten(), True, True)
-        # fd_forces = np.array(self._flucDensForce.get_forces()).reshape((self._n_sites, 3))*49614.77640958472
 
         if False:
 
@@ -459,8 +459,6 @@ class Context(mm.Context):
             print()
             print(forces_dp_all[ID_2], forces_dp_all[ID_1])
             print(forces_fluc_all[ID_2], forces_fluc_all[ID_1])
-
-            
 
 
         if len(fd_forces) != 0:
@@ -502,9 +500,7 @@ class Context(mm.Context):
 
 
 class AmberFDSimulation(Simulation):
-    def __init__(self, topology, system, integrator, platform=None, platformProperties=None, state=None):
-
-    # def __init__(self, topology, system, integrator, state=None):
+    def __init__(self, topology, system, integrator, platform=None, platformProperties=None, state=None, FDProperties=None):
         """Create a Simulation.
 
         Parameters
@@ -528,16 +524,35 @@ class AmberFDSimulation(Simulation):
             Simulation object. NOT YET IMPLIMENTED IN AmberFD
         """
         if hasattr(system, '_amberFDData'):
+            n_threads = 1
             if system._amberFDData['force'] is not None:
                 if platform is not None:
                     if platform.getName() not in ['Reference', 'CPU']:
-                        raise NotImplementedError("Only the Reference or CPU Platform is implimented in AmberFD")
+                        warnings.warn('Only the Reference or CPU Platform is implimented in AmberFD. AmberFD Forces will be calculated on the CPU')
+                        #raise NotImplementedError("Only the Reference or CPU Platform is implimented in AmberFD")
+                if FDProperties is not None:
+                    if "num_threads" in FDProperties:
+                        n_threads = int(FDProperties['num_threads'])
+                
+                # if platform is not None and FDProperties is not None:
+                #     if platform.getName() == 'CPU' and "num_threads" in FDProperties:
+                #         system._amberFDData['force'].set_threads(int(FDProperties['num_threads']))
                 if state is not None:
                     raise NotImplementedError("States are not yet implimented in AmberFD")
             else:
                 print("INFO: Using Standard OpenMM System")
                 super().__init__(topology, system, integrator, platform=platform, platformProperties=platformProperties, state=state)
                 return
+
+            #   set multithreading
+            if 'OMP_NUM_THREADS' in os.environ:
+                try:
+                    n_threads = int(os.environ['OMP_NUM_THREADS'])
+                except ValueError:
+                    n_threads = 1
+            if n_threads > 1:
+                system._amberFDData['force'].set_threads(n_threads)
+
         else:
             super().__init__(topology, system, integrator, platform=platform, platformProperties=platformProperties, state=state)
             return
@@ -556,9 +571,6 @@ class AmberFDSimulation(Simulation):
                 self.integrator = mm.XmlSerializer.deserialize(f.read())
         else:
             self.integrator = integrator
-        ## The index of the current time step
-        if hasattr(self, 'currentStep'):
-            self.currentStep = 0
         ## A list of reporters to invoke during the simulation
         self.reporters = []
 
@@ -579,14 +591,19 @@ class AmberFDSimulation(Simulation):
         self._integrator_step_old = self.integrator.step
         self.integrator.step = self._integrator_step_override
 
+        ## The index of the current time step
+        #if hasattr(self, 'currentStep'):
+        self.currentStep = 0
+
     def _integrator_step_override(self, n_steps):
         ''' Overrides the step function for the integrator. This is needed to that
             AmberFD can calculate it's force and updates the CustomExternalForce
             parameters before the actual integration step is taken in OpenMM.'''
         for n in range(n_steps):
             self.context._currentStep = self.currentStep
-            self.context._update_force()
+            
             self._integrator_step_old(1)
+            self.context._update_force()
 
     def minimizeEnergy(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, PDBOutFile=None, output_interval=1, excludeResidueNames=None):
         if isinstance(PDBOutFile, str):
@@ -714,6 +731,8 @@ class Minimizer(object):
     def minimize(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, output_interval=1):
         self._context.applyConstraints(self._working_constraint_tol)
         gtol = tolerance
+        if uu.is_quantity(gtol):
+            gtol /= gtol.unit
         init_state = self._context.getState(getForces=True, getEnergy=True, getPositions=True)
         init_pos_all = init_state.getPositions(True).value_in_unit(uu.nanometer)
         self._current_all_pos = init_pos_all
@@ -744,7 +763,7 @@ class Minimizer(object):
                 method='l-bfgs-b', 
                 jac=True, 
                 callback=self._callback,
-                options={'maxiter': maxIterations, 'disp': False, 'gtol': tolerance})
+                options={'maxiter': maxIterations, 'disp': False, 'gtol': gtol})
 
             print(" SciPy L-BFGS-B Solver says: \n         ", res.message)
             # if res.success == False or np.max(np.abs(res.jac)) > tolerance:

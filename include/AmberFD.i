@@ -53,8 +53,3 @@ namespace std {
 %include "include/AmberFD.h"
 %include "include/common.h"
 %include "include/Energies.h"
-//%include "include/Vec3.h"
-
-
-
-//%shared_ptr SharedPtr<FlucDens>

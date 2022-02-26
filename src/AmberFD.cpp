@@ -3,6 +3,7 @@
 AmberFD::AmberFD()
 {
     n_sites = 0;
+    parallel_time = 0.0;
 }
 
 AmberFD::AmberFD(const int n_particles)
@@ -15,6 +16,8 @@ AmberFD::AmberFD(const int n_particles)
     pauli_exp.reserve(n_particles);
     n_sites = 0;
     self_forces.reserve(n_particles);
+
+    parallel_time = 0.0;
 }
 AmberFD::~AmberFD()
 {}
@@ -120,7 +123,15 @@ void AmberFD::set_threads(int n_threads)
         Nonbonded::use_threads = true;
         Nonbonded::num_threads = n_threads;
     }
-    omp_set_num_threads(Nonbonded::num_threads);
+    //omp_set_num_threads(Nonbonded::num_threads);
+    //omp_set_num_threads(1);
+
+
+}
+
+double AmberFD::get_parallel_time()
+{
+    return parallel_time;
 }
 
 void AmberFD::initialize()
@@ -143,6 +154,8 @@ void AmberFD::initialize()
 
 Energies AmberFD::calc_threaded_energy(const vec_d &positions)
 {
+    
+    double start_time = omp_get_wtime();
     using std::cout;
     using std::endl;
     //  initialize solvers
@@ -150,12 +163,15 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
     flucDens->initialize_calculation();
     dispersionPauli->initialize();
     total_energies.zero();
+
+
     
+    //omp_set_num_threads(15);
+    //omp_set_num_threads(Nonbonded::num_threads);
     #pragma omp parallel
     {
         
         int thread_num = omp_get_thread_num();
-        // cout << "In thread " << thread_num << endl;
         std::vector<Vec3> *forces = &(thread_forces[thread_num]);
         thread_energies[thread_num].zero();
         
@@ -163,7 +179,7 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
         size_t i, j;
         DeltaR dR;
 
-        #pragma omp for
+        #pragma omp for schedule(dynamic)
         for (i = 0; i < n_sites; i++)
         {
 
@@ -186,6 +202,7 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
             }
         }        
     }
+    //omp_set_num_threads(1);
 
     for(int i = 0; i < Nonbonded::num_threads; i++)
     {
@@ -199,11 +216,13 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
     total_energies.pol = flucDens->get_polarization_energy();
     total_energies.vct = flucDens->get_ct_energy();
 
-    return total_energies;
+    double end_time = omp_get_wtime();
+    parallel_time += (end_time - start_time);
 }
 
 Energies AmberFD::calc_energy_forces(const vec_d &positions)
 {
+    //printf("USING THREADS: %d %d\n", Nonbonded::use_threads, omp_get_num_threads());
     if (Nonbonded::use_threads)
         return calc_threaded_energy(positions);
 

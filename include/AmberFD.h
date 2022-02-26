@@ -66,6 +66,7 @@ class AmberFD{
         void load_from_file(std::string file_loc);
 
         void set_threads(int n_threads);
+        double get_parallel_time();
 
     private:
         vec_i nuclei;
@@ -92,6 +93,7 @@ class AmberFD{
         Energies calc_threaded_energy(const vec_d &positions);
         std::vector<std::vector<Vec3>> thread_forces;
         std::vector<Energies> thread_energies;
+        double parallel_time;
 
 
 };
