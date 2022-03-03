@@ -3,7 +3,7 @@ import enum
 import os
 from statistics import harmonic_mean
 from openmm.app import forcefield as ff, Simulation, Element, GromacsTopFile, GromacsGroFile, PDBFile, Modeller
-from openmm.openmm import CustomExternalForce, Vec3, NonbondedForce, Context as CT
+from openmm.openmm import CustomExternalForce, Vec3, NonbondedForce, CustomNonbondedForce, Context as CT
 import openmm.unit as uu
 from openmm.app import Topology
 import sys
@@ -14,6 +14,8 @@ from openmm.app.simulation import string_types
 from scipy.optimize import minimize, OptimizeResult
 import time
 import warnings
+
+from . import LJOverrides
 
 try:
     sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
@@ -228,6 +230,7 @@ class AmberFDGenerator(object):
         sys._amberFDData = {'ext_force': external_force, 'force': force, 'data': data}
 
     def postprocessSystem(self, sys, data, args):
+        print("IN POST_PROCESS")
         #   exclude base-base interactions already accounted for in AmberFD
         if sys._amberFDData['force'] is None: return
         for force in sys.getForces():
@@ -236,7 +239,16 @@ class AmberFDGenerator(object):
                 for idx_1 in index_mapping:
                     for idx_2 in index_mapping:
                         force.addException(idx_1, idx_2, 0.0, 1.0, 0.0, replace=True)
-                break
+            elif isinstance(force, CustomNonbondedForce):
+                index_mapping = self.force.get_index_mapping()
+                current_exclusions = set([tuple(force.getExclusionParticles(n)) for n in range(force.getNumExclusions())])
+                for idx_1 in index_mapping:
+                    for idx_2 in index_mapping:
+                        if (idx_1, idx_2) not in current_exclusions and (idx_2, idx_1) not in current_exclusions:
+                            force.addExclusion(idx_1, idx_2)
+                            current_exclusions.add((idx_1, idx_2))
+                            current_exclusions.add((idx_2, idx_1))
+
 
 
 
