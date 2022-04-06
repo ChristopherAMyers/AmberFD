@@ -25,7 +25,6 @@ class LJOverrideGenerator(object):
 
     @staticmethod
     def parseElement(element, ff):
-        print("IN PARSE")
         existing = [f for f in ff._forces if isinstance(f, LJOverrideGenerator)]
         if len(existing) == 0:
             generator = LJOverrideGenerator(ff)

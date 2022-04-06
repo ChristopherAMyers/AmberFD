@@ -906,6 +906,48 @@ void FlucDens::print_params(const std::string message, const std::string param_n
     printf("\n");
 }
 
+vec_d FlucDens::calc_density(const vec_d &points, const vec_d &pos, DensityType density_type)
+{
+    vec_d density(int(points.size()/3), 0.0);
+    vec_d frz_coeff(frozen_exp);
+    vec_d dyn_coeff(frozen_exp);
+    for(size_t i = 0; i < n_sites; i++)
+    {
+        frz_coeff[i] = std::pow(frozen_exp[i], 3)/(8*M_PI)*frozen_pop[i];
+        dyn_coeff[i] = std::pow(dynamic_exp[i], 3)/(8*M_PI)*delta_rho[i];
+        //printf("DYN COEFF %10.5e\n", dyn_coeff[i]);
+    }
+    for(size_t i = 0; i < int(points.size()/3); i++)
+    {
+        for(size_t j = 0; j < n_sites; j++)
+        {
+            double dx = points[i*3 + 0] - pos[j*3 + 0];
+            double dy = points[i*3 + 1] - pos[j*3 + 1];
+            double dz = points[i*3 + 2] - pos[j*3 + 2];
+            double dr2 = dx*dx + dy*dy + dz*dz;
+            double dr = sqrt(dr2);
+
+            if(density_type == DensityType::All)
+            {
+                double frz = frz_coeff[j]*std::exp(-frozen_exp[j]*dr);
+                double dyn = dyn_coeff[j]*std::exp(-dynamic_exp[j]*dr);
+                density[i] += frz + dyn;
+            }
+            else if(density_type == DensityType::Frozen)
+            {
+                density[i] += frz_coeff[j]*std::exp(-frozen_exp[j]*dr);
+            }
+            else if(density_type == DensityType::Delta)
+            {
+                density[i] += dyn_coeff[j]*std::exp(-dynamic_exp[j]*dr);
+            }
+        }
+
+    }
+
+    return density;
+}
+
 vec_d FlucDens::get_rho_coulomb_mat()
 {
     return vec_d(J_mat);
@@ -959,3 +1001,4 @@ std::out_of_range FlucDens::out_of_bounds_eror(const char *msg, const int idx1, 
     sprintf(buffer, "Index pair (%d,%d) out of bounds: %s", idx1, idx2, msg);
     return std::out_of_range(buffer);
 }
+

@@ -112,6 +112,12 @@ class FlucDens {
         void set_use_SR_cutoff(bool);
         bool get_use_SR_cutoff();
 
+        //  Density printing
+        enum DensityType {
+            All = 0, Frozen=1, Delta=2
+        };
+        vec_d calc_density(const vec_d &points, const vec_d &pos, DensityType density_type);
+
 
     private:
         

@@ -230,7 +230,6 @@ class AmberFDGenerator(object):
         sys._amberFDData = {'ext_force': external_force, 'force': force, 'data': data}
 
     def postprocessSystem(self, sys, data, args):
-        print("IN POST_PROCESS")
         #   exclude base-base interactions already accounted for in AmberFD
         if sys._amberFDData['force'] is None: return
         for force in sys.getForces():
