@@ -75,6 +75,10 @@ FlucDens::FlucDens(const int num_sites,
     use_SR_cutoff = true;
     cutoff_distance = 0;
     SR_cutoff_coeff = SR_cutoff_a*log(SR_cutoff_pct_error) + SR_cutoff_b;
+
+    //  external fields
+    has_ext_field = false;
+    ext_field_potential.resize(n_sites, 0.0);
 }
 
 FlucDens::~FlucDens()
@@ -279,6 +283,62 @@ bool FlucDens::get_use_SR_cutoff()
     return use_SR_cutoff;
 }
 
+void FlucDens::set_external_field(double field_x, double field_y, double field_z)
+{
+    has_ext_field = true;
+    ext_field[0] = field_x;
+    ext_field[1] = field_y;
+    ext_field[2] = field_z;
+    printf("Setting external field \n");
+}
+
+void FlucDens::apply_field_to_system(const vec_d &coords)
+{
+    // if (periodicity.is_periodic)
+    //     throw std::runtime_error("External electric field is not (yet) vallid with periodic systems");
+    if (has_ext_field)
+    {
+        printf("Applying external field %.5f  %.5f  %.5f \n", ext_field[0], ext_field[1], ext_field[2]);
+        for(int i = 0; i < n_sites; i++)
+        {
+            ext_field_potential[i] = -ext_field[0]*coords[i*3] - ext_field[1]*coords[i*3 + 1] - ext_field[2]*coords[i*3 +2];
+        }
+    }
+}
+
+std::vector<Vec3> FlucDens::get_dipoles(const vec_d &coords)
+{
+    /* return the dipole moment from the nuclei, frozen electrons, 
+    and dynamic electrons */
+    Vec3 dipole_nuc = {0.0, 0.0, 0.0};
+    Vec3 dipole_frz = {0.0, 0.0, 0.0};
+    Vec3 dipole_dyn = {0.0, 0.0, 0.0};
+    for (int i = 0; i < n_sites; i++)
+    {
+        Vec3 pos(coords[i*3 + 0], coords[i*3 + 1], coords[i*3 + 2]);
+        dipole_nuc += pos*nuclei[i];
+        dipole_frz -= pos*frozen_pop[i];
+        dipole_dyn -= pos*delta_rho[i];
+    }
+
+    std::vector<Vec3> result = {dipole_nuc, dipole_frz, dipole_dyn};
+    return result;
+
+    // vec_d nuc = {dipole_nuc[0], dipole_nuc[1], dipole_nuc[2]};
+    // vec_d frz = {dipole_frz[0], dipole_frz[1], dipole_frz[2]};
+    // vec_d del = {dipole_dyn[0], dipole_dyn[1], dipole_dyn[2]};
+    // std::vector<vec_d> result = {nuc, frz, del};
+    // return result;
+}
+
+vec_d FlucDens::get_dipole(const vec_d &coords)
+{
+    std::vector<Vec3> dipoles = get_dipoles(coords);
+    Vec3 total_dipole = dipoles[0] + dipoles[1] + dipoles[2];
+    vec_d result = {total_dipole[0], total_dipole[1], total_dipole[2]};
+    return result;
+}
+
 std::vector<vec_d> FlucDens::get_forces()
 {
     std::vector<vec_d> rtn(n_sites, vec_d(3, 0.0));
@@ -384,6 +444,7 @@ void FlucDens::initialize_calculation()
     fill(dDamp_dPos.begin(), dDamp_dPos.end(), Vec3(0, 0, 0));
     fill(frozen_forces.begin(), frozen_forces.end(), Vec3(0, 0, 0));
     fill(total_forces.begin(), total_forces.end(), Vec3(0, 0, 0));
+    fill(delta_rho.begin(), delta_rho.end(), 0.0);
     total_energies.reset();
 
     if ((int)cutoff_distance == 0 && periodicity.is_periodic)
@@ -404,6 +465,20 @@ void FlucDens::initialize_calculation()
 
 }
 
+double FlucDens::calc_frz_ext_field_energy(const vec_d &positions, std::vector<Vec3> &forces)
+{
+    double energy = 0.0;
+    if (has_ext_field)
+    {
+        for(int i = 0; i < n_sites; i ++)
+            forces[i] += ext_field*frozen_chg[i];
+        std::vector<Vec3> dipoles = get_dipoles(positions);
+        Vec3 dipole_total =  dipoles[0] + dipoles[1];
+        energy = -dipole_total.dot(ext_field);
+    }
+    return energy;
+}
+
 double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_pol)
 {
     initialize_calculation();
@@ -414,6 +489,7 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
     Energies energies;
     DeltaR deltaR;
     energies.zero();
+    double total = 0.0;
 
     for (i = 0; i < n_sites; i++)
     {
@@ -436,17 +512,18 @@ double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_po
     {
         solve_minimization(total_forces);
     }
-    // else
+    total += calc_frz_ext_field_energy(positions, total_forces);
+    // if (has_ext_field)
     // {
-    //     for(size_t i = 0; i < total_forces.size(); i++)
-    //     {
-    //         total_forces[i][0] = frozen_forces[i][0];
-    //         total_forces[i][1] = frozen_forces[i][1];
-    //         total_forces[i][2] = frozen_forces[i][2];
-    //     }
+    //     for(int i = 0; i < n_sites; i ++)
+    //         total_forces[i] += ext_field*(frozen_chg[i] - delta_rho[i]);
+    //     std::vector<Vec3> dipoles = get_dipoles(positions);
+    //     Vec3 dipole_total =  dipoles[0] + dipoles[1] + dipoles[2];
+    //     total  -= dipole_total.dot(ext_field);
     // }
+    total += total_energies.total();
 
-    return total_energies.total();
+    return total;
 }
 
 Energies FlucDens::calc_one_frozen(const vec_d &positions, int i, int j)
@@ -755,6 +832,13 @@ void FlucDens::assign_constraints()
 
 void FlucDens::solve_minimization(std::vector<Vec3> &forces)
 {
+    /*  solve the block matrix equation Ax = b with
+        |J   , C  || Δρ |     | -ϕ |
+        |C^T , 0  || λ  |  =  | -D |
+        A is composed of the Coulomb and constraint matrices.
+        x is the solution for the change in electron density and Lagrange multipliers
+        b is the vector of the negative potential and resulting constraints
+    */
     assign_constraints();
     int n_constr = (int)constraints.size();
     int dim = n_sites + n_constr;
@@ -777,16 +861,21 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
             J_mat[j*n_sites + j] += thread_dampening[i][j]*damp_coeff;
         }
     
-    //  copy over potential vector
+
     vec_d neg_pot(n_sites, 0.0);
     for (int i = 0; i < n_sites; i++)
     {
+        pot_vec[i] = 0.0;
         for(int j = 0; j < n_sites; j++)
         {
-            neg_pot[i] -= potential_mat[i*n_sites + j];
+            pot_vec[i] += potential_mat[i*n_sites + j];
         }
-        pot_vec[i] = -neg_pot[i];
+        // printf("Using external field %.5f  %.5f  %.5f \n", ext_field[0], ext_field[1], ext_field[2]);
+        if (has_ext_field)
+            pot_vec[i] += ext_field_potential[i];
+        neg_pot[i] = -pot_vec[i];
     }
+
     //vec_d neg_pot = pot_vec;
     //cblas_dscal(n_sites, -1, &neg_pot[0], 1);   //negate potential (right hand side of matrix equation)
     std::copy(neg_pot.begin(), neg_pot.end(), B_vec.begin());
@@ -815,7 +904,7 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
     delta_rho.assign(B_vec.begin(), B_vec.begin() + n_sites);
 
     //  simplified version of polarization energy
-    if (false)
+    if (true)
     {
         //  Since all constraints are linear in delta_rho and result in sums equal to zero,
         //  the polarization energy is simply 0.5 * delta_rho^T * pot_vec
@@ -839,25 +928,21 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
         double term2 = cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
 
         total_energies.pol = term1 + term2;
-
-        // for(int i = 0; i < n_sites; i++)
-        // {
-        //     printf("%d  %.10f  %.10f  %.10f  %.10f \n", i, delta_rho[i], y_vec[i], term1, term2);
-        // }
     }
 
     //#pragma omp parallel for
     for(int k = 0; k < n_sites; k++)
     {
-        //total_forces[k] = Vec3(0, 0, 0);
         for(int j = 0; j < n_sites; j++)
         {
             int kj_idx = k*n_sites + j;
+            //  force due to delta-delta interactions
             forces[k] -= delta_rho[k]*dJ_dPos[kj_idx]*delta_rho[j]*(1+ct_coeff);
+            //  force due to frozen-delta interactions
             forces[k] -= (delta_rho[k]*dPot_dPos[kj_idx] - delta_rho[j]*dPot_dPos_trans[kj_idx])*(1+ct_coeff);
+            //  force due to polarization dampening
             forces[k] -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dPos[kj_idx]*(1+ct_coeff);
         }
-        //total_forces[k] += frozen_forces[k] + total_forces[k]*ct_coeff;
     }
 
     total_energies.vct = ct_coeff*total_energies.pol;

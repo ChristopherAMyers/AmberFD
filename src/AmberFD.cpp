@@ -154,7 +154,6 @@ void AmberFD::initialize()
 
 Energies AmberFD::calc_threaded_energy(const vec_d &positions)
 {
-    
     double start_time = omp_get_wtime();
     using std::cout;
     using std::endl;
@@ -163,8 +162,6 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
     flucDens->initialize_calculation();
     dispersionPauli->initialize();
     total_energies.zero();
-
-
     
     //omp_set_num_threads(15);
     //omp_set_num_threads(Nonbonded::num_threads);
@@ -212,7 +209,9 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
     }
 
     //  minimize fluc-dens energy
+    flucDens->apply_field_to_system(positions);
     flucDens->solve_minimization(self_forces);
+    total_energies.frz_ext = flucDens->calc_frz_ext_field_energy(positions, self_forces);
     total_energies.pol = flucDens->get_polarization_energy();
     total_energies.vct = flucDens->get_ct_energy();
 
@@ -257,7 +256,9 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
         }
     }
     //  minimize fluc-dens energy
+    flucDens->apply_field_to_system(positions);
     flucDens->solve_minimization(self_forces);
+    total_energies.frz_ext = flucDens->calc_frz_ext_field_energy(positions, self_forces);
     total_energies.pol = flucDens->get_polarization_energy();
     total_energies.vct = flucDens->get_ct_energy();
 

@@ -112,6 +112,14 @@ class FlucDens {
         void set_use_SR_cutoff(bool);
         bool get_use_SR_cutoff();
 
+        //  External fields and dipoles
+        bool has_ext_field;
+        void set_external_field(double field_x, double field_y, double field_z);
+        void apply_field_to_system(const vec_d &coords);
+        std::vector<Vec3> get_dipoles(const vec_d &coords);
+        vec_d get_dipole(const vec_d &coords);
+        double calc_frz_ext_field_energy(const vec_d &coords, std::vector<Vec3> &forces);
+
         //  Density printing
         enum DensityType {
             All = 0, Frozen=1, Delta=2
@@ -174,6 +182,11 @@ class FlucDens {
         double SR_cutoff_pct_error = 0.10;
         const double SR_cutoff_a = -1.1724, SR_cutoff_b=14.692;
         double SR_cutoff_coeff;
+
+        //  external fields
+        
+        Vec3 ext_field;
+        vec_d ext_field_potential;
 };
 
 

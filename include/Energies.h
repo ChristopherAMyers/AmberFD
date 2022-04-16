@@ -18,16 +18,18 @@ class Energies{
             elec_nuc   = eng.elec_nuc;
             nuc_nuc    = eng.nuc_nuc;
             pauli_wall = eng.pauli_wall;
+            frz_ext        = eng.frz_ext;
         }
 
         double total()
         {
-            return pauli + disp + frz + pol + vct + pauli_wall;
+            return pauli + disp + frz + pol + vct + pauli_wall + frz_ext;
         }
         void zero()
         {
             pauli = disp = frz = pol = vct = pauli_wall = 0.0;
             elec_elec = elec_nuc = nuc_nuc = 0.0;
+            frz_ext = 0.0;
         }
         void add(const Energies &eng)
         {
@@ -40,6 +42,7 @@ class Energies{
             elec_nuc   += eng.elec_nuc;
             nuc_nuc    += eng.nuc_nuc;
             pauli_wall += eng.pauli_wall;
+            frz_ext        += eng.frz_ext;
         }
 
         // Energies operator+();
@@ -59,6 +62,7 @@ class Energies{
         double pauli, disp, frz, pol, vct;
         double elec_elec, elec_nuc, nuc_nuc;
         double pauli_wall;
+        double frz_ext;
 
     private:   
         void multiply(double value)
@@ -72,6 +76,7 @@ class Energies{
             elec_nuc   *= value;
             nuc_nuc    *= value;
             pauli_wall *= value;
+            frz_ext        *= value;
         }
         void subtract(const Energies &eng)
         {
@@ -84,6 +89,7 @@ class Energies{
             elec_nuc   -= eng.elec_nuc;
             nuc_nuc    -= eng.nuc_nuc;
             pauli_wall -= eng.pauli_wall;
+            frz_ext        -= eng.frz_ext;
         }
 };
 
