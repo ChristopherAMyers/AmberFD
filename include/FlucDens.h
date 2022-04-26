@@ -68,6 +68,8 @@ class FlucDens {
         void set_frz_exp(const int index, const double value);
         void set_ct_coeff(const double coeff);
         void set_site_params(const int index, const double frz_chg, const double frz_exp, const double dyn_exp);
+        void set_atomic_hardness(const int index, const double value);
+        void set_atomic_hardness(vec_d values);
 
         int get_num_constraints();
         vec_d get_rho_coulomb_mat();
@@ -112,19 +114,21 @@ class FlucDens {
         void set_use_SR_cutoff(bool);
         bool get_use_SR_cutoff();
 
+        //  Density printing
+        enum DensityType {
+            All = 0, Frozen=1, Delta=2, Nuclei=3
+        };
+        vec_d calc_density(const vec_d &points, const vec_d &pos, DensityType density_type);
+
         //  External fields and dipoles
         bool has_ext_field;
         void set_external_field(double field_x, double field_y, double field_z);
         void apply_field_to_system(const vec_d &coords);
         std::vector<Vec3> get_dipoles(const vec_d &coords);
-        vec_d get_dipole(const vec_d &coords);
+        vec_d get_dipole(const vec_d &coords, DensityType density_dype);
         double calc_frz_ext_field_energy(const vec_d &coords, std::vector<Vec3> &forces);
 
-        //  Density printing
-        enum DensityType {
-            All = 0, Frozen=1, Delta=2
-        };
-        vec_d calc_density(const vec_d &points, const vec_d &pos, DensityType density_type);
+
 
 
     private:
@@ -136,6 +140,7 @@ class FlucDens {
         vec_d frozen_exp;
         vec_d dynamic_exp;
         vec_d delta_rho;
+        vec_d hardness;
         //vec_d damp_sum;
 
         double damp_exponent;
