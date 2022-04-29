@@ -216,12 +216,12 @@ void FlucDens::set_frz_exp(const int index, const double value)
     frozen_exp[index] = value;
 }
 
-void FlucDens::set_atomic_hardness(const int index, const double value)
+void FlucDens::set_additional_hardness(const int index, const double value)
 {
     hardness[index] = value;
 }
 
-void FlucDens::set_atomic_hardness(vec_d values)
+void FlucDens::set_additional_hardness(vec_d values)
 {
     if ((int)values.size() != n_sites)
         throw std::runtime_error("hardness array length does not equal n_sites");
@@ -930,7 +930,7 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
         //  perform rho * pot
         double term2 = cblas_ddot(n_sites, &delta_rho[0], 1, &pot_vec[0], 1);
 
-        total_energies.pol = term1 + term2*0;
+        total_energies.pol = term1 + term2;
     }
 
     //#pragma omp parallel for

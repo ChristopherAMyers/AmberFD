@@ -68,8 +68,8 @@ class FlucDens {
         void set_frz_exp(const int index, const double value);
         void set_ct_coeff(const double coeff);
         void set_site_params(const int index, const double frz_chg, const double frz_exp, const double dyn_exp);
-        void set_atomic_hardness(const int index, const double value);
-        void set_atomic_hardness(vec_d values);
+        void set_additional_hardness(const int index, const double value);
+        void set_additional_hardness(vec_d values);
 
         int get_num_constraints();
         vec_d get_rho_coulomb_mat();

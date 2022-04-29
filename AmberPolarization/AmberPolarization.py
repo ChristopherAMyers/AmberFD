@@ -103,16 +103,16 @@ class AmberFDGenerator(object):
         pol_residues = set()
         pauli_residues = set()
         atom_indices = {}
+        optional_hardness = []
+        found_hardness = False
         for atom, params in data.atomParameters.items():
             add_atom = False
             nuclei = atom.element.atomic_number if isinstance(atom.element, Element) else 0
             particle = ParticleInfo(nuclei)
-            polar_params_present = [x in params for x in ['frz_chg', 'frz_exp', 'dyn_exp']]
-            pauli_params_present = [x in params for x in ['pauli_exp', 'pauli_radii']]
+            polar_params_present =   [x in params for x in ['frz_chg', 'frz_exp', 'dyn_exp']]
+            pauli_params_present =   [x in params for x in ['pauli_exp', 'pauli_radii']]
+            harness_params_present = [x in params for x in ['hard_inc']]
             
-            if 'LP' in atom.name and False:
-               polar_params_present = [False]
-               pauli_params_present = [False]
 
             #   fluctuating density force
             if any(polar_params_present):
@@ -134,6 +134,12 @@ class AmberFDGenerator(object):
                 add_atom = True
 
             if add_atom:
+                #   optional hardness increase
+                if any(harness_params_present):
+                    optional_hardness.append(params['hard_inc'])
+                    found_hardness = True
+                else:
+                    optional_hardness.append(0.0)
                 force.add_particle(atom.index, particle)
                 atom_indices[atom] = len(atom_indices)
         
@@ -152,6 +158,8 @@ class AmberFDGenerator(object):
         #if len(pol_residues) != 0:
         if True:
             pol_force = force.create_fluc_dens_force()
+            if found_hardness:
+                pol_force.set_additional_hardness(optional_hardness)
             pol_force.set_dampening(self.damp_coeff, self.damp_exp)
             pol_force.set_ct_coeff(self.ct_coeff)
             for res in pol_residues:
