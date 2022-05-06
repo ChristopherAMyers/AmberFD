@@ -37,6 +37,8 @@ class FlucDens {
                    const double *dynamic_exp);
         ~FlucDens();
 
+        enum DampType {Linear = 1, Quadratic = 2};
+
         void print_params(const std::string message, const std::string param_name);
         static double dot3Vec(const vec_d &coords, int i, int j);
 
@@ -46,8 +48,7 @@ class FlucDens {
         Energies calc_one_frozen(const vec_d &coords, int i, int j);
         void initialize_calculation();
         void solve_minimization(std::vector<Vec3> &forces);
-        //void set_dampening(double coeff, double exponent);
-        void set_dampening(double coeff, double exponent, double pol_wall=1.2);
+        void set_dampening(double coeff, double exponent, DampType damp = DampType::Linear);
 
         //  frozen - frozen exclusions
         void add_frz_frz_exclusion(int frz_i, int frz_j);
@@ -156,6 +157,7 @@ class FlucDens {
         int n_fragments;
         bool use_frag_constraints;
         bool remove_core;
+        int dampening_type;
         
 
         bool use_SR_approx(double r, double a, double b);

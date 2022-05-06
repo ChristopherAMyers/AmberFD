@@ -60,11 +60,10 @@ FlucDens::FlucDens(const int num_sites,
     use_frag_constraints = true;
     damp_exponent = 1.0;
     damp_coeff = 0.0;
+    dampening_type = DampType::Linear;
     thread_dampening.resize(Nonbonded::num_threads);
     for (int i = 0; i < Nonbonded::num_threads; i++)
         thread_dampening[i].resize(n_sites, 0.0);
-    pol_wall_coeff = pow(2.3, 12)*0.0;
-    pol_wall_exponent = 20;
     ct_coeff = 0.0;
     calc_forces = true;
 
@@ -228,11 +227,11 @@ void FlucDens::set_additional_hardness(vec_d values)
     hardness.assign(values.begin(), values.end());
 }
 
-void FlucDens::set_dampening(double coeff, double exponent, double pol_wall_Radii)
+void FlucDens::set_dampening(double coeff, double exponent, DampType damp)
 {
     damp_coeff = coeff;
     damp_exponent = exponent;
-    pol_wall_coeff = exp(pol_wall_exponent*pol_wall_Radii)*0;
+    dampening_type = damp;
 }
 
 void FlucDens::get_dampening(double &coeff, double &exponent)
@@ -856,28 +855,33 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
     for (int i = 0; i < n_sites; i++)
         J_mat[i*n_sites + i] = dynamic_exp[i]*5/16 + hardness[i];
 
+    for (int j = 0; j < n_sites; j++)
+        pot_vec[j] = 0.0;
     
-    //  copy over dampening
+    //  copy over dampening and zero out potentials
     for (int i = 0; i < Nonbonded::num_threads; i++)
+    {
         for (int j = 0; j < n_sites; j++)
         {
-            J_mat[j*n_sites + j] += thread_dampening[i][j]*damp_coeff;
+            if (dampening_type == Quadratic)
+                J_mat[j*n_sites + j] += thread_dampening[i][j]*damp_coeff;
+            else
+                pot_vec[j] += thread_dampening[i][j]*damp_coeff;
         }
-    
+    }
 
     vec_d neg_pot(n_sites, 0.0);
     for (int i = 0; i < n_sites; i++)
     {
-        pot_vec[i] = 0.0;
+        //pot_vec[i] = 0.0;
         for(int j = 0; j < n_sites; j++)
         {
             pot_vec[i] += potential_mat[i*n_sites + j];
         }
-        // printf("Using external field %.5f  %.5f  %.5f \n", ext_field[0], ext_field[1], ext_field[2]);
         if (has_ext_field)
             pot_vec[i] -= ext_field_potential[i]/(1+ct_coeff);
-            //pot_vec[i] -= ext_field_potential[i];
-        neg_pot[i] = -pot_vec[i];
+
+        neg_pot[i] = -pot_vec[i];        
     }
 
     //vec_d neg_pot = pot_vec;
@@ -944,8 +948,13 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
             forces[k] -= delta_rho[k]*dJ_dPos[kj_idx]*delta_rho[j]*(1+ct_coeff);
             //  force due to frozen-delta interactions
             forces[k] -= (delta_rho[k]*dPot_dPos[kj_idx] - delta_rho[j]*dPot_dPos_trans[kj_idx])*(1+ct_coeff);
+
             //  force due to polarization dampening
-            forces[k] -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dPos[kj_idx]*(1+ct_coeff);
+            if (dampening_type == Quadratic)
+                forces[k] -= 0.5*(delta_rho[k]*delta_rho[k] + delta_rho[j]*delta_rho[j])*dDamp_dPos[kj_idx]*(1+ct_coeff);
+            else
+                // TODO: encorporate a dDamp_dPos_transpose array for quicker access
+                forces[k] -= (delta_rho[k]*dDamp_dPos[kj_idx] - delta_rho[j]*dDamp_dPos[j*n_sites + k])*(1+ct_coeff);
         }
     }
 
