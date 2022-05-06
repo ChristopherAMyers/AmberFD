@@ -875,7 +875,8 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
         }
         // printf("Using external field %.5f  %.5f  %.5f \n", ext_field[0], ext_field[1], ext_field[2]);
         if (has_ext_field)
-            pot_vec[i] -= ext_field_potential[i];
+            pot_vec[i] -= ext_field_potential[i]/(1+ct_coeff);
+            //pot_vec[i] -= ext_field_potential[i];
         neg_pot[i] = -pot_vec[i];
     }
 
