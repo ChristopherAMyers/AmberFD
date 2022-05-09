@@ -608,12 +608,12 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 dPot_dPos_trans[idx_ij] = -dP_dR_ji*dR;
 
                 //  polarization dampening
-                double dampening = exp(-damp_exponent*r);
-                thread_dampening[thread_num][i] += dampening;
-                thread_dampening[thread_num][j] += dampening;
-                double dDamp_dR = -damp_exponent*damp_coeff*dampening;
-                dDamp_dPos[idx_ij] =  dDamp_dR*dR;
-                dDamp_dPos[idx_ji] = -dDamp_dR*dR;
+                // double dampening = exp(-damp_exponent*r)*0;
+                // thread_dampening[thread_num][i] += dampening*damp_coeff;
+                // thread_dampening[thread_num][j] += dampening*damp_coeff;
+                // double dDamp_dR = -damp_exponent*damp_coeff*dampening;
+                // dDamp_dPos[idx_ij] =  dDamp_dR*dR;
+                // dDamp_dPos[idx_ji] = -dDamp_dR*dR;
             }
         }
 
@@ -684,12 +684,28 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 dPot_dPos_trans[idx_ij] = -dP_dR_ji*dR;
 
                 //  polarization dampening
-                double dampening = exp(-damp_exponent*r);
-                thread_dampening[thread_num][i] += dampening;
-                thread_dampening[thread_num][j] += dampening;
-                double dDamp_dR = -damp_exponent*damp_coeff*dampening;
-                dDamp_dPos[idx_ij] =  dDamp_dR*dR;
-                dDamp_dPos[idx_ji] = -dDamp_dR*dR;
+                
+                //  proportional to frozen density
+                double damp_i = pow(frozen_pop[j]*b_frz*b_frz*b_frz/(8*M_PI)*exp_br_frz, damp_exponent)*damp_coeff;
+                double damp_j = pow(frozen_pop[i]*a_frz*a_frz*a_frz/(8*M_PI)*exp_ar_frz, damp_exponent)*damp_coeff;
+                thread_dampening[thread_num][i] += damp_i;
+                thread_dampening[thread_num][j] += damp_j;
+
+                dDamp_dPos[idx_ij] = -damp_i*damp_exponent*b_frz*dR;
+                dDamp_dPos[idx_ji] =  damp_j*damp_exponent*a_frz*dR;
+
+
+                // double dampening = exp(-damp_exponent*r);
+                // thread_dampening[thread_num][i] += dampening*damp_coeff*(frozen_pop[j] > 0);
+                // thread_dampening[thread_num][j] += dampening*damp_coeff*(frozen_pop[i] > 0);
+                // thread_dampening[thread_num][i] += dampening*damp_coeff;
+                // thread_dampening[thread_num][j] += dampening*damp_coeff;
+                // double dDamp_dR = -damp_exponent*damp_coeff*dampening;
+                // dDamp_dPos[idx_ij] =  dDamp_dR*dR;
+                // dDamp_dPos[idx_ji] = -dDamp_dR*dR;
+
+
+
             }
         }
         //  frozen_rho - frozen_rho
@@ -864,9 +880,9 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
         for (int j = 0; j < n_sites; j++)
         {
             if (dampening_type == Quadratic)
-                J_mat[j*n_sites + j] += thread_dampening[i][j]*damp_coeff;
+                J_mat[j*n_sites + j] += thread_dampening[i][j];
             else
-                pot_vec[j] += thread_dampening[i][j]*damp_coeff;
+                pot_vec[j] += thread_dampening[i][j];
         }
     }
 
