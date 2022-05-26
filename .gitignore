@@ -45,6 +45,6 @@ tests/res
 tests/
 tests/create_asserts.py
 
-AmberPolarization/tests/*
-AmberPolarization/__pycache__*
-AmberPolarization/__pycache__/AmberPolarization.cpython-39.pyc
+AmberFD/tests/
+AmberFD/__pycache__*
+AmberFD/__pycache__/AmberFD.cpython-39.pyc
