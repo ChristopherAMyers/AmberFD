@@ -40,6 +40,7 @@ class AmberFDGenerator(object):
         self.res_to_fragment = {}
         self.damp_coeff = 0.0
         self.damp_exp = 1.0
+        self.damp_type = None
         self.ct_coeff = 0.0
 
         self.residues = {}
@@ -93,9 +94,12 @@ class AmberFDGenerator(object):
             raise ValueError("More than one <PolarizationPairwise> section specified in force field")
         generator.registerPolPairwise(pol_pairwise_sections[0])
 
-        generator.ct_coeff   = float(element.findall('PolarizationNonPairwise')[0].attrib['CT_coeff'])
-        generator.damp_coeff = float(element.findall('PolarizationNonPairwise')[0].attrib['damp_coeff'])
-        generator.damp_exp   = float(element.findall('PolarizationNonPairwise')[0].attrib['damp_exp'])
+        pol_opts = element.findall('PolarizationNonPairwise')[0].attrib
+        generator.ct_coeff   = float(pol_opts['CT_coeff'])
+        generator.damp_coeff = float(pol_opts['damp_coeff'])
+        generator.damp_exp   = float(pol_opts['damp_exp'])
+        if 'damp_type' in pol_opts:
+            generator.damp_type  = pol_opts['damp_type']
 
 
     def createForce(self, sys, data, nonbondedMethod, nonbondedCutoff, args):
@@ -160,7 +164,16 @@ class AmberFDGenerator(object):
             pol_force = force.create_fluc_dens_force()
             if found_hardness:
                 pol_force.set_additional_hardness(optional_hardness)
-            pol_force.set_dampening(self.damp_coeff, self.damp_exp)
+            
+            damp_type = pol_force.Quadratic
+            if self.damp_type is not None:
+                if self.damp_type.lower() == 'linear':
+                    damp_type = pol_force.Linear
+                elif self.damp_type.lower() == 'Quadratic':
+                    damp_type = pol_force.Quadratic
+                else:
+                    raise ValueError("Polarization Dampening must be 'linear' or 'quadratic'")
+            pol_force.set_dampening(self.damp_coeff, self.damp_exp, damp_type)
             pol_force.set_ct_coeff(self.ct_coeff)
             for res in pol_residues:
                 fragment_idx = []

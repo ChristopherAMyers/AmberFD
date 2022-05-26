@@ -686,6 +686,7 @@ void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, boo
                 //  polarization dampening
                 
                 //  proportional to frozen density
+                // damp_coeff = 0.0;
                 double damp_i = pow(frozen_pop[j]*b_frz*b_frz*b_frz/(8*M_PI)*exp_br_frz, damp_exponent)*damp_coeff;
                 double damp_j = pow(frozen_pop[i]*a_frz*a_frz*a_frz/(8*M_PI)*exp_ar_frz, damp_exponent)*damp_coeff;
                 thread_dampening[thread_num][i] += damp_i;
