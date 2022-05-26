@@ -1,4 +1,4 @@
-%module AmberFD
+%module _AmberFD
 
 %{
     #define SWIG_FILE_WITH_INIT
