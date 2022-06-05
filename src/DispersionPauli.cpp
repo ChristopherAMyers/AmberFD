@@ -51,11 +51,11 @@ DispersionPauli::DispersionPauli(const int num_sites, const int* nuclei_in, cons
     self_forces.resize(n_sites, Vec3());
 
     secondary_radii_map = {
-        {0, 2.1*0.5*ANG2BOHR},
-        {1, 0.0*0.5*ANG2BOHR},
-        {6, 2.8*0.5*ANG2BOHR},
-        {7, 2.4*0.5*ANG2BOHR},
-        {8, 2.2*0.5*ANG2BOHR}
+        {0, 2.1*0.3*ANG2BOHR},
+        {1, 0.0*0.3*ANG2BOHR},
+        {6, 2.8*0.3*ANG2BOHR},
+        {7, 2.4*0.3*ANG2BOHR},
+        {8, 2.2*0.3*ANG2BOHR}
     };
     secondary_exp = 8.0/ANG2BOHR;
     set_all_secondary_radii();

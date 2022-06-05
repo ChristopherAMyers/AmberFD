@@ -276,14 +276,43 @@ ff.parsers['AmberFDForce'] = AmberFDGenerator.parseElement
 
 class MoleculeImporter():
     def __init__(self, ff_files, structure_files, solvate=False, **solvate_kwargs) -> None:
-        ''' Loads multiple molecule files at once and stores the positions, topology, and forcefield information
+        ''' 
+        Loads multiple molecule files at once and stores the positions, topology, and forcefield information into one object. MoleculeImporter can also solvate the system, using all valid solvation options that are used in openmm.app.modeller.addSolvent()
         
         Parameters
         ----------
-        files:  tuple of strings
-            The location of the files to load. 
-            Valid extensions are .pdb, .gro, .top, and .xml. 
-            This mist MUST include a .xml forcefield file
+        ff_files: tuple or string
+            The .xml OpenMM forcefield files to use 
+        structure_files:  tuple or string
+            Molecule files to load, depending on the type. 
+            If using a .pdb file, only one file needs to be supplied.
+            If using GROMACS files, then a tuple of (.gro, .top) files should be used
+        solvate: bool
+            Whether or not to solvate the system. This is controlled using the following solvent_kwargs, which take on the same options used to solvate the system that are used with  openmm.app.modeller.addSolvent(). However, the kward 'forcefield' will be ignored: instead, force field files used with the 'ff_files' option will be used.
+            
+        Keyword Args
+        ------------
+        model : str='tip3p'
+            the water model to use.  Supported values are 'tip3p', 'spce', 'tip4pew', and 'tip5p'.
+        boxSize : Vec3=None
+            the size of the box to fill with water
+        boxVectors : tuple of Vec3=None
+            the vectors defining the periodic box to fill with water
+        padding : distance=None
+            the padding distance to use
+        numAdded : int=None
+            the total number of molecules (waters and ions) to add
+        positiveIon : string='Na+'
+            the type of positive ion to add.  Allowed values are 'Cs+', 'K+', 'Li+', 'Na+', and 'Rb+'
+        negativeIon : string='Cl-'
+            the type of negative ion to add.  Allowed values are 'Cl-', 'Br-', 'F-', and 'I-'. Be aware
+            that not all force fields support all ion types.
+        ionicStrength : concentration=0*molar
+            the total concentration of ions (both positive and negative) to add.  This
+            does not include ions that are added to neutralize the system.
+            Note that only monovalent ions are currently supported.
+        neutralize : bool=True
+            whether to add ions to neutralize the system
         '''
 
         self.topology = None
@@ -305,7 +334,7 @@ class MoleculeImporter():
         #   to load their standard bonds
         _blank_top = Topology()
         _blank_top.createStandardBonds()
-        #   then add out own deffinitions
+        #   then add our own deffinitions
         res_file = join(dirname(__file__), 'residues.xml')
         if isfile(res_file):
             Topology.loadBondDefinitions(res_file)
@@ -323,7 +352,7 @@ class MoleculeImporter():
         #   import force fields
         forcefield = ff.ForceField(*ff_files)
 
-        #   determine tyoe of structure files provided
+        #   determine type of structure files provided
         extensions = [splitext(x)[-1] for x in structure_files]
         box_dims = None
         if set(extensions) == {'.pdb'}:
@@ -393,7 +422,7 @@ class MoleculeImporter():
                 self.topology.setPeriodicBoxVectors(vectors)       
 
 class Context(mm.Context):
-    '''Construct a new Context in which to run a simulation. ONLY THE CPU PLATFORM IS CURRENTLY SUPPORTED
+    '''Construct a new Context in which to run a simulation. At the moment, only the CPU platform is implimented. 
 
         Parameters
         ----------
@@ -532,8 +561,13 @@ class Context(mm.Context):
 
 
 class AmberFDSimulation(Simulation):
+    '''
+    This is a subsitute to openmm.simulation objects and enables the use of AmberFD polarization.
+    
+    To use it, create a simulation just like you normally would with OpenMM, but instead call AmberFDSimulation. If a system is provided that was not created using the AmberFD forcefield, then this will initialize using openmm.simulation instead. All of the same members that belong to openmm.simulation are also available, such as minimizeEnergy() and step(). Some of these members have additional options that are otherwise unavailable with vanilla openmm.simulation. These options are available regardless if an AmberFD force field is used or not.
+    '''
     def __init__(self, topology, system, integrator, platform=None, platformProperties=None, state=None, FDProperties=None):
-        """Create a Simulation.
+        """Create a Simulation. 
 
         Parameters
         ----------
@@ -638,6 +672,26 @@ class AmberFDSimulation(Simulation):
             self.context._update_force()
 
     def minimizeEnergy(self, tolerance=10*uu.kilojoules_per_mole/uu.nanometer, maxIterations=500, PDBOutFile=None, output_interval=1, excludeResidueNames=None):
+        '''
+        Minimize the energy of the system w.r.t. the molecular coordinates.
+
+        Parameters
+        ----------
+        tolerance : force
+            This specifies how precisely the energy minimum must be located.  Minimization
+            is halted once themaximum value of all force components reaches
+            this tolerance.
+        maxIterations : int
+            The maximum number of iterations to perform.  If this is 0,
+            minimization is continued until the results converge without regard
+            to how many iterations it takes.
+        PDBOutFile: string
+            .pdb file to print minimized coordinates to as the minimization procedes.
+        output_interval: int
+            Number of steps in between minimization to print coordinates to PDBOutFile
+        excludeResidueNames: iterable
+            A list of residue names to exclude in PDBOutFile. For example, one may want to exclude all waters and ions from KCl, so ('HOH', 'CL', 'K') would be used
+        '''
         if isinstance(PDBOutFile, str):
             minimizer = Minimizer(self.context, self.topology, out_pdb=PDBOutFile, excludeResidueNames=excludeResidueNames)
         else:

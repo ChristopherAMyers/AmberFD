@@ -1,7 +1,7 @@
-AmberPolarization
-=================
+AmberFD
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   AmberPolarization
+   AmberFD
