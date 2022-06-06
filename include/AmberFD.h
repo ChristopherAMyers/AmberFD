@@ -36,13 +36,30 @@ class ParticleInfo{
         {}
 };
 
+/**
+ * Combination of FLucDens force and DispersionPauli force
+ * 
+ */
+
 class AmberFD{
+
     public:
         AmberFD();
         AmberFD(const int n_sites);
         ~AmberFD();
-
+        /**
+         * @brief Add a new particle to the system with the properties specified in it's ParticleInfo
+         * 
+         * @param index 
+         * @param parameters 
+         * @return index of the particle added
+         */
         int add_particle(int index, ParticleInfo parameters);
+        /**
+         * @brief Set the indicies that define a fragment within the entire molecular system.
+         * 
+         * @param frag_idx 
+         */
         void add_fragment(const vec_i frag_idx);
         int get_num_particles()
         {   return n_sites; }

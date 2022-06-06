@@ -23,7 +23,8 @@ try:
 except:
     print(" WARNING: Using MINERVA Build")
     sys.path.insert(1, join(dirname(realpath(__file__)), '../build_minerva/'))
-    from _AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
+    from _AmberFD import ANG2BOHR, AmberFD, FlucDens, VctorI, VectorD, VectorPairII, ParticleInfo, MapIDe
+
 
 HARTREE_TO_KJ_MOL = 2625.5009
 ANG_TO_BOHR = uu.angstrom.conversion_factor_to(uu.bohr)

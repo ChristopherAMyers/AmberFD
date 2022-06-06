@@ -26,9 +26,17 @@ class FlucDensEnergies{
 };
         
 
-//typedef std::vector<double> vec_d;
-class FlucDens {
 
+class FlucDens {
+    /**
+     * This class impliments the fluctuating monopole density interaction. 
+     * Similar to a fluctuating charge model, this force uses atom centered
+     * monopole densities described by slater functions for the electrons and
+     * point-particles for the nuclei. As such, FlucDens includes effects of
+     * electron overlap between atomic sites. 
+     * 
+     * 
+     */
     public:
         FlucDens(const int n_sites, 
                    const double *frozen_charges_in, 

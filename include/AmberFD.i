@@ -1,5 +1,8 @@
 %module _AmberFD
 
+//%feature("autodoc", "1");
+%feature("doxygen:ignore:transferfull");
+
 %{
     #define SWIG_FILE_WITH_INIT
     #include "include/AmberFD.h"
@@ -14,6 +17,9 @@
 %include "std_string.i"
 %include <std_shared_ptr.i>
 %include <typemaps.i>
+
+
+
 
 //  TODO: Test for performance hits
 %include exception.i       
@@ -45,6 +51,7 @@ namespace std {
 %init %{
     import_array();
 %}
+
 
 %shared_ptr(FlucDens);
 %shared_ptr(DispersionPauli);

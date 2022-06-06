@@ -13,7 +13,7 @@ find_package(Python3 COMPONENTS Interpreter Development NumPy)
 find_package(SWIG REQUIRED)
 find_package(OpenMP REQUIRED)
 include(${SWIG_USE_FILE})
-set(CMAKE_SWIG_FLAGS -py3)
+set(CMAKE_SWIG_FLAGS -py3 -doxygen)
 
 #   lapack and blas
 #find_package(BLAS REQUIRED)
