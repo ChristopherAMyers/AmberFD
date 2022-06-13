@@ -46,8 +46,7 @@ tests/
 tests/create_asserts.py
 
 AmberFD/tests/
-AmberFD/__pycache__*
-AmberFD/__pycache__/AmberFD.cpython-39.pyc
+*__pycache__*
 
 #   documentation
 docs/build/*

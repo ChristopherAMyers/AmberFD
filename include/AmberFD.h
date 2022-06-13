@@ -37,18 +37,44 @@ class ParticleInfo{
 };
 
 /**
- * Combination of FLucDens force and DispersionPauli force
+ * AmberFD is an umbrella function thatcombines FlucDens force 
+ * and DispersionPauli force settings into one accessable class. This
+ * class does not calculate forces itslf, but is instead used create and access the 
+ * fluctuating density and dispersion-pauli system and set it's options. 
  * 
+ * To use this class,  first create an AmberFD object with the number of particles to be added to 
+ * the system. The, add each particle to the system by calling add_particle(),
+ * passing in a ParticleInfo object. Once all particles have been added, create
+ * the fluctuating density force and dispersion-pauli force by calling create_fluc_dens_force()
+ * and create_disp_pauli_force(), respectively. Each of these forces will then be generated,
+ * and a pointer to each force can be obtained by calling get_fluc_dens_force() or 
+ * get_disp_pauli_force().
+ * 
+ * Once the forces have been generated, adding new particles will have no effect on the system.
+ * Calling create_XXX_force() will simply return a pointer to the already created forces.
+ * If periodic boundary conditions are desired, then call set_use_PBC() after all particles have
+ * been added.
+ *  
  */
 
 class AmberFD{
 
     public:
+        /**
+         * Construct a new AmberFD force
+         */
         AmberFD();
+        /**
+         * Construct a new AmberFD force with the number of particles already known.
+         * This can help speed up the system creation for very large numbers of particles.
+         * More particles can be added than n_sites, but the memory will not be preallocated.
+         * 
+         * @param n_sites the estimated number of particles to create a system for 
+         */
         AmberFD(const int n_sites);
         ~AmberFD();
         /**
-         * @brief Add a new particle to the system with the properties specified in it's ParticleInfo
+         * Add a new particle to the system with the properties specified in it's ParticleInfo
          * 
          * @param index 
          * @param parameters 
@@ -56,33 +82,133 @@ class AmberFD{
          */
         int add_particle(int index, ParticleInfo parameters);
         /**
-         * @brief Set the indicies that define a fragment within the entire molecular system.
+         * Set the indicies that define a fragment within the entire molecular system.
          * 
          * @param frag_idx 
          */
         void add_fragment(const vec_i frag_idx);
+        /**
+         * Get the number of particles in the system
+         * 
+         * @return int 
+         */
         int get_num_particles()
         {   return n_sites; }
+        /**
+         * Return the forces exerted on each particle. This will only have an effect
+         * if calc_energy_forces has been called forst with the updated positions. Else, this
+         * will return the forces most recently computed.
+         * 
+         * @return std::vector<vec_d> 
+         */
         std::vector<vec_d> get_forces();
+        /**
+         * Compute the energy and forces on the AmberFD system at the current positions.
+         * 
+         * @param positions 1-D array of positions (in a.u.)
+         * @return Energies object
+         */
         Energies calc_energy_forces(const vec_d &positions);
+        /**
+         * Get a pointer to the FlucDens force object being used
+         * 
+         * @param create_if_null create the force if it hasn't been created yet.
+         * @return std::shared_ptr<FlucDens> 
+         */
         std::shared_ptr<FlucDens> get_fluc_dens_force(bool create_if_null=false);
+        /**
+         * @brief Get a pointer to the DispersionPauli force object being used
+         * 
+         * @param create_if_null create the force if it hasn't been created yet.
+         * @return std::shared_ptr<DispersionPauli> 
+         */
         std::shared_ptr<DispersionPauli> get_disp_pauli_force(bool create_if_null=false);
+        /**
+         * @brief Create a FlucDens force object. Adding particles to the system
+         *        After creating this force will have no effect.
+         * 
+         * @return std::shared_ptr<FlucDens> a pointer to the created force
+         */
         std::shared_ptr<FlucDens> create_fluc_dens_force();
+        /**
+         * @brief Create a DispersionPauli force object. Adding particles to the system
+         *        After creating this force will have no effect.
+         * 
+         * @return std::shared_ptr<DispersionPauli> a pointer to the created force
+         */
         std::shared_ptr<DispersionPauli> create_disp_pauli_force();
+        /**
+         * @brief Get the a mapping from the OpenMM particle index to
+         *        the AmberFD particle index.
+         * 
+         * @return std::map<int, int> 
+         */
         std::map<int, int> get_index_mapping();
-
+        /**
+         * @brief Calculate the interaction between a single pair of particles. Since
+         *        Polarization is a many-body force, it will not be calculated here.
+         * 
+         * @param positions The full array of positions of the system that would normally be passed to calc_energy_forces()
+         * @param i The index of the first particle
+         * @param j The index of the second particle
+         * @return Energies The energies of the pair
+         */
         Energies calc_one_pair(const vec_d &positions, int i, int j);
+        /**
+         * @brief Get the distance object between two pairs of particles.
+         * 
+         * @param positions The full array of positions of the system that would normally be passed to calc_energy_forces()
+         * @param i The index of the first particle
+         * @param j The index of the second particle
+         * @return DeltaR 
+         */
         DeltaR getDeltaR(const vec_d &positions, int i, int j);
-
-        //DeltaR getDeltaR(const vec_d &positions, int ii, int jj);
+        /**
+         * @brief Turn on or off the use of periodic boundary conditions.
+         * 
+         * @param is_periodic 
+         */
         void set_use_PBC(const bool is_periodic);
+        /**
+         * @brief Turn on or off the use of periodic boundary conditions.
+         * 
+         * @param is_periodic 
+         * @param x The x-direction box length
+         * @param y The y-direction box length
+         * @param z The z-direction box length
+         */
         void set_use_PBC(const bool is_periodic, const double x, const double y, const double z);
+        /**
+         * @brief Determine of the periodic doundary contitions are used or not
+         * 
+         * @return true 
+         * @return false 
+         */
         bool get_use_PBC();
-
+        /**
+         * @brief Serialize force FlucDens and DisperionPauli forces to a file
+         * 
+         * @param file_loc String of the file location to write data to.
+         */
         void dump_to_file(std::string file_loc);
+        /**
+         * @brief Load in serialized data previously created with dump_to_file()
+         * 
+         * @param file_loc String of the file location to load.
+         */
         void load_from_file(std::string file_loc);
-
+        /**
+         * @brief Set the number of threads to be used in force computations vis OpenMP.
+         *        If set less than or equal to one, then a serial calculation will take place.
+         * 
+         * @param n_threads Number of threads to use
+         */
         void set_threads(int n_threads);
+        /**
+         * @brief Get the cumulative wall time used to compute forces and energies so far.
+         * 
+         * @return Wall time in second
+         */
         double get_parallel_time();
 
     private:
