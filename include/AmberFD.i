@@ -1,7 +1,7 @@
 %module _AmberFD
 
-//%feature("autodoc", "0");
-//%feature("doxygen:ignore:transferfull");
+//%feature("autodoc", "2");
+%feature("doxygen:ignore:transferfull");
 
 %{
     #define SWIG_FILE_WITH_INIT
