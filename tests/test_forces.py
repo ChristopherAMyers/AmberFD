@@ -3,7 +3,7 @@ from os.path import *
 import numpy as np
 #from simtk.openmm.app.element import Element
 sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
-from AmberFD import AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, PairII
+from _AmberFD import AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, PairII
 import time
 from AssertEqual import AssertEqual
 

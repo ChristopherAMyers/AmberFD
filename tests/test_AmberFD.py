@@ -3,7 +3,7 @@ from os.path import *
 import numpy as np
 #from simtk.openmm.app.element import Element
 sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
-from AmberFD import AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, PairII
+from _AmberFD import AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, PairII
 import time
 from AssertEqual import AssertEqual
 
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     fluc.create_frz_exclusions_from_bonds(bonds, 3)
     fluc.add_fragment(np.arange(0, n_atoms))
     fluc.add_fragment(np.arange(n_atoms, n_atoms*2))
-    fluc.set_dampening(1.5467, 1.4364)
+    fluc.set_dampening(1.5467, 1.4364, fluc.Quadratic)
     
     energies = amber.calc_energy_forces(coords.flatten())
 
@@ -74,6 +74,6 @@ if __name__ == "__main__":
     print('{:.16f}'.format(energies.pol*AU_2_KJ_PER_MOL))
 
     AssertEqual(energies.frz*AU_2_KJ_PER_MOL,   -149.2014396519202535,    1e-14)
-    AssertEqual(energies.pol*AU_2_KJ_PER_MOL,    -10.1261050926210281,    1e-14)
+    AssertEqual(energies.pol*AU_2_KJ_PER_MOL,    -10.7901176009650204,    1e-14)
     AssertEqual(energies.pauli*AU_2_KJ_PER_MOL,    0.4749888820543172741, 1e-14)
     AssertEqual(energies.disp*AU_2_KJ_PER_MOL,    -8.4318942845087168081, 1e-14)

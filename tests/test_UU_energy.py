@@ -3,7 +3,7 @@ from os.path import *
 import numpy as np
 #from simtk.openmm.app.element import Element
 sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
-from AmberFD import FlucDens, VectorI, VectorD, VectorPairII, PairII
+from _AmberFD import FlucDens, VectorI, VectorD, VectorPairII, PairII
 import time
 from AssertEqual import AssertEqual
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         AssertEqual(frz_energy_1, -57.1334380438952394, 1e-14)
         AssertEqual(frz_energy_2, -57.7070355050438337, 1e-14)
         AssertEqual(eng_diff,     -34.3609661029811804, 1e-14)
-        AssertEqual(pol_energy,   -10.1261050926210316, 1e-14)
+        AssertEqual(pol_energy,   -10.7857329659557024, 1e-14)
 
         
 
