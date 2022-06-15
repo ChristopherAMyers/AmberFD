@@ -91,7 +91,9 @@ double FlucDens::dot3Vec(const vec_d &coords, int i, int j)
     double z = coords[i + 2] - coords[j + 2];
     return x*x + y*y + z*z;
 }
-
+//****************************************************************
+//                   individual site parameters 
+//****************************************************************
 void FlucDens::set_site_params(const int index, const double frz_chg_new, const double frz_exp_new, const double dyn_exp_new)
 {
     frozen_chg[index] = frz_chg_new;
@@ -105,96 +107,6 @@ void FlucDens::get_site_params(const int index, double &frz_chg, double &frz_exp
     frz_chg = frozen_chg[index];
     frz_exp = frozen_exp[index];
     dyn_exp = dynamic_exp[index];
-}
-
-void FlucDens::set_frag_constraints(const bool constr_frags)
-{
-    /* choose to constrain total charge per fragment (True) or as a whole system (False) */
-    use_frag_constraints = constr_frags;
-}
-
-void FlucDens::create_del_exclusions_from_fragment(const std::vector<int> frag_idx)
-{
-    for (auto del_i: frag_idx)
-        for(auto frz_j: frag_idx)
-            add_del_frz_exclusion(del_i, frz_j);
-}
-
-void FlucDens::add_del_frz_exclusion(int delta_i, int frz_j)
-{
-    /*  delta_rho_i and frozen_rho_j interactions
-        will be excluded */
-    if ((delta_i > n_sites) || (frz_j > n_sites) || (delta_i < 0) || (frz_j < 0))
-        throw out_of_bounds_eror("add_del_frz_exclusion()", delta_i, frz_j);
-    exclusions_del_frz[delta_i].insert(frz_j);
-}
-
-std::set<int> FlucDens::get_del_frz_exclusions(const int particle1) const
-{
-    std::set<int> particles2;
-    if (particle1 < 0 || particle1 >= (int) exclusions_frz_frz.size()) 
-        throw "Index out of range";
-    particles2 = exclusions_del_frz[particle1];
-    return particles2;
-}
-
-void FlucDens::add_frz_frz_exclusion(int frz_i, int frz_j)
-{
-    /*  frozen_rho_i and frozen_rho_j interactions
-        will be excluded */
-    if ((frz_i > n_sites) || (frz_j > n_sites) || (frz_i < 0) || (frz_j < 0))
-    {   
-        char buffer[100];
-        sprintf(buffer, "Frozen exception index pair (%d,%d) out of bounds", frz_i, frz_j);
-        throw std::out_of_range(buffer);
-    }
-    exclusions_frz_frz[frz_i].insert(frz_j);
-    exclusions_frz_frz[frz_j].insert(frz_i);
-}
-
-int FlucDens::get_num_frz_frz_exclusions() const
-{
-    return exclusions_frz_frz.size(); 
-}
-
-std::set<int> FlucDens::get_frz_frz_exclusions(const int particle1) const
-{
-    if (particle1 < 0 || particle1 >= (int) exclusions_frz_frz.size()) 
-        throw "Index out of range";
-    // std::vector<int> particles2;
-    // particles2.resize(exclusions_frz_frz[particle1].size());
-    // std::copy(exclusions_frz_frz[particle1].begin(), exclusions_frz_frz[particle1].end(), particles2.begin());
-    // int i = 0;
-    // for(auto &x: exclusions_frz_frz[particle1])
-    // {
-    //     printf("%d  %d  %d \n", (int)i, particles2[i], x);
-    //     i++;
-    // }
-    // return particles2;
-    return exclusions_frz_frz[particle1];
-}
-
-void FlucDens::create_frz_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)
-{
-    vector<std::set<int> > exclusions = Nonbonded::calc_exclusions_from_bonds(bonds, bond_cutoff, n_sites);
-    for (int i = 0; i < (int) exclusions.size(); ++i)
-        for (int j : exclusions[i])
-            if (j < i)
-                add_frz_frz_exclusion(i, j);    
-}
-
-void FlucDens::add_fragment(const std::vector<int> site_idx_list)
-{
-    for(auto delta_i: site_idx_list)
-    {
-        if ((delta_i > n_sites) || (delta_i < 0) )
-            throw out_of_bounds_eror("add_fragment()", delta_i);
-        
-        site_frag_ids[delta_i] = n_fragments;
-        for(auto frz_j: site_idx_list)
-            add_del_frz_exclusion(delta_i, frz_j);
-    }
-    n_fragments += 1;
 }
 
 void FlucDens::set_dyn_exp(const int index, const double value)
@@ -215,16 +127,14 @@ void FlucDens::set_frz_exp(const int index, const double value)
     frozen_exp[index] = value;
 }
 
-void FlucDens::set_additional_hardness(const int index, const double value)
+void FlucDens::set_ct_coeff(const double coeff)
 {
-    hardness[index] = value;
+    ct_coeff = coeff;
 }
 
-void FlucDens::set_additional_hardness(vec_d values)
+double FlucDens::get_ct_coeff()
 {
-    if ((int)values.size() != n_sites)
-        throw std::runtime_error("hardness array length does not equal n_sites");
-    hardness.assign(values.begin(), values.end());
+    return ct_coeff;
 }
 
 void FlucDens::set_dampening(double coeff, double exponent, DampType damp)
@@ -240,24 +150,75 @@ void FlucDens::get_dampening(double &coeff, double &exponent)
     exponent = damp_exponent;
 }
 
-void FlucDens::set_ct_coeff(const double coeff)
+void FlucDens::set_additional_hardness(const int index, const double value)
 {
-    ct_coeff = coeff;
+    hardness[index] = value;
 }
 
-double FlucDens::get_ct_coeff()
+void FlucDens::set_additional_hardness(vec_d values)
 {
-    return ct_coeff;
+    if ((int)values.size() != n_sites)
+        throw std::runtime_error("hardness array length does not equal n_sites");
+    hardness.assign(values.begin(), values.end());
 }
 
-void FlucDens::set_calc_forces(bool calculate_forces)
+//****************************************************************
+//**********  delta_rho - frozen exclusions and fragments ********
+//****************************************************************
+void FlucDens::add_fragment(const std::vector<int> site_idx_list)
 {
-    calc_forces = calculate_forces;
+    for(auto delta_i: site_idx_list)
+    {
+        if ((delta_i > n_sites) || (delta_i < 0) )
+            throw out_of_bounds_eror("add_fragment()", delta_i);
+        
+        site_frag_ids[delta_i] = n_fragments;
+        for(auto frz_j: site_idx_list)
+            add_del_frz_exclusion(delta_i, frz_j);
+    }
+    n_fragments += 1;
 }
 
-double FlucDens::get_total_time()
+std::vector<vec_i> FlucDens::get_fragments()
 {
-    return total_time;
+    if (site_frag_ids_partitioned.size() != n_fragments)
+    {
+        site_frag_ids_partitioned.resize(n_fragments);
+        for (int i = 0; i < n_sites; i++)
+        {
+            site_frag_ids_partitioned[site_frag_ids[i]].push_back(i);
+        }
+    }
+    return site_frag_ids_partitioned;
+}
+
+int FlucDens::get_num_fragments()
+{
+    return n_fragments;
+}
+
+void FlucDens::add_del_frz_exclusion(int delta_i, int frz_j)
+{
+    /*  delta_rho_i and frozen_rho_j interactions
+        will be excluded */
+    if ((delta_i > n_sites) || (frz_j > n_sites) || (delta_i < 0) || (frz_j < 0))
+        throw out_of_bounds_eror("add_del_frz_exclusion()", delta_i, frz_j);
+    exclusions_del_frz[delta_i].insert(frz_j);
+}
+
+std::set<int> FlucDens::get_del_frz_exclusions(const int particle1) const
+{
+    std::set<int> particles2;
+    if (particle1 < 0 || particle1 >= (int) exclusions_frz_frz.size()) 
+        throw "Index out of range";
+    particles2 = exclusions_del_frz[particle1];
+    return particles2;
+}
+
+void FlucDens::set_frag_constraints(const bool constr_frags)
+{
+    /* choose to constrain total charge per fragment (True) or as a whole system (False) */
+    use_frag_constraints = constr_frags;
 }
 
 int FlucDens::get_num_constraints()
@@ -265,36 +226,100 @@ int FlucDens::get_num_constraints()
     return constraints.size();
 }
 
-void FlucDens::set_cutoff_distance(double distance_in_nm)
+std::vector<std::vector<int>> FlucDens::get_constraints()
 {
-    cutoff_distance = distance_in_nm*10*ANG2BOHR;
+    return constraints;
 }
 
-double FlucDens::get_cutoff_distance()
+void FlucDens::assign_constraints()
 {
-    return cutoff_distance/(10*ANG2BOHR);
+    if (use_frag_constraints)
+    {
+        if (n_fragments == 0)
+            throw std::runtime_error("No fragments defined when fragment constraints are enabled");
+        if ((int)constraints.size() != n_fragments)
+        {   
+            
+            constraints.resize(n_fragments, std::vector<int>(n_sites, 0));
+            for(int i = 0; i < n_sites; i ++)
+            {
+                int frag_id = site_frag_ids[i];
+                if (frag_id == -1)
+                    throw std::runtime_error("assign_constraints: Site " + std::to_string(i+1) + " not assigned a fragment.");
+                constraints[frag_id][i] = 1;
+            }
+        }
+    }
+    else
+    {
+        if ((int)constraints.size() != 1)
+        {
+            //printf("RESIZING CONSTRAINTS %d  %d\n", (int)constraints.size(), (int)use_frag_constraints);
+            constraints.clear();
+            constraints.resize(1, std::vector<int>(n_sites, 1));
+        }
+    }
 }
 
-void FlucDens::set_use_cutoff(bool useCutoff)
+void FlucDens::create_del_exclusions_from_fragment(const std::vector<int> frag_idx)
 {
-    use_cutoff = useCutoff;
+    for (auto del_i: frag_idx)
+        for(auto frz_j: frag_idx)
+            add_del_frz_exclusion(del_i, frz_j);
 }
 
-bool FlucDens::get_use_cutoff()
+
+//****************************************************************
+//                frozen - frozen exclusions 
+//****************************************************************
+void FlucDens::add_frz_frz_exclusion(int frz_i, int frz_j)
 {
-    return use_cutoff;
+    /*  frozen_rho_i and frozen_rho_j interactions
+        will be excluded */
+    if ((frz_i > n_sites) || (frz_j > n_sites) || (frz_i < 0) || (frz_j < 0))
+    {   
+        char buffer[100];
+        sprintf(buffer, "Frozen exception index pair (%d,%d) out of bounds", frz_i, frz_j);
+        throw std::out_of_range(buffer);
+    }
+    exclusions_frz_frz[frz_i].insert(frz_j);
+    exclusions_frz_frz[frz_j].insert(frz_i);
 }
 
-void FlucDens::set_use_SR_cutoff(bool yes_no)
+std::set<int> FlucDens::get_frz_frz_exclusions(const int particle1) const
 {
-    use_SR_cutoff = yes_no;
+    if (particle1 < 0 || particle1 >= (int) exclusions_frz_frz.size()) 
+        throw "Index out of range";
+    // std::vector<int> particles2;
+    // particles2.resize(exclusions_frz_frz[particle1].size());
+    // std::copy(exclusions_frz_frz[particle1].begin(), exclusions_frz_frz[particle1].end(), particles2.begin());
+    // int i = 0;
+    // for(auto &x: exclusions_frz_frz[particle1])
+    // {
+    //     printf("%d  %d  %d \n", (int)i, particles2[i], x);
+    //     i++;
+    // }
+    // return particles2;
+    return exclusions_frz_frz[particle1];
 }
 
-bool FlucDens::get_use_SR_cutoff()
+int FlucDens::get_num_frz_frz_exclusions() const
 {
-    return use_SR_cutoff;
+    return exclusions_frz_frz.size(); 
 }
 
+void FlucDens::create_frz_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)
+{
+    vector<std::set<int> > exclusions = Nonbonded::calc_exclusions_from_bonds(bonds, bond_cutoff, n_sites);
+    for (int i = 0; i < (int) exclusions.size(); ++i)
+        for (int j : exclusions[i])
+            if (j < i)
+                add_frz_frz_exclusion(i, j);
+}
+
+//****************************************************************
+//                  External fields and dipoles 
+//****************************************************************
 void FlucDens::set_external_field(double field_x, double field_y, double field_z)
 {
     has_ext_field = true;
@@ -340,6 +365,102 @@ vec_d FlucDens::get_dipole(const vec_d &coords, DensityType density_dype=Density
     return result;
 }
 
+double FlucDens::calc_frz_ext_field_energy(const vec_d &positions, std::vector<Vec3> &forces)
+{
+    double energy = 0.0;
+    if (has_ext_field)
+    {
+        for(int i = 0; i < n_sites; i ++)
+            forces[i] += ext_field*frozen_chg[i];
+
+        std::vector<Vec3> dipoles = get_dipoles(positions);
+        Vec3 dipole_total =  dipoles[DensityType::Nuclei] + dipoles[DensityType::Frozen];
+        energy = -dipole_total.dot(ext_field);
+    }
+    return energy;
+}
+
+//****************************************************************
+//                  Periodic boundary conditions
+//****************************************************************
+void FlucDens::set_use_PBC(const bool is_periodic)
+{
+    periodicity.is_periodic = is_periodic;
+}
+
+void FlucDens::set_use_PBC(const bool is_periodic, const double x, const double y, const double z)
+{
+    periodicity.set(is_periodic, x, y, z);
+}
+
+bool FlucDens::get_use_PBC()
+{
+    return periodicity.is_periodic;
+}
+
+//****************************************************************
+//                      Cutoff distances
+//****************************************************************
+void FlucDens::set_use_cutoff(bool useCutoff)
+{
+    use_cutoff = useCutoff;
+}
+
+bool FlucDens::get_use_cutoff()
+{
+    return use_cutoff;
+}
+void FlucDens::set_cutoff_distance(double distance_in_nm)
+{
+    cutoff_distance = distance_in_nm*10*ANG2BOHR;
+}
+
+double FlucDens::get_cutoff_distance()
+{
+    return cutoff_distance/(10*ANG2BOHR);
+}
+
+void FlucDens::set_use_SR_cutoff(bool yes_no)
+{
+    use_SR_cutoff = yes_no;
+}
+
+bool FlucDens::get_use_SR_cutoff()
+{
+    return use_SR_cutoff;
+}
+
+bool FlucDens::use_SR_approx(double r, double a, double b)
+{
+    if (!use_SR_cutoff)
+        return false;
+    double alpha = std::max(a, b);
+    double max_dist = SR_cutoff_coeff/alpha;
+    return (r > max_dist);
+}
+
+//****************************************************************
+//                      Energies and Forces
+//****************************************************************
+double FlucDens::get_frozen_energy()
+{
+    return total_energies.frz;
+}
+
+double FlucDens::get_polarization_energy()
+{
+    return total_energies.pol;
+}
+
+double FlucDens::get_ct_energy()
+{
+    return total_energies.vct;
+}
+
+FlucDensEnergies FlucDens::get_energies()
+{
+    return total_energies;
+}
 std::vector<vec_d> FlucDens::get_forces()
 {
     std::vector<vec_d> rtn(n_sites, vec_d(3, 0.0));
@@ -466,21 +587,6 @@ void FlucDens::initialize_calculation()
 
 }
 
-double FlucDens::calc_frz_ext_field_energy(const vec_d &positions, std::vector<Vec3> &forces)
-{
-    double energy = 0.0;
-    if (has_ext_field)
-    {
-        for(int i = 0; i < n_sites; i ++)
-            forces[i] += ext_field*frozen_chg[i];
-
-        std::vector<Vec3> dipoles = get_dipoles(positions);
-        Vec3 dipole_total =  dipoles[DensityType::Nuclei] + dipoles[DensityType::Frozen];
-        energy = -dipole_total.dot(ext_field);
-    }
-    return energy;
-}
-
 double FlucDens::calc_energy(const vec_d &positions, bool calc_frz, bool calc_pol)
 {
     initialize_calculation();
@@ -538,21 +644,6 @@ Energies FlucDens::calc_one_frozen(const vec_d &positions, int i, int j)
         deltaR.getDeltaR(positions, (int)i*3, (int)j*3);
     calc_one_electro(deltaR, i, j, false, true, eng_out, total_forces);
     return eng_out;
-}
-
-void FlucDens::set_use_PBC(const bool is_periodic)
-{
-    periodicity.is_periodic = is_periodic;
-}
-
-void FlucDens::set_use_PBC(const bool is_periodic, const double x, const double y, const double z)
-{
-    periodicity.set(is_periodic, x, y, z);
-}
-
-bool FlucDens::get_use_PBC()
-{
-    return periodicity.is_periodic;
 }
 
 void FlucDens::calc_one_electro(DeltaR &deltaR, int i, int j, bool calc_pol, bool calc_frz, Energies& energies, std::vector<Vec3> &forces, int thread_num)
@@ -758,19 +849,6 @@ double FlucDens::elec_nuclei_energy(const double inv_r, const double a, const do
     return nuc_elec;
 }
 
-std::vector<vec_i> FlucDens::get_fragments()
-{
-    if (site_frag_ids_partitioned.size() != n_fragments)
-    {
-        site_frag_ids_partitioned.resize(n_fragments);
-        for (int i = 0; i < n_sites; i++)
-        {
-            site_frag_ids_partitioned[site_frag_ids[i]].push_back(i);
-        }
-    }
-    return site_frag_ids_partitioned;
-}
-
 double FlucDens::elec_elec_energy(const double inv_r, const double a, const double b, const double exp_ar, const double exp_br, double &dEdR)
 {
     double E_ee = 0.0;
@@ -812,41 +890,6 @@ double FlucDens::elec_elec_energy(const double inv_r, const double a, const doub
         dEdR = -a*E_ee + a*inv_r - inv_r*inv_r*one_minus_exp + exp_ar*(A1 + 2*A2*r + 3*A3*r2 + 4*A4*r3);
     }
     return E_ee;
-}
-
-int FlucDens::get_num_fragments()
-{
-    return n_fragments;
-}
-
-void FlucDens::assign_constraints()
-{
-    if (use_frag_constraints)
-    {
-        if (n_fragments == 0)
-            throw std::runtime_error("No fragments defined when fragment constraints are enabled");
-        if ((int)constraints.size() != n_fragments)
-        {   
-            
-            constraints.resize(n_fragments, std::vector<int>(n_sites, 0));
-            for(int i = 0; i < n_sites; i ++)
-            {
-                int frag_id = site_frag_ids[i];
-                if (frag_id == -1)
-                    throw std::runtime_error("assign_constraints: Site " + std::to_string(i+1) + " not assigned a fragment.");
-                constraints[frag_id][i] = 1;
-            }
-        }
-    }
-    else
-    {
-        if ((int)constraints.size() != 1)
-        {
-            //printf("RESIZING CONSTRAINTS %d  %d\n", (int)constraints.size(), (int)use_frag_constraints);
-            constraints.clear();
-            constraints.resize(1, std::vector<int>(n_sites, 1));
-        }
-    }
 }
 
 void FlucDens::solve_minimization(std::vector<Vec3> &forces)
@@ -978,15 +1021,6 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
     total_energies.vct = ct_coeff*total_energies.pol;
 }
 
-bool FlucDens::use_SR_approx(double r, double a, double b)
-{
-    if (!use_SR_cutoff)
-        return false;
-    double alpha = std::max(a, b);
-    double max_dist = SR_cutoff_coeff/alpha;
-    return (r > max_dist);
-}
-
 std::vector<std::string> FlucDens::get_param_names()
 {
     std::vector<std::string> keys;
@@ -1078,29 +1112,16 @@ vec_d FlucDens::get_delta_rho()
     return delta_rho;
 }
 
-double FlucDens::get_frozen_energy()
+
+
+void FlucDens::set_calc_forces(bool calculate_forces)
 {
-    return total_energies.frz;
+    calc_forces = calculate_forces;
 }
 
-double FlucDens::get_polarization_energy()
+double FlucDens::get_total_time()
 {
-    return total_energies.pol;
-}
-
-double FlucDens::get_ct_energy()
-{
-    return total_energies.vct;
-}
-
-FlucDensEnergies FlucDens::get_energies()
-{
-    return total_energies;
-}
-
-std::vector<std::vector<int>> FlucDens::get_constraints()
-{
-    return constraints;
+    return total_time;
 }
 
 std::out_of_range FlucDens::out_of_bounds_eror(const char *msg, const int idx1)

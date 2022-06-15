@@ -457,7 +457,14 @@ void AmberFD::load_from_file(std::string file_loc)
                 }
                 else if (key.compare("ATOM") == 0)
                 {
-                    ParticleInfo particle(stoi(tokens[1]), stod(tokens[2]), stod(tokens[3]), stod(tokens[4]), stod(tokens[5]), stod(tokens[6]));
+                    //ParticleInfo particle(stoi(tokens[1]), stod(tokens[2]), stod(tokens[3]), stod(tokens[4]), stod(tokens[5]), stod(tokens[6]));
+
+                    ParticleInfo particle(stoi(tokens[1]));
+                    particle.frz_chg =  stod(tokens[2]);
+                    particle.frz_exp = stod(tokens[3]);
+                    particle.dyn_exp = stod(tokens[4]);
+                    particle.pauli_exp = stod(tokens[5]);
+                    particle.pauli_radii = stod(tokens[6]);
 
                     add_particle(stoi(tokens[7]), particle);
                 }

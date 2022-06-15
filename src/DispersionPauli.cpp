@@ -90,21 +90,55 @@ void DispersionPauli::set_all_C6_coeff()
         C6_coeff[i] = C6_map[nuclei[i]];
 }
 
+
+//****************************************************************
+//                   Parameter Specification
+//****************************************************************
 void DispersionPauli::set_dispersion_params(double s6, double a1, double a2)
 {
     disp_s6 = s6;
     disp_a1 = a1;
     disp_a2 = a2;
 }
+
+void DispersionPauli::get_dispersion_params(double &s6, double &a1, double &a2)
+{
+    s6 = disp_s6;
+    a1 = disp_a1;
+    a2 = disp_a2;
+}
+
 void DispersionPauli::set_vdw_radii(map_id nuclei2radiiMap)
 {
     vdw_radii_map = nuclei2radiiMap;
     set_all_vdw_radii();
 }
+
+map_id DispersionPauli::get_vdw_radii_map()
+{
+    return vdw_radii_map;
+}
+
+vec_d DispersionPauli::get_vdw_radii()
+{
+    return vdw_radii;
+}
+
 void DispersionPauli::set_C6_map(map_id nucleiToC6Map){
     C6_map = nucleiToC6Map;
     set_all_C6_coeff();
 }
+
+map_id DispersionPauli::get_C6_map()
+{
+    return C6_map;
+}
+
+vec_d DispersionPauli::get_C6_coeff()
+{
+    return C6_coeff;
+}
+
 double DispersionPauli::radii_to_coeff(double radii, double exponent)
 {
     if (radii <= 0)
@@ -112,6 +146,7 @@ double DispersionPauli::radii_to_coeff(double radii, double exponent)
     else
         return sqrt(kcal * exp(exponent*radii));
 }
+
 void DispersionPauli::set_pauli_radii(vec_d radii_list)
 {
     if ((int)radii_list.size() != n_sites)
@@ -120,6 +155,7 @@ void DispersionPauli::set_pauli_radii(vec_d radii_list)
     for (size_t i=0; i < pauli_radii.size(); i ++)
         pauli_coeff[i] = radii_to_coeff(pauli_radii[i], pauli_exponents[i]);
 }
+
 void DispersionPauli::set_pauli_radii(int index, double radii)
 {
     if (index > (n_sites - 1))
@@ -129,12 +165,19 @@ void DispersionPauli::set_pauli_radii(int index, double radii)
     pauli_radii[index] = radii;
     pauli_coeff[index] = radii_to_coeff(radii, pauli_exponents[index]);
 }
+
+vec_d DispersionPauli::get_pauli_radii()
+{
+    return pauli_radii;
+}
+
 void DispersionPauli::set_pauli_exp(vec_d exp_list)
 {
     if ((int)exp_list.size() != n_sites)
         throw std::runtime_error("exp_list length does not equal n_sites");
     pauli_exponents.assign(exp_list.begin(), exp_list.end());
 }
+
 void DispersionPauli::set_pauli_exp(int index, double exponent)
 {
     if (index > (n_sites - 1))
@@ -144,6 +187,61 @@ void DispersionPauli::set_pauli_exp(int index, double exponent)
     pauli_exponents[index] = exponent;
 }
 
+vec_d DispersionPauli::get_pauli_exp()
+{
+    return pauli_exponents;
+}
+int DispersionPauli::get_num_sites()
+{
+    return n_sites;
+}
+
+
+//****************************************************************
+//                      Exclusions
+//****************************************************************
+void DispersionPauli::create_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)
+{
+    vector<set<int> > exclusions = Nonbonded::calc_exclusions_from_bonds(bonds, bond_cutoff, n_sites);
+
+    for (int i = 0; i < (int) exclusions.size(); ++i)
+        for (int j : exclusions[i])
+            if (j < i)
+                add_exclusion(i, j);
+}
+
+void DispersionPauli::create_exclusions_from_fragment(const std::vector<int> frag_idx)
+{
+    for (auto idx_i: frag_idx)
+        for(auto idx_j: frag_idx)
+            add_exclusion(idx_i, idx_j);
+}
+
+void DispersionPauli::add_exclusion(const int index_i, const int index_j)
+{
+    if ((index_i > n_sites) || (index_j > n_sites) || (index_i < 0) || (index_j < 0))
+    {   
+        char buffer[100];
+        sprintf(buffer, " Exception index pair (%d,%d) out of bounds", index_i, index_j);
+        throw std::out_of_range(buffer);
+    }
+    exclusions[index_i].insert(index_j);
+    exclusions[index_j].insert(index_i);
+}
+
+std::set<int> DispersionPauli::get_exclusions(const int particle1) const
+{
+    std::set<int> particles2;
+    if (particle1 < 0 || particle1 >= (int) exclusions.size()) 
+        throw "Index out of range";
+    particles2 = exclusions[particle1];
+    return particles2;
+}
+
+
+//****************************************************************
+//                 Periodic Boundary Conditions
+//****************************************************************
 void DispersionPauli::set_use_PBC(const bool is_periodic)
 {
     periodicity.is_periodic = is_periodic;
@@ -158,37 +256,10 @@ bool DispersionPauli::get_use_PBC()
     return periodicity.is_periodic;
 }
 
-void DispersionPauli::get_dispersion_params(double &s6, double &a1, double &a2)
-{
-    s6 = disp_s6;
-    a1 = disp_a1;
-    a2 = disp_a2;
-}
 
-map_id DispersionPauli::get_vdw_radii_map()
-{
-    return vdw_radii_map;
-}
-vec_d DispersionPauli::get_vdw_radii()
-{
-    return vdw_radii;
-}
-map_id DispersionPauli::get_C6_map()
-{
-    return C6_map;
-}
-vec_d DispersionPauli::get_pauli_radii()
-{
-    return pauli_radii;
-}
-vec_d DispersionPauli::get_pauli_exp()
-{
-    return pauli_exponents;
-}
-vec_d DispersionPauli::get_C6_coeff()
-{
-    return C6_coeff;
-}
+//****************************************************************
+//                          Energies
+//****************************************************************
 double DispersionPauli::get_pauli_energy()
 {
     return total_pauli_energy;
@@ -196,10 +267,6 @@ double DispersionPauli::get_pauli_energy()
 double DispersionPauli::get_disp_energy()
 {
     return total_disp_energy;
-}
-int DispersionPauli::get_num_sites()
-{
-    return n_sites;
 }
 
 std::vector<vec_d> DispersionPauli::get_forces()
@@ -212,11 +279,6 @@ std::vector<vec_d> DispersionPauli::get_forces()
         rtn[i][2] = self_forces[i][2];
     }
     return rtn;
-}
-
-void DispersionPauli::set_use_secondary_radii(bool use_radii)
-{
-    use_secondary_radii = use_radii;
 }
 
 void DispersionPauli::initialize()
@@ -399,6 +461,13 @@ void DispersionPauli::calc_two_site_repulsion(const vec_d &pos, DeltaR &deltaR, 
     // printf("IN PAULI: %d  %d  %.5f \n", i, j, energies.pauli);
 }
 
+//****************************************************************
+//                      Miscellaneous
+//****************************************************************
+void DispersionPauli::set_use_secondary_radii(bool use_radii)
+{
+    use_secondary_radii = use_radii;
+}
 void DispersionPauli::set_use_two_site_repulsion(bool on_off)
 {
     use_two_site_repulsion = on_off;
@@ -443,40 +512,3 @@ void DispersionPauli::create_repulsion_sites(double vertical_dist, const std::ve
     }
 }
 
-void DispersionPauli::create_exclusions_from_bonds(const vector<pair<int, int> > bonds, int bond_cutoff)
-{
-    vector<set<int> > exclusions = Nonbonded::calc_exclusions_from_bonds(bonds, bond_cutoff, n_sites);
-
-    for (int i = 0; i < (int) exclusions.size(); ++i)
-        for (int j : exclusions[i])
-            if (j < i)
-                add_exclusion(i, j);
-}
-
-void DispersionPauli::create_exclusions_from_fragment(const std::vector<int> frag_idx)
-{
-    for (auto idx_i: frag_idx)
-        for(auto idx_j: frag_idx)
-            add_exclusion(idx_i, idx_j);
-}
-
-void DispersionPauli::add_exclusion(const int index_i, const int index_j)
-{
-    if ((index_i > n_sites) || (index_j > n_sites) || (index_i < 0) || (index_j < 0))
-    {   
-        char buffer[100];
-        sprintf(buffer, " Exception index pair (%d,%d) out of bounds", index_i, index_j);
-        throw std::out_of_range(buffer);
-    }
-    exclusions[index_i].insert(index_j);
-    exclusions[index_j].insert(index_i);
-}
-
-std::set<int> DispersionPauli::get_exclusions(const int particle1) const
-{
-    std::set<int> particles2;
-    if (particle1 < 0 || particle1 >= (int) exclusions.size()) 
-        throw "Index out of range";
-    particles2 = exclusions[particle1];
-    return particles2;
-}
