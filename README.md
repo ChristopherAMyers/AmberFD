@@ -1,5 +1,8 @@
 # AmberFD
 
+Full documentation (work in progress) for all the methods, arguments, and tools available
+in AmberFD can be found in it's separate documentation page: https://christopheramyers.github.io/AmberFD_Documentation/html/index.html
+
 This package incorporates a Fluctuating Density based model for MD simulations performed with OpenMM.
 Similar to a fluctuating charge model, this model incorporates explic polarization into a simulation by
 adjusting the density sites at each time step so that the electrostatic energy is minimized. Additionally, 
@@ -51,9 +54,6 @@ simulation.reporters.append(StateDataReporter(stdout, 1000, step=True,
         potentialEnergy=True, temperature=True))
 simulation.step(10000)
 ```
-
-Full documentation (work in progress) for all the methods, arguments, and tools available
-in AmberFD can be found in it's separate documentation page: https://christopheramyers.github.io/AmberFD_Documentation/html/index.html
 
 # Installation
 ## Requirements
