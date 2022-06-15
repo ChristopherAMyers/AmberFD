@@ -21,19 +21,38 @@
 #ifndef AMBERFD_H
 #define AMBERFD_H
 
-/*  Small structure used to assign per-site force field parameters */
+/**  
+ * Small structure used to assign per-site force field parameters.
+ * This is passed into AmberFD when adding a new particle.
+ */
 class ParticleInfo{
     public:
-        int nuclei;
-        double frz_chg, frz_exp, dyn_exp, pauli_exp, pauli_radii;
+        /**
+         * @brief Construct a new Particle Info object
+         * 
+         * @param nuclei The integer nuclei of the particle. A value of zero indicates it's a virtual particle
+         */
         ParticleInfo(int nuclei)
         {
             this->nuclei = nuclei;
             frz_chg = frz_exp = dyn_exp = pauli_exp =  pauli_radii = 0.0;
         }
-        ParticleInfo(int nuclei, double frz_chg, double frz_exp, double dyn_exp, double pauli_exp, double pauli_radii):
-        nuclei(nuclei), frz_chg(frz_chg), frz_exp(frz_exp), dyn_exp(dyn_exp), pauli_exp(pauli_exp), pauli_radii(pauli_radii)
-        {}
+        /** Integer value for the nuclei of the particle. A value of zero indicates it's a virtual particle */
+        int nuclei;
+        /** Frozen charge of the particle, can be positive or negative */
+        double frz_chg;
+        /** Frozen Slater exponent of the particle, must be a positive value */
+        double frz_exp;
+        /** Dynamic Slater exponent of the particle, must be a positive value */
+        double dyn_exp;
+        /** Pauli exponent of the particle, must be a positive value */
+        double pauli_exp;
+        /** Pauli radii of the particle, must be a positive value */
+        double pauli_radii;
+
+        // ParticleInfo(int nuclei, double frz_chg, double frz_exp, double dyn_exp, double pauli_exp, double pauli_radii):
+        // nuclei(nuclei), frz_chg(frz_chg), frz_exp(frz_exp), dyn_exp(dyn_exp), pauli_exp(pauli_exp), pauli_radii(pauli_radii)
+        // {}
 };
 
 /**

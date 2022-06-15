@@ -3,6 +3,7 @@
 //%feature("autodoc", "2");
 %feature("doxygen:ignore:transferfull");
 
+
 %{
     #define SWIG_FILE_WITH_INIT
     #include "include/AmberFD.h"
