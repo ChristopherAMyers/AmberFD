@@ -42,7 +42,7 @@ debug*
 backups/
 tests/__pycache__/
 tests/res
-tests/
+#tests/
 tests/create_asserts.py
 
 AmberFD/tests/
