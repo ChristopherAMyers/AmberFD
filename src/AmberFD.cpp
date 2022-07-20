@@ -123,10 +123,8 @@ void AmberFD::set_threads(int n_threads)
         Nonbonded::use_threads = true;
         Nonbonded::num_threads = n_threads;
     }
-    //omp_set_num_threads(Nonbonded::num_threads);
+    omp_set_num_threads(Nonbonded::num_threads);
     //omp_set_num_threads(1);
-
-
 }
 
 double AmberFD::get_parallel_time()

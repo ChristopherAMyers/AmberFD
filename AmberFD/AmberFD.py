@@ -15,15 +15,15 @@ from scipy.optimize import minimize, OptimizeResult
 import time
 import warnings
 
-from . import LJOverrides
+#from . import LJOverrides
 
 try:
     sys.path.insert(1, join(dirname(realpath(__file__)), '../build/'))
-    from _AmberFD import ANG2BOHR, AmberFD, FlucDens, VectorI, VectorD, VectorPairII, ParticleInfo, MapID
+    from _AmberFD import ANG2BOHR, AmberFD, FlucDens, ParticleInfo, MapID
 except:
     print(" WARNING: Using MINERVA Build")
     sys.path.insert(1, join(dirname(realpath(__file__)), '../build_minerva/'))
-    from _AmberFD import ANG2BOHR, AmberFD, FlucDens, VctorI, VectorD, VectorPairII, ParticleInfo, MapIDe
+    from _AmberFD import ANG2BOHR, AmberFD, FlucDens, ParticleInfo, MapID
 
 
 HARTREE_TO_KJ_MOL = 2625.5009
