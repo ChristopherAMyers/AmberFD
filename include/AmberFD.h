@@ -230,6 +230,9 @@ class AmberFD{
          */
         double get_parallel_time();
 
+        ///////////////   NEW
+        void print_timings();
+
     private:
         vec_i nuclei;
         vec_d frz_chg;
@@ -257,7 +260,7 @@ class AmberFD{
         std::vector<Energies> thread_energies;
         double parallel_time;
 
-
+        Timer timers;
 };
 
 

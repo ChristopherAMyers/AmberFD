@@ -12,6 +12,7 @@
 
 #include "common.h"
 #include "Vec3.h"
+#include "timer.h"
 
 #ifndef FLUC_DENS_H
 #define FLUC_DENS_H
@@ -710,6 +711,8 @@ class FlucDens {
 
         std::vector<int> site_frag_ids;
         std::vector<std::vector<int> > site_frag_ids_partitioned;
+
+        Timer timers;
 };
 
 
