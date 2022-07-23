@@ -1,14 +1,7 @@
-#include <chrono>
 #include <stdio.h>
 #include <map>
-#include <chrono>
 #include <string>
-
-#define USE_OMP_WTIME
-
-#ifdef USE_OMP_WTIME
-    #include <omp.h>
-#endif
+#include <omp.h>
 
 #ifndef TIMER_INFO
 #define TIMER_INFO
