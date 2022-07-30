@@ -79,6 +79,9 @@ FlucDens::FlucDens(const int num_sites,
     //  external fields
     has_ext_field = false;
     ext_field_potential.resize(n_sites, 0.0);
+
+    //  default minimizer
+    solver = Solver::Global;
 }
 
 FlucDens::~FlucDens()
@@ -962,14 +965,23 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
         for(int j = 0; j < n_constr; j++)
             A_mat[dim*i + n_sites + j] = constraints[j][i];
 
-    A_mat_save = A_mat;
-    B_vec_save = B_vec;
-    
-    //  solve matrix equation A_mat * x = B_vec for x
-    int ipiv[dim];
-    openblas_set_num_threads(1);
-    info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim, 1, &A_mat[0], dim, ipiv, &B_vec[0], dim);
-    delta_rho.assign(B_vec.begin(), B_vec.begin() + n_sites);
+    if (solver == Solver::Global)
+    {
+        A_mat_save = A_mat;
+        B_vec_save = B_vec;
+        
+        //  solve matrix equation A_mat * x = B_vec for x
+        int ipiv[dim];
+        openblas_set_num_threads(1);
+        info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim, 1, &A_mat[0], dim, ipiv, &B_vec[0], dim);
+        delta_rho.assign(B_vec.begin(), B_vec.begin() + n_sites);
+    }
+    else{
+        std::vector<vec_i> fragments = get_fragments();
+        printf("ENTERING DaC \n");
+        divide_and_conquer.solve(J_mat, pot_vec, fragments);
+        printf("EXITING DaC \n");
+    }
 
     //  simplified version of polarization energy
     if (false)
@@ -1112,8 +1124,6 @@ vec_d FlucDens::get_delta_rho()
     return delta_rho;
 }
 
-
-
 void FlucDens::set_calc_forces(bool calculate_forces)
 {
     calc_forces = calculate_forces;
@@ -1122,6 +1132,10 @@ void FlucDens::set_calc_forces(bool calculate_forces)
 double FlucDens::get_total_time()
 {
     return total_time;
+}
+void FlucDens::set_solver(Solver solver_in)
+{
+    solver = solver_in;
 }
 
 std::out_of_range FlucDens::out_of_bounds_eror(const char *msg, const int idx1)

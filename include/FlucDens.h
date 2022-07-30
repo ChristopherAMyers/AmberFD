@@ -13,6 +13,7 @@
 #include "common.h"
 #include "Vec3.h"
 #include "timer.h"
+#include "LinearSolvers.h"
 
 #ifndef FLUC_DENS_H
 #define FLUC_DENS_H
@@ -119,8 +120,8 @@ class FlucDens {
             /**
              * @brief Dampening will be applied to the quadratic terms (old method)
              */
-            Quadratic = 2}
-        ;
+            Quadratic = 2
+        };
         /**
          * @brief enumeration of the types of densities to be computed
          * 
@@ -645,6 +646,13 @@ class FlucDens {
          */
         vec_d B_vec_save;
 
+        enum Solver{
+            Global = 0,
+            DivideConquer = 1
+        };
+
+        void set_solver(Solver solver_in);
+
 
     private:
         
@@ -713,6 +721,8 @@ class FlucDens {
         std::vector<std::vector<int> > site_frag_ids_partitioned;
 
         Timer timers;
+        Solver solver;
+        DivideAndConquer divide_and_conquer;
 };
 
 
