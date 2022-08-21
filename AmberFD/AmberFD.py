@@ -559,6 +559,79 @@ class Context(mm.Context):
                  getParameterDerivatives=getParameterDerivatives, getIntegratorParameters=getIntegratorParameters,
                  enforcePeriodicBox=enforcePeriodicBox, groups=groups)
 
+    def create_cube_file(self, cube_file, grid_range=None, grid_spacing=0.3, grid_padding=3.0, density_type='delta'):
+
+        #   update density and get current positions
+        state = self.getState(getPositions=True, getEnergy=True)
+        all_pos = state.getPositions(True)
+        pos_bohr = (all_pos[self._omm_indicies])/uu.bohr
+
+        #   determine bounds
+        if grid_range is None:
+            x_min, y_min, z_min = np.min(pos_bohr, axis=0) - 3*ANG_TO_BOHR
+            x_max, y_max, z_max = np.max(pos_bohr, axis=0) + 3*ANG_TO_BOHR
+        else:
+            ((x_min, x_max), (y_min, y_max), (z_min, z_max)) = grid_range
+
+        #   create grid points
+        x = np.arange(x_min, x_max, grid_spacing*ANG_TO_BOHR)
+        y = np.arange(y_min, y_max, grid_spacing*ANG_TO_BOHR)
+        z = np.arange(z_min, z_max, grid_spacing*ANG_TO_BOHR)
+        xx, yy, zz = np.meshgrid(x, y, z, indexing='ij')
+
+        nx, ny, nz = len(x), len(y), len(z)
+        dim = nx*ny*nz
+        a = np.reshape(xx, dim)
+        b = np.reshape(yy, dim)
+        c = np.reshape(zz, dim)
+        coords = np.array([a, b, c]).T
+
+        #   determine type of density to print
+        if not isinstance(density_type, str):
+            raise TypeError("create_cube_file(): density_dype must be 'delta', 'frozen', or 'all'")
+        if density_type.lower() == 'delta':
+            density_type = self._flucDensForce.Delta
+        elif density_type.lower() == 'frozen':
+            density_type = self._flucDensForce.Frozen
+        elif density_type.lower() == 'all':
+            density_type = self._flucDensForce.All
+
+        #   compute the actual density
+        print(pos_bohr.shape)
+        density = self._flucDensForce.calc_density(coords.flatten(), pos_bohr.flatten(), density_type)
+        density = np.array(density)
+
+        if isinstance(cube_file, str):
+            file = open(cube_file, 'w')
+        else:
+            file = cube_file
+
+        all_nuclei = np.array(self._flucDensForce.get_params_by_name('nuclei'), dtype=int)
+        keep_idx = np.where(all_nuclei > 0)
+        out_pos = pos_bohr[keep_idx]
+        out_nuclei = all_nuclei[keep_idx]
+
+        #   write cube file header
+        file.write("Cube file generated with cube_file_parser.py\n")
+        file.write("Cube file generated with cube_file_parser.py\n")
+        file.write("{:5d} {:12.6f} {:12.6f} {:12.6f}\n"
+        .format(len(out_pos), x_min, y_min, z_min))
+        file.write("{:5d} {:12.6f} {:12.6f} {:12.6f}\n".format(nx, grid_spacing*ANG_TO_BOHR, 0.0, 0.0))
+        file.write("{:5d} {:12.6f} {:12.6f} {:12.6f}\n".format(ny, 0.0, grid_spacing*ANG_TO_BOHR, 0.0))
+        file.write("{:5d} {:12.6f} {:12.6f} {:12.6f}\n".format(nz, 0.0, 0.0, grid_spacing*ANG_TO_BOHR))
+        for n, nuclei in enumerate(out_nuclei):
+            file.write("{:5d} {:12.6f} {:12.6f} {:12.6f} {:12.6f}\n"
+            .format(int(nuclei), nuclei, out_pos[n][0], out_pos[n][1], out_pos[n][2]))
+
+        #   write cube file data
+        print(density.shape)
+        remainder = density.shape[0] % 6
+        first_part = density[0:-remainder].reshape((-1, 6))
+        second_part = density[-remainder:]
+        np.savetxt(file, first_part)
+        np.savetxt(file, [second_part])
+
+        file.close()
 
 
 class AmberFDSimulation(Simulation):
