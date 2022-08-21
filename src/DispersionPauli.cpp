@@ -51,11 +51,11 @@ DispersionPauli::DispersionPauli(const int num_sites, const int* nuclei_in, cons
     self_forces.resize(n_sites, Vec3());
 
     secondary_radii_map = {
-        {0, 2.1*0.3*ANG2BOHR},
-        {1, 0.0*0.3*ANG2BOHR},
-        {6, 2.8*0.3*ANG2BOHR},
-        {7, 2.4*0.3*ANG2BOHR},
-        {8, 2.2*0.3*ANG2BOHR}
+        {0, 2.1*0.35*ANG2BOHR},
+        {1, 0.0*0.35*ANG2BOHR},
+        {6, 2.8*0.35*ANG2BOHR},
+        {7, 2.4*0.35*ANG2BOHR},
+        {8, 2.2*0.35*ANG2BOHR}
     };
     secondary_exp = 8.0/ANG2BOHR;
     set_all_secondary_radii();
@@ -338,6 +338,8 @@ double DispersionPauli::calc_one_pair(const vec_d &pos, DeltaR &deltaR, int i, i
     energies.disp = 0.0;
     energies.pauli = 0.0;
     energies.pauli_wall = 0.0;
+    if (deltaR.r > 30.0)
+        return energies.disp + energies.pauli + energies.pauli_wall;
     if (std::find(exclusions[i].begin(), exclusions[i].end(), j) == exclusions[i].end())
     {      
         Vec3 dR_dPos = deltaR.dR*deltaR.r_inv;

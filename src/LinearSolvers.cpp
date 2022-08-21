@@ -5,28 +5,44 @@ DivideAndConquer::DivideAndConquer()
     
 }
 
-void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec_i> &fragments_in)
+void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec_i> &fragments_in, vec_d &delta_rho)
 {
     assign_fragments(fragments_in);
 
     int dim = pot_vec.size();
     vec_d pot_vec_all(dim, 0.0);
-    vec_d delta_rho(dim, 0.0);
+    // vec_d delta_rho(dim, 0.0);
     vec_d delta_rho_old(dim, 0.0);
+    vec_d lambdas(fragments.size(), 0.0);
+    vec_d lambdas_full(dim);
+    if (delta_rho.size() != dim)
+        delta_rho.resize(dim, 0.0);
+    double prev_energy = 1e20;
 
-    for(int round_n = 0; round_n < 15; round_n++)
+
+    // vec_i used_idx(dim);
+    // for(int n = 0; n < (int)fragments.size(); n++)
+    //     for(int i = 0; i < (int)fragments[n].size(); i++)
+    //         used_idx[fragments[n][i]] += 1;
+    // for(int i = 0; i < dim; i++)
+    //     printf("FRAG CHK: %d  %d\n", i, used_idx[i]);
+    // std::cin.get();
+
+
+    for(int round_n = 0; round_n < 20; round_n++)
     {
-        //printf("Round 1\n");
         //  store interaction with all other sites: pot_vec_all = Coulomb_mat @ delta_rho
         cblas_dsymv(CblasRowMajor, CblasUpper, dim, 1.0, &Coulomb_mat[0], dim, &delta_rho[0], 1, 0.0, &pot_vec_all[0], 1);
+
+        //#pragma omp parallel for num_threads(1)
         for(int n = 0; n < (int)fragments.size(); n++)
         {
-            //printf("Fragment %d\n", n);
-            int dim_n = (int)fragments[n].size();
+            int num_sites_n = (int)fragments[n].size();
+            int dim_n = num_sites_n + 1;
 
             vec_d A_mat(dim_n*dim_n);
             vec_d b_vec(dim_n);
-            vec_d delta_rho_n(dim_n);
+            vec_d delta_rho_lam_n(dim_n);
 
             //  copy over block and external potential 
             //  corresponding to this fragment
@@ -35,32 +51,51 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
                 int idx_i = fragments[n][i];
                 for(int j = 0; j < dim_n; j++)
                 {
-                    int idx_j = fragments[n][j];
-                    int orig_idx = idx_i*dim + idx_j;
-                    A_mat[i*dim_n + j] = Coulomb_mat[orig_idx];
+                    if ((i == num_sites_n) || (j == num_sites_n))
+                        A_mat[i*dim_n + j] = 1.0;
+                    else
+                    {
+                        int idx_j = fragments[n][j];
+                        int orig_idx = idx_i*dim + idx_j;
+                        A_mat[i*dim_n + j] = Coulomb_mat[orig_idx];
+                    }
                 }
-                b_vec[i] = pot_vec[idx_i] + pot_vec_all[idx_i];
-                delta_rho_n[i] = delta_rho[idx_i];
+                 if (i < num_sites_n)
+                 {
+                    b_vec[i] = pot_vec[idx_i] + pot_vec_all[idx_i];
+                    delta_rho_lam_n[i] = delta_rho[idx_i];
+                 }
             }
+            A_mat[num_sites_n*dim_n + num_sites_n] = 0.0;
+            delta_rho_lam_n[num_sites_n] = 0.0;
 
             //  subtract out the potential from delta_rho on this current fragment
             //  and copy over right hand side (rhs)
             vec_d fragment_pot(dim_n);
             vec_d rhs(dim_n);
-            cblas_dsymv(CblasRowMajor, CblasUpper, dim_n, 1.0, &A_mat[0], dim_n, &delta_rho_n[0], 1, 0.0, &fragment_pot[0], 1);
-            for(int i = 0; i < dim_n; i++)
+            rhs[num_sites_n] = 0.0;
+            //openblas_set_num_threads(1);
+            cblas_dsymv(CblasRowMajor, CblasUpper, dim_n, 1.0, &A_mat[0], dim_n, &delta_rho_lam_n[0], 1, 0.0, &fragment_pot[0], 1);
+            for(int i = 0; i < num_sites_n; i++)
             {
                 b_vec[i] -= fragment_pot[i];
                 rhs[i] = -b_vec[i];
+
             }
 
             //  minimize delta_rho for this fragment
             int ipiv[dim_n];
             int info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim_n, 1, &A_mat[0], dim_n, ipiv, &rhs[0], dim_n);
 
-            //  copy over delta_rho to entire collection
-            for(int i = 0; i < dim_n; i++)
+            //  copy over delta_rho and lagrange multipliers to entire collection
+            lambdas[n] = rhs[num_sites_n];
+            for(int i = 0; i < num_sites_n; i++)
+            {
                 delta_rho[fragments[n][i]] = rhs[i];
+                lambdas_full[fragments[n][i]] = lambdas[n];
+                // printf("DELTA RHO: %d  %d  %d  %.3f  %.3f  %.3f\n", 
+                //     round_n, n, fragments[n][i], rhs[i], lambdas[n]*2625.5009, pot_vec[fragments[n][i]]*2625.5009);
+            }
         }
 
         //  get rms change in delta_rho
@@ -84,8 +119,29 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
         double term1 = 0.5*cblas_ddot(dim, &delta_rho[0], 1, &y_vec[0], 1);
         double term2 = cblas_ddot(dim, &delta_rho[0], 1, &pot_vec[0], 1);
         double energy = term1 + term2;
+        double energy_diff = (energy - prev_energy)*2625.5009;
+        
+        double max_gradient = 0.0;
+        for(int i = 0; i < dim; i++)
+        {
+            double gradient = y_vec[i] + pot_vec[i] + lambdas_full[i];
+            max_gradient = std::max(max_gradient, std::abs(gradient));
+            //printf("GRADIENT: %d  %.3f  %.3f  %.3f  %.3f\n", i, pot_vec[i]*2625.5009, lambdas_full[i]*2625.5009, y_vec[i]*2625.5009, max_gradient*2625.5009);
+        }
 
-        printf("round %2d: %15.8f %15.8f %15.8f\n", round_n, rms, max_diff, energy*2625.5009);
+        // printf("round %2d: %15.8f %15.8f %15.8f  %15.8f\n", 
+        //           round_n, rms, max_diff, energy*2625.5009, max_gradient*2625.5009);
+        // std::cin.get();
+
+        prev_energy = energy;
+        if (std::abs(energy_diff) < 1.0)
+            break;
+        if(max_gradient*2625.5009 < 0.5)
+            break;
+
+
+        // for(int i = 0; i < (int)delta_rho.size(); i++)
+        //     delta_rho[i] = 0.0;
     }
 }
 

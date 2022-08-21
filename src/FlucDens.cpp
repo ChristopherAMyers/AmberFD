@@ -569,14 +569,16 @@ void FlucDens::initialize_calculation()
     fill(dDamp_dPos.begin(), dDamp_dPos.end(), Vec3(0, 0, 0));
     fill(frozen_forces.begin(), frozen_forces.end(), Vec3(0, 0, 0));
     fill(total_forces.begin(), total_forces.end(), Vec3(0, 0, 0));
-    fill(delta_rho.begin(), delta_rho.end(), 0.0);
     total_energies.reset();
+    if (solver == Solver::Global)
+        fill(delta_rho.begin(), delta_rho.end(), 0.0);
 
     if ((int)cutoff_distance == 0 && periodicity.is_periodic)
     {
         double min_dist = std::min(periodicity.box_size[0], periodicity.box_size[1]);
         min_dist = std::min(min_dist, periodicity.box_size[2]);
         cutoff_distance = 0.5*0.99999*min_dist;
+        cutoff_distance = std::min(40.0, cutoff_distance);
     }
     if (Nonbonded::num_threads != (int)thread_dampening.size())
     {
@@ -978,9 +980,7 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
     }
     else{
         std::vector<vec_i> fragments = get_fragments();
-        printf("ENTERING DaC \n");
-        divide_and_conquer.solve(J_mat, pot_vec, fragments);
-        printf("EXITING DaC \n");
+        divide_and_conquer.solve(J_mat, pot_vec, fragments, delta_rho);
     }
 
     //  simplified version of polarization energy
