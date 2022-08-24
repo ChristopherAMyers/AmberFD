@@ -571,7 +571,7 @@ class Context(mm.Context):
             x_min, y_min, z_min = np.min(pos_bohr, axis=0) - 3*ANG_TO_BOHR
             x_max, y_max, z_max = np.max(pos_bohr, axis=0) + 3*ANG_TO_BOHR
         else:
-            ((x_min, x_max), (y_min, y_max), (z_min, z_max)) = grid_range
+            ((x_min, x_max), (y_min, y_max), (z_min, z_max)) = np.array(grid_range)*ANG_TO_BOHR
 
         #   create grid points
         x = np.arange(x_min, x_max, grid_spacing*ANG_TO_BOHR)
@@ -597,7 +597,6 @@ class Context(mm.Context):
             density_type = self._flucDensForce.All
 
         #   compute the actual density
-        print(pos_bohr.shape)
         density = self._flucDensForce.calc_density(coords.flatten(), pos_bohr.flatten(), density_type)
         density = np.array(density)
 
@@ -610,10 +609,11 @@ class Context(mm.Context):
         keep_idx = np.where(all_nuclei > 0)
         out_pos = pos_bohr[keep_idx]
         out_nuclei = all_nuclei[keep_idx]
+        out_nuclei[np.where(out_nuclei > 1)] += 2
 
         #   write cube file header
-        file.write("Cube file generated with cube_file_parser.py\n")
-        file.write("Cube file generated with cube_file_parser.py\n")
+        file.write("Cube file generated with AmberFD\n")
+        file.write("Cube file generated with AmberFD\n")
         file.write("{:5d} {:12.6f} {:12.6f} {:12.6f}\n"
         .format(len(out_pos), x_min, y_min, z_min))
         file.write("{:5d} {:12.6f} {:12.6f} {:12.6f}\n".format(nx, grid_spacing*ANG_TO_BOHR, 0.0, 0.0))
@@ -624,7 +624,6 @@ class Context(mm.Context):
             .format(int(nuclei), nuclei, out_pos[n][0], out_pos[n][1], out_pos[n][2]))
 
         #   write cube file data
-        print(density.shape)
         remainder = density.shape[0] % 6
         first_part = density[0:-remainder].reshape((-1, 6))
         second_part = density[-remainder:]
