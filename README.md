@@ -1,4 +1,5 @@
 # AmberFD
+[![DOI](https://zenodo.org/badge/417211322.svg)](https://zenodo.org/badge/latestdoi/417211322)
 
 Full documentation (work in progress) for all the methods, arguments, and tools available
 in AmberFD can be found in it's separate [documentation page](https://christopheramyers.github.io/AmberFD_Documentation/html/index.html)
