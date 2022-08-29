@@ -476,43 +476,68 @@ std::vector<vec_d> FlucDens::get_forces()
     return rtn;
 }
 
-double FlucDens::calc_overlap(const vec_d &coords)
+double FlucDens::calc_overlap(const vec_d &coords, DensityType density_type, const vec_i &indices_in)
 {
     size_t i, j;
     double overlap = 0.0;
     double r, r2, inv_r;
+    double pop_a, pop_b, a, b, exp_ar, exp_br;
 
-    for (i = 0; i < n_sites; i++)
+    vec_i indices(indices_in);
+    
+    if (indices.size() == 0)
     {
-        for (j = i+1; j < n_sites; j++)
+        indices.resize(n_sites);
+        for(int i = 0; i < n_sites; i++)
         {
-            if ((nuclei[i] < 1) || (nuclei[j] < 1))
-                continue;
-                
-            //  symmetric Coulomb matrix elements in row_major format
-            size_t matrix_idx_1 = i*n_sites + j;
-            size_t matrix_idx_2 = j*n_sites + i;
+            indices[i] = i;
+        }
+    }
 
-            //  distances and inverse distances
+    vec_d *pops, *exponents;
+    if(density_type == DensityType::Delta)
+    {
+        pops = &delta_rho;
+        exponents = &dynamic_exp;
+    }
+    else if(density_type == DensityType::Frozen)
+    {
+        pops = &frozen_pop;
+        exponents = &frozen_exp;
+    }
+    else if(density_type == DensityType::All)
+    {
+        throw std::invalid_argument("Overlap for ALL not implimented yet");
+    }
+
+    for(int i: indices)
+    {
+        a = (*exponents)[i];
+        pop_a = (*pops)[i];
+        
+
+        for(int j: indices)
+        {
+            if (j < i)
+                continue;
+
             r2 = dot3Vec(coords, (int)j*3, (int)i*3);
             r = sqrt(r2);
             inv_r = 1/r;
-
-            //  extract density exponentials
-            double a = frozen_exp[i];
-            double b = frozen_exp[j];
-
-            if (std::find(exclusions_frz_frz[i].begin(), exclusions_frz_frz[i].end(), j) == exclusions_frz_frz[i].end())
+            b = (*exponents)[j];
+            pop_b = (*pops)[j];
+            
+            //if (std::find(exclusions_frz_frz[i].begin(), exclusions_frz_frz[i].end(), j) == exclusions_frz_frz[i].end())
             {
                 if (use_SR_approx(r, a, b))
-                {            }
+                { }
                 else if (true)
                 {
                     //  compute exponentials only once
-                    double exp_ar = exp(-a*r);
-                    double exp_br = exp(-b*r);
-
-                    overlap += frz_frz_overlap(inv_r, a, b, exp_ar, exp_br)*frozen_pop[i]*frozen_pop[j];
+                    exp_br = exp(-b*r);
+                    exp_ar = exp(-a*r);
+                    double S_12 = frz_frz_overlap(inv_r, a, b, exp_ar, exp_br);
+                    overlap += S_12*pop_a*pop_b;
                 }
             }
         }
@@ -531,7 +556,7 @@ double FlucDens::frz_frz_overlap(const double inv_r, const double a, const doubl
         double a2 = a*a;
         double b2 = b*b;
         double ab4 = a2*a2*b2*b2;
-        double r = 1/inv_r;
+        //double r = 1/inv_r;
         double denom = a2 - b2;
         double denom2 = denom*denom;
 
@@ -539,7 +564,7 @@ double FlucDens::frz_frz_overlap(const double inv_r, const double a, const doubl
         double c2 = ab4/a/denom2;
         double c3 = -c1;
         double c4 = c2*a/b;
-
+        
         return (exp_ar*(c1 + c2) + exp_br*(c3 + c4))/(8*M_PI);
     }
     else

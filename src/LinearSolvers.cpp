@@ -5,7 +5,7 @@ DivideAndConquer::DivideAndConquer()
     
 }
 
-void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec_i> &fragments_in, vec_d &delta_rho)
+void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec_i> &fragments_in, vec_d &delta_rho, vec_d &exponents)
 {
     assign_fragments(fragments_in);
 
@@ -40,6 +40,11 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
             int num_sites_n = (int)fragments[n].size();
             int dim_n = num_sites_n + 1;
 
+            vec_d delta_squared(num_sites_n);
+            double sum_delta_squared = 0.0;
+            double cost_weight = 0.0;
+            double cost_limit = 8.0;
+
             vec_d A_mat(dim_n*dim_n);
             vec_d b_vec(dim_n);
             vec_d delta_rho_lam_n(dim_n);
@@ -64,10 +69,25 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
                  {
                     b_vec[i] = pot_vec[idx_i] + pot_vec_all[idx_i];
                     delta_rho_lam_n[i] = delta_rho[idx_i];
+                    delta_squared[i] = delta_rho[idx_i]*delta_rho[idx_i]*exponents[i]*exponents[i]*exponents[i];
+                    sum_delta_squared += delta_squared[i];
                  }
             }
             A_mat[num_sites_n*dim_n + num_sites_n] = 0.0;
             delta_rho_lam_n[num_sites_n] = 0.0;
+
+            // if(sum_delta_squared > cost_limit)
+            // {
+            //     cost_weight = 1.0;
+            //     for(int i = 0; i < num_sites_n; i++)
+            //     {
+            //         int idx_i = fragments[n][i];
+            //         A_mat[i*dim_n + i] += cost_weight*
+
+            //     }
+            // }
+                
+
 
             //  subtract out the potential from delta_rho on this current fragment
             //  and copy over right hand side (rhs)

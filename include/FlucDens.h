@@ -456,9 +456,10 @@ class FlucDens {
          * @brief Calculate the total electron overlap
          * 
          * @param coords the positions of all sites
+         * @param density_dype Frozen, Delta, or Total population type 
          * @return the total overlap in e^2 /bohr^3
          */
-        double calc_overlap(const vec_d &coords);
+        double calc_overlap(const vec_d &coords, DensityType density_type, const vec_i &indices = vec_i());
         /**
          * @brief Calculate the energy and forces of the system.
          * 

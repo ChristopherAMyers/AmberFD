@@ -16,7 +16,7 @@ class DivideAndConquer
         DivideAndConquer();
 
         void assign_fragments(std::vector<vec_i> &fragments);
-        void solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec_i> &fragments_in, vec_d &delta_rho_out);
+        void solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec_i> &fragments_in, vec_d &delta_rho_out, vec_d &exponents);
 
     private:
         std::vector<vec_i> fragments;
