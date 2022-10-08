@@ -16,6 +16,7 @@ AmberFD::AmberFD(const int n_particles)
     pauli_exp.reserve(n_particles);
     n_sites = 0;
     self_forces.reserve(n_particles);
+    idx_to_frag.reserve(n_particles);
 
     parallel_time = 0.0;
 }
@@ -49,6 +50,7 @@ void AmberFD::add_fragment(const vec_i frag_idx)
 {
     dispersionPauli->create_exclusions_from_fragment(frag_idx);
     flucDens->add_fragment(frag_idx);
+
 }
 
 std::vector<vec_d> AmberFD::get_forces()
@@ -143,6 +145,14 @@ void AmberFD::initialize()
         for (int i = 0; i < Nonbonded::num_threads; i++)
             thread_forces[i].resize(n_sites);
     }
+    if (idx_to_frag.size() != (size_t)n_sites)
+    {
+        idx_to_frag.resize(n_sites);
+        std::vector<vec_i> frag_info = flucDens->get_fragments();
+        for(int frag_idx = 0; frag_idx < (int)frag_info.size(); frag_idx++)
+            for(int site_idx: frag_info[frag_idx])
+                idx_to_frag[site_idx] = frag_idx;
+    }
 
     fill(self_forces.begin(), self_forces.end(), Vec3(0, 0, 0));
     if (Nonbonded::use_threads)
@@ -227,17 +237,16 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
     timers.stop("calc_threaded_energy");
 }
 
-Energies AmberFD::calc_energy_forces(const vec_d &positions)
+Energies AmberFD::calc_energy_forces(const vec_d &positions, bool frag_frag_only)
 {
     //printf("USING THREADS: %d %d\n", Nonbonded::use_threads, omp_get_num_threads());
-    if (Nonbonded::use_threads)
+    if (Nonbonded::use_threads && !frag_frag_only)
         return calc_threaded_energy(positions);
 
     size_t i, j;
     total_energies.zero();
     Energies pair_energies;
-    DeltaR dR;
-    
+    DeltaR dR;    
 
     //  initialize solvers
     initialize();
@@ -260,7 +269,11 @@ Energies AmberFD::calc_energy_forces(const vec_d &positions)
             //  dispersion and pauli energies
             dispersionPauli->calc_one_pair(positions, dR, i, j, pair_energies, self_forces);
 
-            total_energies += pair_energies;
+            //total_energies += pair_energies;
+            if (frag_frag_only && idx_to_frag[i] == idx_to_frag[j])
+                total_energies += pair_energies;
+            else
+                total_energies += pair_energies;
         }
     }
     //  minimize fluc-dens energy

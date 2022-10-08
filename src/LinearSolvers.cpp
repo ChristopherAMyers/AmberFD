@@ -1,12 +1,27 @@
 #include "LinearSolvers.h"
-
+using namespace std::chrono;
 DivideAndConquer::DivideAndConquer()
 {
-    
+    //  debug timers
+    wtime_fragment = microseconds::zero();
+    wtime_total = microseconds::zero();
+}
+DivideAndConquer::~DivideAndConquer()
+{
+    //  print debug timers
+    if (true)
+    {
+        printf("DaC Fragment Time: %.6f \n", duration_cast<microseconds>(wtime_fragment).count() / 1e6 );
+        printf("DaC Total Time:    %.6f \n", duration_cast<microseconds>(wtime_total).count() / 1e6  );
+    }
 }
 
 void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec_i> &fragments_in, vec_d &delta_rho, vec_d &exponents)
 {
+
+    steady_clock::time_point wtime_fragment_start;
+    steady_clock::time_point wtime_total_start = steady_clock::now();
+
     assign_fragments(fragments_in);
 
     int dim = pot_vec.size();
@@ -18,7 +33,7 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
     if (delta_rho.size() != dim)
         delta_rho.resize(dim, 0.0);
     double prev_energy = 1e20;
-
+    
 
     // vec_i used_idx(dim);
     // for(int n = 0; n < (int)fragments.size(); n++)
@@ -34,7 +49,11 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
         //  store interaction with all other sites: pot_vec_all = Coulomb_mat @ delta_rho
         cblas_dsymv(CblasRowMajor, CblasUpper, dim, 1.0, &Coulomb_mat[0], dim, &delta_rho[0], 1, 0.0, &pot_vec_all[0], 1);
 
+        //wtime_fragment_start = omp_get_wtime();
+        wtime_fragment_start = steady_clock::now();
+
         //#pragma omp parallel for num_threads(1)
+        //#pragma omp parallel for
         for(int n = 0; n < (int)fragments.size(); n++)
         {
             int num_sites_n = (int)fragments[n].size();
@@ -116,7 +135,10 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
                 // printf("DELTA RHO: %d  %d  %d  %.3f  %.3f  %.3f\n", 
                 //     round_n, n, fragments[n][i], rhs[i], lambdas[n]*2625.5009, pot_vec[fragments[n][i]]*2625.5009);
             }
+
+
         }
+        wtime_fragment += (steady_clock::now() - wtime_fragment_start);
 
         //  get rms change in delta_rho
         double sum = 0.0;
@@ -158,11 +180,11 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
             break;
         if(max_gradient*2625.5009 < 0.5)
             break;
-
-
-        // for(int i = 0; i < (int)delta_rho.size(); i++)
-        //     delta_rho[i] = 0.0;
+        
     }
+    
+    //  update total time
+    wtime_total += (steady_clock::now() - wtime_total_start);
 }
 
 void DivideAndConquer::assign_fragments(std::vector<vec_i> &fragments_in)

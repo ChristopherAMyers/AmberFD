@@ -125,9 +125,10 @@ class AmberFD{
          * Compute the energy and forces on the AmberFD system at the current positions.
          * 
          * @param positions 1-D array of positions (in a.u.)
+         * @param frag_frag_only compute inter-fragment frozen energies only and exclude intra-fragment energies
          * @return Energies object
          */
-        Energies calc_energy_forces(const vec_d &positions);
+        Energies calc_energy_forces(const vec_d &positions, bool frag_frag_only = false);
         /**
          * Get a pointer to the FlucDens force object being used
          * 
@@ -240,6 +241,7 @@ class AmberFD{
         vec_d dyn_exp;
         vec_d pauli_exp;
         vec_d pauli_radii;
+        vec_i idx_to_frag;
         std::map<int, int> omm_to_index;
         std::map<int, int> index_to_omm;
         int n_sites;

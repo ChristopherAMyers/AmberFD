@@ -999,13 +999,13 @@ void FlucDens::solve_minimization(std::vector<Vec3> &forces)
         
         //  solve matrix equation A_mat * x = B_vec for x
         int ipiv[dim];
-        openblas_set_num_threads(1);
+        //openblas_set_num_threads(1);
         info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim, 1, &A_mat[0], dim, ipiv, &B_vec[0], dim);
         delta_rho.assign(B_vec.begin(), B_vec.begin() + n_sites);
     }
     else{
         std::vector<vec_i> fragments = get_fragments();
-        divide_and_conquer.solve(J_mat, pot_vec, fragments, delta_rho);
+        divide_and_conquer.solve(J_mat, pot_vec, fragments, delta_rho, dynamic_exp);
     }
 
     //  simplified version of polarization energy

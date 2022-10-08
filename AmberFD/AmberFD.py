@@ -463,17 +463,18 @@ class Context(mm.Context):
 
         return pos_bohr.flatten()
 
-    def _update_force(self):
-        # start_time = time.time()
-        # if self._self_pos is None:
-        #     self._self_pos = self._get_fd_pos()
-        # self._current_energies = self._FD_solver.calc_energy_forces(self._self_pos)
-        # end_time = time.time()
-        # self._wall_time += (end_time - start_time)
-        # return
-        
-
+    def get_interaction_energy(self):
         if self._dont_update: return
+
+        state = self.getState(getPositions=True)
+        all_pos = state.getPositions(True)
+        pos_bohr = (all_pos[self._omm_indicies])/uu.bohr    
+        return self._FD_solver.calc_energy_forces(pos_bohr.flatten(), True)
+
+
+    def _update_force(self):     
+        if self._dont_update: return
+
         state = self.getState(getPositions=True)
         all_pos = state.getPositions(True)
         pos_bohr = (all_pos[self._omm_indicies])/uu.bohr
@@ -482,15 +483,6 @@ class Context(mm.Context):
 
         total_E = self._current_energies.total()
         fd_forces = np.array(self._FD_solver.get_forces()).reshape((self._n_sites, 3))*FORCE_ATOMIC_TO_MM
-
-        # print("TOTAL ENERGY: ", total_E*HARTREE_TO_KJ_MOL)
-        # print("FRZ ENERGY:   ", self._current_energies.frz*HARTREE_TO_KJ_MOL)
-        # print("POL ENERGY:   ", (self._current_energies.pol + self._current_energies.vct)*HARTREE_TO_KJ_MOL)
-        # print("VCT ENERGY:   ", self._current_energies.vct*HARTREE_TO_KJ_MOL)
-        # print("DISP ENERGY:  ", self._current_energies.disp*HARTREE_TO_KJ_MOL)
-        # print("PAULI ENERGY: ", self._current_energies.pauli*HARTREE_TO_KJ_MOL)
-        # print("WALL ENERGY:  ", self._current_energies.pauli_wall*HARTREE_TO_KJ_MOL)
-        # print()
 
         if False:
 
