@@ -631,7 +631,7 @@ class AmberFDSimulation(Simulation):
     
     To use it, create a simulation just like you normally would with OpenMM, but instead call AmberFDSimulation. If a system is provided that was not created using the AmberFD forcefield, then this will initialize using openmm.simulation instead. All of the same members that belong to openmm.simulation are also available, such as minimizeEnergy() and step(). Some of these members have additional options that are otherwise unavailable with vanilla openmm.simulation. These options are available regardless if an AmberFD force field is used or not.
     '''
-    def __init__(self, topology, system, integrator, platform=None, platformProperties=None, state=None, FDProperties=None):
+    def __init__(self, topology, system, integrator, platform=None, platformProperties=None, state=None, **FDProperties):
         """Create a Simulation. 
 
         Parameters
@@ -683,6 +683,9 @@ class AmberFDSimulation(Simulation):
                     n_threads = 1
             if n_threads > 1:
                 system._amberFDData['force'].set_threads(n_threads)
+
+            if 'solver' in FDProperties:
+                system._amberFDData['force'].get_fluc_dens_force().set_solver(FDProperties['solver'])
 
         else:
             super().__init__(topology, system, integrator, platform=platform, platformProperties=platformProperties, state=state)

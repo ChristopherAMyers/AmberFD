@@ -3,8 +3,8 @@
 #include <string>
 #include <omp.h>
 
-#ifndef TIMER_INFO
-#define TIMER_INFO
+#ifndef TIMER
+#define TIMER
 class TimerInfo
 {
     public:
@@ -14,20 +14,25 @@ class TimerInfo
         double total;
         unsigned int n_calls;
 };
-#endif // TIMER_INFO
 
-#ifndef TIMER
-#define TIMER
+enum TimerNames{
+    threaded_energy,
+    energy_pairs,
+    minimization,
+    dac_fragments,
+    dac_total
+};
+
 class Timer
 {
     public:
         Timer();
         ~Timer();
-        void add_timer(std::string timer_name);
-        void start(std::string timer_name);
-        void stop(std::string timer_name);
+        void add_timer(TimerNames timer_name);
+        void start(TimerNames timer_name);
+        void stop(TimerNames timer_name);
         void print_timings();
     private:
-        std::map<std::string, TimerInfo> timers;
+        std::map<TimerNames, TimerInfo> timers;
 };
 #endif // TIMER

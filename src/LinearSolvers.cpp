@@ -33,111 +33,138 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
     if (delta_rho.size() != dim)
         delta_rho.resize(dim, 0.0);
     double prev_energy = 1e20;
-    
-
-    // vec_i used_idx(dim);
-    // for(int n = 0; n < (int)fragments.size(); n++)
-    //     for(int i = 0; i < (int)fragments[n].size(); i++)
-    //         used_idx[fragments[n][i]] += 1;
-    // for(int i = 0; i < dim; i++)
-    //     printf("FRAG CHK: %d  %d\n", i, used_idx[i]);
-    // std::cin.get();
-
+   
 
     for(int round_n = 0; round_n < 20; round_n++)
     {
         //  store interaction with all other sites: pot_vec_all = Coulomb_mat @ delta_rho
         cblas_dsymv(CblasRowMajor, CblasUpper, dim, 1.0, &Coulomb_mat[0], dim, &delta_rho[0], 1, 0.0, &pot_vec_all[0], 1);
 
-        //wtime_fragment_start = omp_get_wtime();
         wtime_fragment_start = steady_clock::now();
-
         //#pragma omp parallel for num_threads(1)
         //#pragma omp parallel for
         for(int n = 0; n < (int)fragments.size(); n++)
         {
             int num_sites_n = (int)fragments[n].size();
-            int dim_n = num_sites_n + 1;
+            std::vector<vec_d> constraints;
+            vec_d constraint_vals;
+            constraints.push_back(vec_d(num_sites_n, 1.0));
+            constraint_vals.push_back(0.0);
 
-            vec_d delta_squared(num_sites_n);
-            double sum_delta_squared = 0.0;
-            double cost_weight = 0.0;
-            double cost_limit = 8.0;
+            //  solve the minimization problem for this fragment
+            //  and keep trying until abs. of all populations are
+            //  less than some tollerance
+                int num_constr = (int)constraints.size();
+                int dim_n = num_sites_n + num_constr;
+                vec_d A_mat(dim_n*dim_n, 0.0);
+                vec_d b_vec(dim_n);
+                vec_d delta_rho_lam_n(dim_n, 0.0);
+                vec_d rhs(dim_n);
 
-            vec_d A_mat(dim_n*dim_n);
-            vec_d b_vec(dim_n);
-            vec_d delta_rho_lam_n(dim_n);
-
-            //  copy over block and external potential 
-            //  corresponding to this fragment
-            for(int i = 0; i < dim_n; i++)
-            {
-                int idx_i = fragments[n][i];
-                for(int j = 0; j < dim_n; j++)
+                if (true)
                 {
-                    if ((i == num_sites_n) || (j == num_sites_n))
-                        A_mat[i*dim_n + j] = 1.0;
-                    else
+                    //  copy over Coulomb block and external potential 
+                    //  corresponding to this fragment
+                    for(int i = 0; i < num_sites_n; i++)
                     {
-                        int idx_j = fragments[n][j];
-                        int orig_idx = idx_i*dim + idx_j;
-                        A_mat[i*dim_n + j] = Coulomb_mat[orig_idx];
+                        int idx_i = fragments[n][i];
+                        for(int j = 0; j < num_sites_n; j++)
+                        {
+                            int idx_j = fragments[n][j];
+                            int orig_idx = idx_i*dim + idx_j;
+                            A_mat[i*dim_n + j] = Coulomb_mat[orig_idx];
+                        }
+                        b_vec[i] = pot_vec[idx_i] + pot_vec_all[idx_i];
+                        delta_rho_lam_n[i] = delta_rho[idx_i];
                     }
+
+                    //  copy over constraint as rows
+                    for(int i = 0; i < num_constr; i++)
+                    {
+                        std::copy(constraints[i].begin(), constraints[i].end(), A_mat.begin() + dim_n*num_sites_n + i*dim_n);
+                        rhs[num_sites_n + i] = constraint_vals[i];
+                    }
+
+                    //  copy over constraint as columns
+                    for(int i = 0; i < num_sites_n; i++)
+                        for(int j = 0; j < num_constr; j++)
+                            A_mat[dim_n*i + num_sites_n + j] = constraints[j][i];
                 }
-                 if (i < num_sites_n)
-                 {
-                    b_vec[i] = pot_vec[idx_i] + pot_vec_all[idx_i];
-                    delta_rho_lam_n[i] = delta_rho[idx_i];
-                    delta_squared[i] = delta_rho[idx_i]*delta_rho[idx_i]*exponents[i]*exponents[i]*exponents[i];
-                    sum_delta_squared += delta_squared[i];
-                 }
-            }
-            A_mat[num_sites_n*dim_n + num_sites_n] = 0.0;
-            delta_rho_lam_n[num_sites_n] = 0.0;
 
-            // if(sum_delta_squared > cost_limit)
-            // {
-            //     cost_weight = 1.0;
-            //     for(int i = 0; i < num_sites_n; i++)
-            //     {
-            //         int idx_i = fragments[n][i];
-            //         A_mat[i*dim_n + i] += cost_weight*
+                else
+                {
+                    //  copy over block and external potential 
+                    //  corresponding to this fragment
+                    for(int i = 0; i < dim_n; i++)
+                    {
+                        int idx_i = fragments[n][i];
+                        for(int j = 0; j < dim_n; j++)
+                        {
+                            if ((i == num_sites_n) || (j == num_sites_n))
+                                A_mat[i*dim_n + j] = 1.0;
+                            else
+                            {
+                                int idx_j = fragments[n][j];
+                                int orig_idx = idx_i*dim + idx_j;
+                                A_mat[i*dim_n + j] = Coulomb_mat[orig_idx];
+                            }
+                        }
+                        if (i < num_sites_n)
+                        {
+                            b_vec[i] = pot_vec[idx_i] + pot_vec_all[idx_i];
+                            delta_rho_lam_n[i] = delta_rho[idx_i];
+                        }
+                    }
+                    A_mat[num_sites_n*dim_n + num_sites_n] = 0.0;
+                    delta_rho_lam_n[num_sites_n] = 0.0;
+                    rhs[num_sites_n] = 0.0;
+                }
 
-            //     }
-            // }
+                //  subtract out the potential from delta_rho on this current fragment
+                //  and copy over right hand side (rhs)
+                vec_d fragment_pot(dim_n);
                 
+                //openblas_set_num_threads(1);
+                cblas_dsymv(CblasRowMajor, CblasUpper, dim_n, 1.0, &A_mat[0], dim_n, &delta_rho_lam_n[0], 1, 0.0, &fragment_pot[0], 1);
+                for(int i = 0; i < num_sites_n; i++)
+                {
+                    b_vec[i] -= fragment_pot[i];
+                    rhs[i] = -b_vec[i];
+                }
 
+                //  minimize delta_rho for this fragment
+                int ipiv[dim_n];
+                int info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim_n, 1, &A_mat[0], dim_n, ipiv, &rhs[0], dim_n);
 
-            //  subtract out the potential from delta_rho on this current fragment
-            //  and copy over right hand side (rhs)
-            vec_d fragment_pot(dim_n);
-            vec_d rhs(dim_n);
-            rhs[num_sites_n] = 0.0;
-            //openblas_set_num_threads(1);
-            cblas_dsymv(CblasRowMajor, CblasUpper, dim_n, 1.0, &A_mat[0], dim_n, &delta_rho_lam_n[0], 1, 0.0, &fragment_pot[0], 1);
-            for(int i = 0; i < num_sites_n; i++)
-            {
-                b_vec[i] -= fragment_pot[i];
-                rhs[i] = -b_vec[i];
+                //  copy over delta_rho and lagrange multipliers to entire collection
+                //  also check for maximum population change
+                double max_delta_rho = 0.0;
+                int max_delta_rho_idx = 0;
+                lambdas[n] = rhs[num_sites_n];
+                for(int i = 0; i < num_sites_n; i++)
+                {
+                    delta_rho[fragments[n][i]] = rhs[i];
+                    if (abs(rhs[i]) > abs(max_delta_rho))
+                    {
+                        max_delta_rho = rhs[i];
+                        max_delta_rho_idx = i;
+                    }
+                    lambdas_full[fragments[n][i]] = lambdas[n];
+                }
 
-            }
-
-            //  minimize delta_rho for this fragment
-            int ipiv[dim_n];
-            int info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim_n, 1, &A_mat[0], dim_n, ipiv, &rhs[0], dim_n);
-
-            //  copy over delta_rho and lagrange multipliers to entire collection
-            lambdas[n] = rhs[num_sites_n];
-            for(int i = 0; i < num_sites_n; i++)
-            {
-                delta_rho[fragments[n][i]] = rhs[i];
-                lambdas_full[fragments[n][i]] = lambdas[n];
-                // printf("DELTA RHO: %d  %d  %d  %.3f  %.3f  %.3f\n", 
-                //     round_n, n, fragments[n][i], rhs[i], lambdas[n]*2625.5009, pot_vec[fragments[n][i]]*2625.5009);
-            }
-
-
-        }
+                {
+                    vec_d eye(num_sites_n*num_sites_n, 0.0);
+                    vec_d x0(num_sites_n);
+                    for(int kk = 0; kk < num_sites_n; kk++)
+                    {
+                        eye[kk*num_sites_n + kk] = 1.0;
+                        x0[kk] = rhs[kk];
+                    }
+                    project_constraints(eye, x0, constraints, constraint_vals, 0.5);
+                    for(int i = 0; i < num_sites_n; i++)
+                        delta_rho[fragments[n][i]] = x0[i];
+                }
+        } // end loop over fragments
         wtime_fragment += (steady_clock::now() - wtime_fragment_start);
 
         //  get rms change in delta_rho
@@ -151,7 +178,6 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
             max_diff = std::max(max_diff, std::abs(diff));
         }
         double rms = sqrt(sum/(double)dim);
-
         
         //  perform J_mat * rho -> y
         //  perform 0.5 * rho * y = 0.5 * rho * (Jmat * rho)
@@ -185,6 +211,121 @@ void DivideAndConquer::solve(vec_d &Coulomb_mat, vec_d &pot_vec, std::vector<vec
     
     //  update total time
     wtime_total += (steady_clock::now() - wtime_total_start);
+}
+
+double DivideAndConquer::sign(double x)
+{
+    return (0 < x) - (x < 0);
+}
+
+void DivideAndConquer::project_constraints(vec_d &metric, vec_d &guess_x, std::vector<vec_d> &constraints_in, vec_d &constraint_vals_in, double max_abs_val)
+{
+    int dim_x = (int)guess_x.size();
+    vec_d x0(guess_x);
+    double bound = abs(max_abs_val);
+    double error = bound*0.0001;
+    
+    for(int trial = 0; trial < 10; trial++)
+    {
+        //  constrain any populations over max_abs_val
+        std::vector<vec_d> constraints(constraints_in);
+        vec_d constraint_vals(constraint_vals_in);
+        vec_d orig_x0(x0);
+        for(int i = 0; i < dim_x; i++)
+        {
+            double diff = abs(x0[i]) - bound;
+            if (diff > error)
+            {
+                //printf("FOUND ONE trial=%d:  idx=%d  val=%.3f  diff=%.5e\n", trial, i, x0[i], abs(x0[i]) - abs(max_abs_val));
+                vec_d new_constraint(dim_x);
+                new_constraint[i] = 1;
+                constraints.push_back(new_constraint);
+                constraint_vals.push_back(sign(x0[i])*max_abs_val);
+                x0.push_back(0.0);
+            }
+        }
+        if(constraint_vals.size() == constraint_vals_in.size())
+            break;
+            //  no new constraints were added, we are done 
+
+        //  copy over metric
+        int dim_full = dim_x + constraint_vals.size();
+        vec_d A_mat(dim_full*dim_full);
+        for(int i = 0; i < dim_x; i++)
+        {
+            for(int j = 0; j < dim_x; j++)
+                A_mat[i*dim_full + j] = metric[i*dim_x + j];
+        }
+
+        //  solve the optimization
+        int ipiv2[dim_full];
+        apply_constraints(A_mat, x0, constraints, constraint_vals);
+        int info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim_full, 1, &A_mat[0], dim_full, ipiv2, &x0[0], dim_full);
+
+        // printf("TRIAL:\n");
+        // for(int i = 0; i < dim_x; i++)
+        //     printf("DELTA: %2d  %8.3f  %8.3f  %8.3f\n", i, orig_x0[i], x0[i], x0[i] - orig_x0[i]);
+        // std::cin.get();
+    }
+    std::copy(&(x0[0]), &(x0[dim_x]), guess_x.begin());
+}
+
+void DivideAndConquer::apply_constraints(vec_d &A_mat, vec_d &rhs, std::vector<vec_d> &constraints, vec_d &constraint_vals)
+{
+    int dim_1 = constraints[0].size();
+    int dim_2 = (int)constraints.size();
+    int dim_12 = dim_1 + dim_2; // num_sites
+
+    //  copy over constraint as rows
+    for(int i = 0; i < dim_2; i++)
+    {
+        std::copy(constraints[i].begin(), constraints[i].end(), A_mat.begin() + dim_12*dim_1 + i*dim_12);
+        rhs[dim_1 + i] = constraint_vals[i];
+    }
+
+    //  copy over constraint as columns
+    for(int i = 0; i < dim_1; i++)
+        for(int j = 0; j < dim_2; j++)
+            A_mat[dim_12*i + dim_1 + j] = constraints[j][i];
+}
+
+void DivideAndConquer::solve_restrained(vec_d &A_mat_in, vec_d &rhs_in, vec_d &guess, int n_sites, double rho_max, vec_d &out)
+{
+    /*  Iteratively solve constraint problem. Development only.
+    */
+    int dim_n = (int)guess.size();
+    int ipiv[dim_n];
+    double total_cost;
+    vec_d rhs(rhs_in);
+    vec_d A_mat(A_mat_in);
+    vec_d solution(guess);
+    for(int n_try = 0; n_try < 10; n_try++)
+    {
+        std::copy(rhs_in.begin(), rhs_in.end(), rhs.begin());
+        std::copy(A_mat_in.begin(), A_mat_in.end(), A_mat.begin());
+        total_cost = 0;
+        for(int i = 0; i < n_sites; i++)
+        {
+            double dx = solution[i] - rho_max;
+            if(dx > 0)
+            {
+                printf("OVER MAX: %2d  %8.3f\n", i, solution[i]);
+                double cost = 0.04*dx*dx*dx*dx;
+                rhs[i] -= cost*4/dx;
+                total_cost += cost;
+            }
+        }
+
+        int info = LAPACKE_dgesv(LAPACK_COL_MAJOR, dim_n, 1, &A_mat[0], dim_n, ipiv, &rhs[0], dim_n);
+        std::copy(rhs.begin(), rhs.end(), solution.begin());
+
+        printf("     ROUND  %2d: %.10f \n", (n_try+1), total_cost);
+        for(int i = 0; i < n_sites; i++)
+            printf("DELTA2: %2d  %8.3f \n", i, solution[i]);
+        std::cin.get();
+    }
+
+    std::copy(solution.begin(), solution.end(), out.begin());
 }
 
 void DivideAndConquer::assign_fragments(std::vector<vec_i> &fragments_in)

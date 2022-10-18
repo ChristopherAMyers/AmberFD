@@ -162,7 +162,7 @@ void AmberFD::initialize()
 
 Energies AmberFD::calc_threaded_energy(const vec_d &positions)
 {
-    timers.start("calc_threaded_energy");
+    timers.start(TimerNames::threaded_energy);
 
     double start_time = omp_get_wtime();
     using std::cout;
@@ -176,7 +176,7 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
     //omp_set_num_threads(15);
     //omp_set_num_threads(Nonbonded::num_threads);
 
-    timers.start("energy_pairs");
+    timers.start(TimerNames::energy_pairs);
     #pragma omp parallel
     {
         int thread_num = omp_get_thread_num();
@@ -210,7 +210,7 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
             }
         }        
     }
-    timers.stop("energy_pairs");
+    timers.stop(TimerNames::energy_pairs);
     //omp_set_num_threads(1);
 
     for(int i = 0; i < Nonbonded::num_threads; i++)
@@ -223,9 +223,9 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
     //  minimize fluc-dens energy
     flucDens->apply_field_to_system(positions);
 
-    timers.start("solve_minimization");
+    timers.start(TimerNames::minimization);
     flucDens->solve_minimization(self_forces);
-    timers.stop("solve_minimization");
+    timers.stop(TimerNames::minimization);
     
     total_energies.frz_ext = flucDens->calc_frz_ext_field_energy(positions, self_forces);
     total_energies.pol = flucDens->get_polarization_energy();
@@ -234,7 +234,7 @@ Energies AmberFD::calc_threaded_energy(const vec_d &positions)
     double end_time = omp_get_wtime();
     parallel_time += (end_time - start_time);
 
-    timers.stop("calc_threaded_energy");
+    timers.stop(TimerNames::threaded_energy);
 }
 
 Energies AmberFD::calc_energy_forces(const vec_d &positions, bool frag_frag_only)
